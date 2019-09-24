@@ -1,0 +1,39 @@
+#!/usr/bin/comet
+import (a, b) from module.something
+
+class MyClass
+{
+    def constructor(a)
+    {
+        self.a = a
+        self.list = []
+        self.hash = {}
+        self.set = Set()
+    }
+
+    def this_is_a_method()
+    {
+        print("interpolated string ${self.a}")
+        print('literal string')
+    }
+
+    def this_is_a_different_method(a, b=1, c=nil)
+    {
+        while (expression)
+        {
+            self.my_iterative_method(|something| {
+                print(something)
+            })
+        }
+    }
+
+    def this_method_is_destructive!()
+    {
+
+    }
+
+    def this_method_returns_a_bool?()
+    {
+        return false
+    }
+}

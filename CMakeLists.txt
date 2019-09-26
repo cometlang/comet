@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.0)
-project (Mcc)
+project (comet)
 enable_language(C)
 enable_testing()
 
@@ -9,3 +9,4 @@ set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} --coverage")
 
 set(MEMORYCHECK_COMMAND_OPTIONS "--track-origins=yes --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 --log-fd=2")
 add_subdirectory(eral)
+add_subdirectory(lexer)

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "util.h"
 #include "fileBuffer.h"
+#include "fileOpener.h"
 #include "list.h"
 #include "stack.h"
 #include "stringBuffer.h"

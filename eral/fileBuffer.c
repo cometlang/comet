@@ -34,17 +34,17 @@ struct FileBuffer
 void eral_DebugPrintFileBuffer(eral_FileBuffer_t *buffer);
 #endif
 
-const char *eral_GetFileBufferFilename(eral_FileBuffer_t *fileBuffer)
+const char *eral_GetFileBufferFilename(const eral_FileBuffer_t *fileBuffer)
 {
    return fileBuffer->filename;
 }
 
-unsigned int eral_GetFileBufferCurrentLineNo(eral_FileBuffer_t *fileBuffer)
+unsigned int eral_GetFileBufferCurrentLineNo(const eral_FileBuffer_t *fileBuffer)
 {
    return fileBuffer->lineNum;
 }
 
-unsigned short eral_GetFileBufferFileNumber(eral_FileBuffer_t *fileBuffer)
+unsigned short eral_GetFileBufferFileNumber(const eral_FileBuffer_t *fileBuffer)
 {
    return fileBuffer->fileNumber;
 }
@@ -91,7 +91,7 @@ static void readFileChunk(eral_FileBuffer_t *fileBuffer)
    fileBuffer->bufferIndex = 0;
 }
 
-bool_t eral_FileBufferEOFReached(eral_FileBuffer_t *buffer)
+bool_t eral_FileBufferEOFReached(const eral_FileBuffer_t *buffer)
 {
    return (bool_t)(feof(buffer->file) && buffer->charsRead == 0);
 }

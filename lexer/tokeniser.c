@@ -22,43 +22,17 @@ static char handle_octal_integer_const(eral_LogicalLine_t *line,
                                        eral_FileBuffer_t *fileBuffer);
 static char handle_hex_integer_const(eral_LogicalLine_t *line,
                                      eral_FileBuffer_t *fileBuffer);
-static void handle_whitespace(eral_LogicalLine_t *line,
-                              eral_FileBuffer_t *fileBuffer,
-                              mcc_TokenListIterator_t *iter);
+static void handle_whitespace(eral_LogicalLine_t *line);
 
 static void pretty_error(eral_FileBuffer_t *file, unsigned int index, const char *format, ...);
 
-static void handle_whitespace(eral_LogicalLine_t *line,
-                              eral_FileBuffer_t *fileBuffer,
-                              mcc_TokenListIterator_t *iter)
+static void handle_whitespace(eral_LogicalLine_t *line)
 {
-   eral_StringBuffer_t *buffer = eral_CreateStringBuffer();
-   int lineCol = line->index + 1;
-   int numChars = 0;
    while ((line->index < line->length) &&
           (isNonBreakingWhiteSpace((line->string[line->index]))))
    {
-      eral_StringBufferAppendChar(buffer, line->string[line->index]);
       line->index++;
-      numChars++;
    }
-   if (numChars > 0)
-   {
-      const mcc_Token_t *temp = mcc_TokenListPeekCurrentToken(iter);
-      if (temp != NULL && temp->tokenType != TOK_WHITESPACE)
-      {
-         mcc_Token_t *token = mcc_CreateToken(
-            eral_StringBufferGetString(buffer),
-            eral_GetStringBufferLength(buffer),
-            TOK_WHITESPACE,
-            TOK_UNSET_INDEX,
-            lineCol,
-            eral_GetFileBufferCurrentLineNo(fileBuffer),
-            eral_GetFileBufferFileNumber(fileBuffer));
-         mcc_InsertToken(token, iter);
-      }
-   }
-   eral_DeleteStringBuffer(buffer);
 }
 
 static void handle_string_const(eral_LogicalLine_t *line,
@@ -248,7 +222,7 @@ static void eral_TokeniseLine(eral_LogicalLine_t *line,
 
    if (!insideMultiLineComment)
    {
-      handle_whitespace(line, fileBuffer, iter);
+      handle_whitespace(line);
    }
 
    while(line->index < line->length)
@@ -402,7 +376,7 @@ static void eral_TokeniseLine(eral_LogicalLine_t *line,
          mcc_InsertToken(token, iter);
          token = NULL;
       }
-      handle_whitespace(line, fileBuffer, iter);
+      handle_whitespace(line);
    }
 }
 

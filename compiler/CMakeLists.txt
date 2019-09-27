@@ -4,19 +4,17 @@ enable_language(C)
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     "${CMAKE_CURRENT_SOURCE_DIR}/../eral"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../lexer"
 )
 
 set(SOURCE
-    error.c
-    lexer_error.h
-    tokeniser.c
-    tokenList.c
-    tokenList.h
-    tokens.c
-    tokens.h
+    ast.c
+    ast.h
+    expression.c
+    expression.h
 )
 
-add_library(lexer STATIC ${SOURCE})
-target_link_libraries(lexer PRIVATE eral)
+add_library(compiler STATIC ${SOURCE})
+target_link_libraries(compiler PRIVATE eral lexer)
 
 # add_subdirectory(test)

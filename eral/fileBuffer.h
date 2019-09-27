@@ -17,15 +17,15 @@ eral_FileBuffer_t *eral_CreateFileBuffer(const char *file);
 
 void eral_DeleteFileBuffer(eral_FileBuffer_t* buffer);
 
-bool_t eral_FileBufferEOFReached(eral_FileBuffer_t *buffer);
+bool_t eral_FileBufferEOFReached(const eral_FileBuffer_t *buffer);
 
 eral_LogicalLine_t *eral_FileBufferGetNextLogicalLine(eral_FileBuffer_t *fileBuffer);
 
 void eral_ShiftLineLeftAndShrink(eral_LogicalLine_t *line, uint32_t shiftOffset, int amountToShift);
 
-const char *eral_GetFileBufferFilename(eral_FileBuffer_t *fileBuffer);
-unsigned short eral_GetFileBufferFileNumber(eral_FileBuffer_t *fileBuffer);
-unsigned int eral_GetFileBufferCurrentLineNo(eral_FileBuffer_t *fileBuffer);
+const char *eral_GetFileBufferFilename(const eral_FileBuffer_t *fileBuffer);
+unsigned short eral_GetFileBufferFileNumber(const eral_FileBuffer_t *fileBuffer);
+unsigned int eral_GetFileBufferCurrentLineNo(const eral_FileBuffer_t *fileBuffer);
 
 #if ERAL_DEBUG
 void eral_DebugPrintFileBuffer(eral_FileBuffer_t *buffer);

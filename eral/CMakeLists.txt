@@ -4,6 +4,8 @@ project (eral)
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 set(SOURCE 
+  error.c
+  error.h
   fileBuffer.c
   fileBuffer.h
   fileOpener.c

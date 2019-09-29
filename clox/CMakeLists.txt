@@ -24,6 +24,8 @@ memory.c
 memory.h
 value.c
 value.h
+vm.c
+vm.h
 )
 
 add_executable(clox ${SOURCE})

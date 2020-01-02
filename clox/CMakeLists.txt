@@ -28,6 +28,8 @@ object.c
 object.h
 scanner.c
 scanner.h
+table.c
+table.h
 value.c
 value.h
 vm.c

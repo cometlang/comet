@@ -1,5 +1,5 @@
 #ifndef _COMET_ERAL_ERROR_H_
-#define _COMER_ERAL_ERROR_H_
+#define _COMET_ERAL_ERROR_H_
 
 #include "fileBuffer.h"
 

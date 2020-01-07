@@ -12,6 +12,7 @@
 
 #define GLOBAL_SCOPE 0
 #define UNINITIALIZED_LOCAL_SCOPE -1
+#define UNRESOLVED_VARIABLE_INDEX -1
 
 typedef struct
 {
@@ -49,7 +50,14 @@ typedef struct
 {
     Token name;
     int depth;
+    bool isCaptured;
 } Local;
+
+typedef struct
+{
+    uint8_t index;
+    bool isLocal;
+} Upvalue;
 
 typedef enum
 {
@@ -64,6 +72,7 @@ typedef struct Compiler
     FunctionType type;
     Local locals[UINT8_COUNT];
     int localCount;
+    Upvalue upvalues[UINT8_COUNT];
     int scopeDepth;
 } Compiler;
 
@@ -234,6 +243,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
 
     Local *local = &current->locals[current->localCount++];
     local->depth = 0;
+    local->isCaptured = false;
     local->name.start = "";
     local->name.length = 0;
 }
@@ -265,7 +275,14 @@ static void endScope()
     while (current->localCount > 0 &&
            current->locals[current->localCount - 1].depth > current->scopeDepth)
     {
-        emitByte(OP_POP);
+        if (current->locals[current->localCount - 1].isCaptured)
+        {
+            emitByte(OP_CLOSE_UPVALUE);
+        }
+        else
+        {
+            emitByte(OP_POP);
+        }
         current->localCount--;
     }
 }
@@ -303,7 +320,52 @@ static int resolveLocal(Compiler *compiler, Token *name)
         }
     }
 
-    return -1;
+    return UNRESOLVED_VARIABLE_INDEX;
+}
+
+static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
+{
+    int upvalueCount = compiler->function->upvalueCount;
+
+    for (int i = 0; i < upvalueCount; i++)
+    {
+        Upvalue *upvalue = &compiler->upvalues[i];
+        if (upvalue->index == index && upvalue->isLocal == isLocal)
+        {
+            return i;
+        }
+    }
+
+    if (upvalueCount == UINT8_COUNT)
+    {
+        error("Too many closure variables in function.");
+        return 0;
+    }
+
+    compiler->upvalues[upvalueCount].isLocal = isLocal;
+    compiler->upvalues[upvalueCount].index = index;
+    return compiler->function->upvalueCount++;
+}
+
+static int resolveUpvalue(Compiler *compiler, Token *name)
+{
+    if (compiler->enclosing == NULL)
+        return UNRESOLVED_VARIABLE_INDEX;
+
+    int local = resolveLocal(compiler->enclosing, name);
+    if (local != UNRESOLVED_VARIABLE_INDEX)
+    {
+        compiler->enclosing->locals[local].isCaptured = true;
+        return addUpvalue(compiler, (uint8_t)local, true);
+    }
+
+    int upvalue = resolveUpvalue(compiler->enclosing, name);
+    if (upvalue != UNRESOLVED_VARIABLE_INDEX)
+    {
+        return addUpvalue(compiler, (uint8_t)upvalue, false);
+    }
+
+    return UNRESOLVED_VARIABLE_INDEX;
 }
 
 static void addLocal(Token name)
@@ -316,6 +378,7 @@ static void addLocal(Token name)
     Local *local = &current->locals[current->localCount++];
     local->name = name;
     local->depth = UNINITIALIZED_LOCAL_SCOPE;
+    local->isCaptured = false;
 }
 
 static void declareVariable()
@@ -504,10 +567,15 @@ static void namedVariable(Token name, bool canAssign)
 {
     uint8_t getOp, setOp;
     int arg = resolveLocal(current, &name);
-    if (arg != -1)
+    if (arg != UNRESOLVED_VARIABLE_INDEX)
     {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
+    }
+    else if ((arg = resolveUpvalue(current, &name)) != UNRESOLVED_VARIABLE_INDEX)
+    {
+        getOp = OP_GET_UPVALUE;
+        setOp = OP_SET_UPVALUE;
     }
     else
     {
@@ -673,6 +741,12 @@ static void function(FunctionType type)
     // Create the function object.
     ObjFunction *function = endCompiler();
     emitBytes(OP_CONSTANT, makeConstant(OBJ_VAL(function)));
+
+    for (int i = 0; i < function->upvalueCount; i++)
+    {
+        emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+        emitByte(compiler.upvalues[i].index);
+    }
 }
 
 static void funDeclaration()

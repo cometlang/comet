@@ -516,6 +516,22 @@ static void call(bool UNUSED(canAssign))
     emitBytes(OP_CALL, argCount);
 }
 
+static void dot(bool canAssign)
+{
+    consume(TOKEN_IDENTIFIER, "Expect property name after '.'.");
+    uint8_t name = identifierConstant(&parser.previous);
+
+    if (canAssign && match(TOKEN_EQUAL))
+    {
+        expression();
+        emitBytes(OP_SET_PROPERTY, name);
+    }
+    else
+    {
+        emitBytes(OP_GET_PROPERTY, name);
+    }
+}
+
 static void literal(bool UNUSED(canAssign))
 {
     switch (parser.previous.type)
@@ -628,7 +644,7 @@ ParseRule rules[] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_COMMA
-    {NULL, NULL, PREC_NONE},         // TOKEN_DOT
+    {NULL, dot, PREC_CALL},          // TOKEN_DOT
     {unary, binary, PREC_TERM},      // TOKEN_MINUS
     {NULL, binary, PREC_TERM},       // TOKEN_PLUS
     {NULL, NULL, PREC_NONE},         // TOKEN_SEMICOLON

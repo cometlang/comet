@@ -1,0 +1,6 @@
+- iterable
+ - contains?
+ - iterator()
+ - empty?
+
+ 

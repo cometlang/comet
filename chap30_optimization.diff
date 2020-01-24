@@ -1,0 +1,276 @@
+diff --unified --new-file gen/chap29_superclasses/common.h gen/chap30_optimization/common.h
+--- gen/chap29_superclasses/common.h	2020-01-25 10:07:58.311268705 +1300
++++ gen/chap30_optimization/common.h	2020-01-25 10:07:58.331278706 +1300
+@@ -5,6 +5,7 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++#define NAN_TAGGING
+ #define DEBUG_PRINT_CODE
+ #define DEBUG_TRACE_EXECUTION
+ 
+diff --unified --new-file gen/chap29_superclasses/table.c gen/chap30_optimization/table.c
+--- gen/chap29_superclasses/table.c	2020-01-25 10:07:58.319272705 +1300
++++ gen/chap30_optimization/table.c	2020-01-25 10:07:58.331278706 +1300
+@@ -10,16 +10,16 @@
+ 
+ void initTable(Table* table) {
+   table->count = 0;
+-  table->capacity = 0;
++  table->capacityMask = -1;
+   table->entries = NULL;
+ }
+ void freeTable(Table* table) {
+-  FREE_ARRAY(Entry, table->entries, table->capacity);
++  FREE_ARRAY(Entry, table->entries, table->capacityMask + 1);
+   initTable(table);
+ }
+-static Entry* findEntry(Entry* entries, int capacity,
++static Entry* findEntry(Entry* entries, int capacityMask,
+                         ObjString* key) {
+-  uint32_t index = key->hash % capacity;
++  uint32_t index = key->hash & capacityMask;
+   Entry* tombstone = NULL;
+ 
+   for (;;) {
+@@ -38,47 +38,48 @@
+       return entry;
+     }
+ 
+-    index = (index + 1) % capacity;
++    index = (index + 1) & capacityMask;
+   }
+ }
+ bool tableGet(Table* table, ObjString* key, Value* value) {
+   if (table->count == 0) return false;
+ 
+-  Entry* entry = findEntry(table->entries, table->capacity, key);
++  Entry* entry = findEntry(table->entries, table->capacityMask, key);
+   if (entry->key == NULL) return false;
+ 
+   *value = entry->value;
+   return true;
+ }
+-static void adjustCapacity(Table* table, int capacity) {
+-  Entry* entries = ALLOCATE(Entry, capacity);
+-  for (int i = 0; i < capacity; i++) {
++static void adjustCapacity(Table* table, int capacityMask) {
++  Entry* entries = ALLOCATE(Entry, capacityMask + 1);
++  for (int i = 0; i <= capacityMask; i++) {
+     entries[i].key = NULL;
+     entries[i].value = NIL_VAL;
+   }
+ 
+   table->count = 0;
+-  for (int i = 0; i < table->capacity; i++) {
++  for (int i = 0; i <= table->capacityMask; i++) {
+     Entry* entry = &table->entries[i];
+     if (entry->key == NULL) continue;
+ 
+-    Entry* dest = findEntry(entries, capacity, entry->key);
++    Entry* dest = findEntry(entries, capacityMask, entry->key);
+     dest->key = entry->key;
+     dest->value = entry->value;
+     table->count++;
+   }
+ 
+-  FREE_ARRAY(Entry, table->entries, table->capacity);
++  FREE_ARRAY(Entry, table->entries, table->capacityMask + 1);
+   table->entries = entries;
+-  table->capacity = capacity;
++  table->capacityMask = capacityMask;
+ }
+ bool tableSet(Table* table, ObjString* key, Value value) {
+-  if (table->count + 1 > table->capacity * TABLE_MAX_LOAD) {
+-    int capacity = GROW_CAPACITY(table->capacity);
+-    adjustCapacity(table, capacity);
++  if (table->count + 1 > (table->capacityMask + 1) * TABLE_MAX_LOAD) {
++    // Figure out the new table size.
++    int capacityMask = GROW_CAPACITY(table->capacityMask + 1) - 1;
++    adjustCapacity(table, capacityMask);
+   }
+ 
+-  Entry* entry = findEntry(table->entries, table->capacity, key);
++  Entry* entry = findEntry(table->entries, table->capacityMask, key);
+ 
+   bool isNewKey = entry->key == NULL;
+   if (isNewKey && IS_NIL(entry->value)) table->count++;
+@@ -91,7 +92,7 @@
+   if (table->count == 0) return false;
+ 
+   // Find the entry.
+-  Entry* entry = findEntry(table->entries, table->capacity, key);
++  Entry* entry = findEntry(table->entries, table->capacityMask, key);
+   if (entry->key == NULL) return false;
+ 
+   // Place a tombstone in the entry.
+@@ -101,7 +102,7 @@
+   return true;
+ }
+ void tableAddAll(Table* from, Table* to) {
+-  for (int i = 0; i < from->capacity; i++) {
++  for (int i = 0; i <= from->capacityMask; i++) {
+     Entry* entry = &from->entries[i];
+     if (entry->key != NULL) {
+       tableSet(to, entry->key, entry->value);
+@@ -112,7 +113,7 @@
+                            uint32_t hash) {
+   if (table->count == 0) return NULL;
+ 
+-  uint32_t index = hash % table->capacity;
++  uint32_t index = hash & table->capacityMask;
+ 
+   for (;;) {
+     Entry* entry = &table->entries[index];
+@@ -127,11 +128,11 @@
+       return entry->key;
+     }
+ 
+-    index = (index + 1) % table->capacity;
++    index = (index + 1) & table->capacityMask;
+   }
+ }
+ void tableRemoveWhite(Table* table) {
+-  for (int i = 0; i < table->capacity; i++) {
++  for (int i = 0; i <= table->capacityMask; i++) {
+     Entry* entry = &table->entries[i];
+     if (entry->key != NULL && !entry->key->obj.isMarked) {
+       tableDelete(table, entry->key);
+@@ -139,7 +140,7 @@
+   }
+ }
+ void markTable(Table* table) {
+-  for (int i = 0; i < table->capacity; i++) {
++  for (int i = 0; i <= table->capacityMask; i++) {
+     Entry* entry = &table->entries[i];
+     markObject((Obj*)entry->key);
+     markValue(entry->value);
+diff --unified --new-file gen/chap29_superclasses/table.h gen/chap30_optimization/table.h
+--- gen/chap29_superclasses/table.h	2020-01-25 10:07:58.323274705 +1300
++++ gen/chap30_optimization/table.h	2020-01-25 10:07:58.335280706 +1300
+@@ -11,7 +11,7 @@
+ 
+ typedef struct {
+   int count;
+-  int capacity;
++  int capacityMask;
+   Entry* entries;
+ } Table;
+ 
+diff --unified --new-file gen/chap29_superclasses/value.c gen/chap30_optimization/value.c
+--- gen/chap29_superclasses/value.c	2020-01-25 10:07:58.323274705 +1300
++++ gen/chap30_optimization/value.c	2020-01-25 10:07:58.331278706 +1300
+@@ -26,14 +26,29 @@
+   initValueArray(array);
+ }
+ void printValue(Value value) {
++#ifdef NAN_TAGGING
++  if (IS_BOOL(value)) {
++    printf(AS_BOOL(value) ? "true" : "false");
++  } else if (IS_NIL(value)) {
++    printf("nil");
++  } else if (IS_NUMBER(value)) {
++    printf("%g", AS_NUMBER(value));
++  } else if (IS_OBJ(value)) {
++    printObject(value);
++  }
++#else
+   switch (value.type) {
+     case VAL_BOOL:   printf(AS_BOOL(value) ? "true" : "false"); break;
+     case VAL_NIL:    printf("nil"); break;
+     case VAL_NUMBER: printf("%g", AS_NUMBER(value)); break;
+     case VAL_OBJ:    printObject(value); break;
+   }
++#endif
+ }
+ bool valuesEqual(Value a, Value b) {
++#ifdef NAN_TAGGING
++  return a == b;
++#else
+   if (a.type != b.type) return false;
+ 
+   switch (a.type) {
+@@ -42,4 +57,5 @@
+     case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
+     case VAL_OBJ:    return AS_OBJ(a) == AS_OBJ(b);
+   }
++#endif
+ }
+diff --unified --new-file gen/chap29_superclasses/value.h gen/chap30_optimization/value.h
+--- gen/chap29_superclasses/value.h	2020-01-25 10:07:58.311268705 +1300
++++ gen/chap30_optimization/value.h	2020-01-25 10:07:58.331278706 +1300
+@@ -6,6 +6,65 @@
+ typedef struct sObj Obj;
+ typedef struct sObjString ObjString;
+ 
++#ifdef NAN_TAGGING
++
++// A mask that selects the sign bit.
++#define SIGN_BIT ((uint64_t)1 << 63)
++
++// The bits that must be set to indicate a quiet NaN.
++#define QNAN ((uint64_t)0x7ffc000000000000)
++
++// Tag values for the different singleton values.
++#define TAG_NIL   1 // 01.
++#define TAG_FALSE 2 // 10.
++#define TAG_TRUE  3 // 11.
++
++typedef uint64_t Value;
++
++#define IS_BOOL(v)    (((v) & FALSE_VAL) == FALSE_VAL)
++#define IS_NIL(v)     ((v) == NIL_VAL)
++// If the NaN bits are set, it's not a number.
++#define IS_NUMBER(v)  (((v) & QNAN) != QNAN)
++#define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
++
++#define AS_BOOL(v)    ((v) == TRUE_VAL)
++#define AS_NUMBER(v)  valueToNum(v)
++#define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
++
++#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)
++#define FALSE_VAL         ((Value)(uint64_t)(QNAN | TAG_FALSE))
++#define TRUE_VAL          ((Value)(uint64_t)(QNAN | TAG_TRUE))
++#define NIL_VAL           ((Value)(uint64_t)(QNAN | TAG_NIL))
++#define NUMBER_VAL(num)   numToValue(num)
++// The triple casting is necessary here to satisfy some compilers:
++// 1. (uintptr_t) Convert the pointer to a number of the right size.
++// 2. (uint64_t)  Pad it up to 64 bits in 32-bit builds.
++// 3. Or in the bits to make a tagged Nan.
++// 4. Cast to a typedef'd value.
++#define OBJ_VAL(obj) \
++    (Value)(SIGN_BIT | QNAN | (uint64_t)(uintptr_t)(obj))
++
++// A union to let us reinterpret a double as raw bits and back.
++typedef union {
++  uint64_t bits64;
++  uint32_t bits32[2];
++  double num;
++} DoubleUnion;
++
++static inline double valueToNum(Value value) {
++  DoubleUnion data;
++  data.bits64 = value;
++  return data.num;
++}
++
++static inline Value numToValue(double num) {
++  DoubleUnion data;
++  data.num = num;
++  return data.bits64;
++}
++
++#else
++
+ typedef enum {
+   VAL_BOOL,
+   VAL_NIL, // [user-types]
+@@ -36,6 +95,8 @@
+ #define NUMBER_VAL(value) ((Value){ VAL_NUMBER, { .number = value } })
+ #define OBJ_VAL(object)   ((Value){ VAL_OBJ, { .obj = (Obj*)object } })
+ 
++#endif
++
+ typedef struct {
+   int capacity;
+   int count;

@@ -4,6 +4,8 @@
 #include "object.h"
 #include "vm.h"
 
+typedef struct Compiler Compiler;
+
 ObjFunction* compile(const char* source);
 void markCompilerRoots();
 

@@ -68,7 +68,7 @@ typedef enum
     TYPE_SCRIPT
 } FunctionType;
 
-typedef struct Compiler
+struct Compiler
 {
     struct Compiler *enclosing;
     ObjFunction *function;
@@ -77,7 +77,7 @@ typedef struct Compiler
     int localCount;
     Upvalue upvalues[UINT8_COUNT];
     int scopeDepth;
-} Compiler;
+};
 
 typedef struct ClassCompiler
 {
@@ -1184,6 +1184,8 @@ ObjFunction *compile(const char *source)
 
     parser.hadError = false;
     parser.panicMode = false;
+
+    // chicken-egg situation.
 
     advance();
     while (!match(TOKEN_EOF))

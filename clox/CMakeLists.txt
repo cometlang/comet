@@ -36,5 +36,5 @@ vm.h
 )
 
 add_executable(clox ${SOURCE})
-target_link_libraries(clox PUBLIC c m)
+target_link_libraries(clox PUBLIC c m stdlib)
 

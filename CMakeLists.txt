@@ -11,3 +11,4 @@ set(MEMORYCHECK_COMMAND_OPTIONS "--track-origins=yes --leak-check=full --errors-
 add_subdirectory(eral)
 add_subdirectory(lexer)
 add_subdirectory(compiler)
+add_subdirectory(stdlib)

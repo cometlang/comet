@@ -1,7 +1,7 @@
 #!/usr/bin/comet
-import (a, b) from module.something
+import Module
 
-class MyClass
+class MyClass : Object
 {
     def constructor(a)
     {

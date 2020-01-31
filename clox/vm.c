@@ -283,6 +283,15 @@ static void defineMethod(ObjString *name)
     pop();
 }
 
+void defineNativeMethod(Value owner, NativeFn function, ObjString *name)
+{
+    push(owner);
+    ObjNative *method = newNative(function);
+    push(OBJ_VAL(method));
+    ObjBoundMethod *nativeMethod = newBoundMethod(owner, CLOSURE_VAL(method));
+    defineMethod(name);
+}
+
 static bool isFalsey(Value value)
 {
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));

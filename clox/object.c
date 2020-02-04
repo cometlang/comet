@@ -44,6 +44,16 @@ ObjClass *newClass(ObjString *name)
     return klass;
 }
 
+ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor)
+{
+    ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
+    klass->klass.name = name;
+    initTable(&klass->klass.methods);
+    klass->constructor = constructor;
+    klass->destructor = destructor;
+    return klass;
+}
+
 ObjClosure *newClosure(ObjFunction *function)
 {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue *, function->upvalueCount);
@@ -71,10 +81,34 @@ ObjFunction *newFunction()
 
 ObjInstance *newInstance(ObjClass *klass)
 {
-    ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-    instance->klass = klass;
-    initTable(&instance->fields);
-    return instance;
+    Obj *obj = (Obj *)klass;
+    switch (obj->type)
+    {
+        case OBJ_CLASS:
+        {
+            ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+            instance->klass = klass;
+            initTable(&instance->fields);
+            return instance;
+        }
+        case OBJ_NATIVE_CLASS:
+        {
+            ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+            instance->klass = klass;
+            initTable(&instance->fields);
+            ObjNativeClass *native_klass = (ObjNativeClass *)klass;
+            if (native_klass->constructor != NULL)
+            {
+                native_klass->data = native_klass->constructor();
+            }
+            return instance;
+        }
+        default:
+        {
+            // this is an error - how do I abort?
+            return NULL;
+        }
+    }
 }
 
 ObjNative *newNative(NativeFn function)
@@ -164,6 +198,9 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
         printf("%s", AS_CLASS(value)->name->chars);
+        break;
+    case OBJ_NATIVE_CLASS:
+        printf("<native class %s>", AS_CLASS(value)->name->chars);
         break;
     case OBJ_BOUND_METHOD:
         printFunction(AS_BOUND_METHOD(value)->method->function);

@@ -35,6 +35,7 @@ typedef enum
   OBJ_CLOSURE,
   OBJ_FUNCTION,
   OBJ_INSTANCE,
+  OBJ_NATIVE_INSTANCE,
   OBJ_NATIVE,
   OBJ_STRING,
   OBJ_UPVALUE,
@@ -101,7 +102,6 @@ typedef void (NativeDestructor)(void *);
 typedef struct sNativeClass
 {
   ObjClass klass;
-  void *data;
   NativeConstructor *constructor;
   NativeDestructor *destructor;
 } ObjNativeClass;
@@ -112,6 +112,12 @@ typedef struct
   ObjClass *klass;
   Table fields;
 } ObjInstance;
+
+typedef struct
+{
+  ObjInstance instance;
+  void *data;
+} ObjNativeInstance;
 
 typedef struct
 {

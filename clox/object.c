@@ -93,15 +93,15 @@ ObjInstance *newInstance(ObjClass *klass)
         }
         case OBJ_NATIVE_CLASS:
         {
-            ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-            instance->klass = klass;
-            initTable(&instance->fields);
+            ObjNativeInstance *instance = ALLOCATE_OBJ(ObjNativeInstance, OBJ_NATIVE_INSTANCE);
+            instance->instance.klass = klass;
+            initTable(&instance->instance.fields);
             ObjNativeClass *native_klass = (ObjNativeClass *)klass;
             if (native_klass->constructor != NULL)
             {
-                native_klass->data = native_klass->constructor();
+                instance->data = native_klass->constructor();
             }
-            return instance;
+            return instance->instance;
         }
         default:
         {

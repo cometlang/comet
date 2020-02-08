@@ -83,8 +83,6 @@ typedef struct
     } as;
 } Value;
 
-#define VALUE Value
-
 #define IS_BOOL(value) ((value).type == VAL_BOOL)
 #define IS_NIL(value) ((value).type == VAL_NIL)
 #define IS_NUMBER(value) ((value).type == VAL_NUMBER)
@@ -100,6 +98,8 @@ typedef struct
 #define OBJ_VAL(object)   ((Value){ VAL_OBJ, { .obj = (Obj*)object } })
 
 #endif
+
+#define VALUE Value
 
 typedef struct
 {

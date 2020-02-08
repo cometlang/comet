@@ -1,7 +1,33 @@
 #include "comet.h"
 #include "util.h"
 
-VALUE file_open(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+#include <stdlib.h>
+#include <stdio.h>
+
+typedef struct fileData
+{
+    FILE *fp;
+} fileData;
+
+void *file_constructor(void)
+{
+    fileData *data = (fileData *) malloc(sizeof(fileData));
+    data->fp = NULL;
+    return (void *) data;
+}
+
+void file_destructor(void *data)
+{
+    fileData *file_data = (fileData *) data;
+    if (file_data->fp != NULL)
+    {
+        fflush(file_data->fp);
+        fclose(file_data->fp);
+    }
+    free(file_data);
+}
+
+VALUE file_static_open(int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
@@ -36,17 +62,17 @@ VALUE file_sync(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return NIL_VAL;
 }
 
-VALUE file_static_exists_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_exists_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE file_static_directory_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_directory_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE file_static_file_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_file_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }

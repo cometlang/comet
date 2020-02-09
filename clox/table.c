@@ -24,7 +24,7 @@ void freeTable(Table *table)
 static Entry *findEntry(Entry *entries, int capacityMask,
                         ObjString *key)
 {
-    uint32_t index = key->hash % capacityMask;
+    uint32_t index = key->hash & capacityMask;
     Entry *tombstone = NULL;
 
     for (;;)
@@ -51,7 +51,7 @@ static Entry *findEntry(Entry *entries, int capacityMask,
             return entry;
         }
 
-        index = (index + 1) % capacityMask;
+        index = (index + 1) & capacityMask;
     }
 }
 
@@ -134,7 +134,7 @@ bool tableDelete(Table *table, ObjString *key)
 
 void tableAddAll(Table *from, Table *to)
 {
-    for (int i = 0; i < from->capacityMask; i++)
+    for (int i = 0; i <= from->capacityMask; i++)
     {
         Entry *entry = &from->entries[i];
         if (entry->key != NULL)
@@ -150,7 +150,7 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
     if (table->count == 0)
         return NULL;
 
-    uint32_t index = hash % table->capacityMask;
+    uint32_t index = hash & table->capacityMask;
 
     for (;;)
     {
@@ -170,7 +170,7 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
             return entry->key;
         }
 
-        index = (index + 1) % table->capacityMask;
+        index = (index + 1) & table->capacityMask;
     }
 }
 
@@ -188,7 +188,7 @@ void tableRemoveWhite(Table *table)
 
 void markTable(Table *table)
 {
-    for (int i = 0; i < table->capacityMask; i++)
+    for (int i = 0; i <= table->capacityMask; i++)
     {
         Entry *entry = &table->entries[i];
         markObject((Obj *)entry->key);

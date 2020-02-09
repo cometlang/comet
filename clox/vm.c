@@ -172,6 +172,7 @@ static bool callValue(Value callee, int argCount)
         }
 
         default:
+            printf("Obj type: %u\n", OBJ_TYPE(callee));
             // Non-callable object type.
             break;
         }
@@ -525,13 +526,13 @@ static InterpretResult run(void)
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm.frames[vm.frameCount - 1];
             push(NUMBER_VAL(-AS_NUMBER(pop())));
             break;
         case OP_PRINT:
         {
             printValue(pop());
             printf("\n");
+            frame = &vm.frames[vm.frameCount - 1];
             break;
         }
         case OP_JUMP:

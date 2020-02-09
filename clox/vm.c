@@ -288,7 +288,6 @@ void defineNativeMethod(Value owner, NativeFn function, ObjString *name)
     push(owner);
     ObjNative *method = newNative(function);
     push(OBJ_VAL(method));
-    ObjBoundMethod *nativeMethod = newBoundMethod(owner, CLOSURE_VAL(method));
     defineMethod(name);
 }
 

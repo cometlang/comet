@@ -79,7 +79,7 @@ ObjFunction *newFunction()
     return function;
 }
 
-ObjInstance *newInstance(ObjClass *klass)
+Obj *newInstance(ObjClass *klass)
 {
     Obj *obj = (Obj *)klass;
     switch (obj->type)
@@ -89,7 +89,7 @@ ObjInstance *newInstance(ObjClass *klass)
             ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
             instance->klass = klass;
             initTable(&instance->fields);
-            return instance;
+            return (Obj *)instance;
         }
         case OBJ_NATIVE_CLASS:
         {
@@ -101,7 +101,7 @@ ObjInstance *newInstance(ObjClass *klass)
             {
                 instance->data = native_klass->constructor();
             }
-            return instance->instance;
+            return (Obj *)instance;
         }
         default:
         {
@@ -212,6 +212,7 @@ void printObject(Value value)
         printFunction(AS_FUNCTION(value));
         break;
     case OBJ_INSTANCE:
+    case OBJ_NATIVE_INSTANCE:
         printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
         break;
     case OBJ_NATIVE:

@@ -127,6 +127,13 @@ static void blackenObject(Obj *object)
         markTable(&instance->fields);
         break;
     }
+    case OBJ_NATIVE_INSTANCE:
+    {
+        ObjNativeInstance *instance = (ObjNativeInstance *)object;
+        markObject((Obj *)instance->instance.klass);
+        markTable(&instance->instance.fields);
+        break;
+    }
     case OBJ_UPVALUE:
         markValue(((ObjUpvalue *)object)->closed);
         break;
@@ -157,7 +164,6 @@ static void freeObject(Obj *object)
     {
         ObjNativeClass *klass = (ObjNativeClass *)object;
         freeTable(&klass->klass.methods);
-        klass->destructor(klass->data);
         FREE(ObjNativeClass, object);
         break;
     }
@@ -180,6 +186,15 @@ static void freeObject(Obj *object)
         ObjInstance *instance = (ObjInstance *)object;
         freeTable(&instance->fields);
         FREE(ObjInstance, object);
+        break;
+    }
+    case OBJ_NATIVE_INSTANCE:
+    {
+        ObjNativeInstance *instance = (ObjNativeInstance *)object;
+        ObjNativeClass *klass = (ObjNativeClass *)instance->instance.klass;
+        klass->destructor(instance->data);
+        freeTable(&instance->instance.fields);
+        FREE(ObjNativeInstance, object);
         break;
     }
     case OBJ_NATIVE:
@@ -219,7 +234,7 @@ static void markRoots()
 
     markTable(&vm.globals);
     markCompilerRoots();
-    markObject((Obj*)vm.initString);
+    markObject((Obj *)vm.initString);
 }
 
 static void traceReferences()

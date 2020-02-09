@@ -11,6 +11,7 @@
 #define IS_BOUND_METHOD(value) isObjType(value, OBJ_BOUND_METHOD)
 #define IS_CLASS(value) isObjType(value, OBJ_CLASS)
 #define IS_NATIVE_CLASS(value) isObjType(value, OBJ_NATIVE_CLASS)
+#define IS_NATIVE_METHOD(value) isObjType(value, OBJ_NATIVE_METHOD)
 #define IS_CLOSURE(value) isObjType(value, OBJ_CLOSURE)
 #define IS_FUNCTION(value) isObjType(value, OBJ_FUNCTION)
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
@@ -32,109 +33,109 @@
 
 typedef enum
 {
-  OBJ_BOUND_METHOD,
-  OBJ_CLASS,
-  OBJ_NATIVE_CLASS,
-  OBJ_NATIVE_METHOD,
-  OBJ_CLOSURE,
-  OBJ_FUNCTION,
-  OBJ_INSTANCE,
-  OBJ_NATIVE_INSTANCE,
-  OBJ_NATIVE,
-  OBJ_STRING,
-  OBJ_UPVALUE,
+    OBJ_BOUND_METHOD,
+    OBJ_CLASS,
+    OBJ_NATIVE_CLASS,
+    OBJ_NATIVE_METHOD,
+    OBJ_CLOSURE,
+    OBJ_FUNCTION,
+    OBJ_INSTANCE,
+    OBJ_NATIVE_INSTANCE,
+    OBJ_NATIVE,
+    OBJ_STRING,
+    OBJ_UPVALUE,
 } ObjType;
 
 struct sObj
 {
-  ObjType type;
-  bool isMarked;
-  struct sObj *next;
+    ObjType type;
+    bool isMarked;
+    struct sObj *next;
 };
 
 typedef struct
 {
-  Obj obj;
-  int arity;
-  int upvalueCount;
-  Chunk chunk;
-  ObjString *name;
+    Obj obj;
+    int arity;
+    int upvalueCount;
+    Chunk chunk;
+    ObjString *name;
 } ObjFunction;
 
 typedef Value (*NativeFn)(int argCount, Value *args);
 
 typedef struct
 {
-  Obj obj;
-  NativeFn function;
+    Obj obj;
+    NativeFn function;
 } ObjNative;
 
 struct sObjString
 {
-  Obj obj;
-  int length;
-  char *chars;
-  uint32_t hash;
+    Obj obj;
+    int length;
+    char *chars;
+    uint32_t hash;
 };
 
 typedef struct sUpvalue
 {
-  Obj obj;
-  Value *location;
-  Value closed;
-  struct sUpvalue *next;
+    Obj obj;
+    Value *location;
+    Value closed;
+    struct sUpvalue *next;
 } ObjUpvalue;
 
 typedef struct
 {
-  Obj obj;
-  ObjFunction *function;
-  ObjUpvalue **upvalues;
-  int upvalueCount;
+    Obj obj;
+    ObjFunction *function;
+    ObjUpvalue **upvalues;
+    int upvalueCount;
 } ObjClosure;
 
 typedef struct sObjClass
 {
-  Obj obj;
-  ObjString *name;
-  Table methods;
+    Obj obj;
+    ObjString *name;
+    Table methods;
 } ObjClass;
 
 typedef void *(NativeConstructor)(void);
-typedef void (NativeDestructor)(void *);
+typedef void(NativeDestructor)(void *);
 
 typedef struct sNativeClass
 {
-  ObjClass klass;
-  NativeConstructor *constructor;
-  NativeDestructor *destructor;
+    ObjClass klass;
+    NativeConstructor *constructor;
+    NativeDestructor *destructor;
 } ObjNativeClass;
 
 typedef struct sNativeMethod
 {
-  Obj obj;
-  Value receiver;
-  NativeFn function;
+    Obj obj;
+    Value receiver;
+    NativeFn function;
 } ObjNativeMethod;
 
 typedef struct
 {
-  Obj obj;
-  ObjClass *klass;
-  Table fields;
+    Obj obj;
+    ObjClass *klass;
+    Table fields;
 } ObjInstance;
 
 typedef struct
 {
-  ObjInstance instance;
-  void *data;
+    ObjInstance instance;
+    void *data;
 } ObjNativeInstance;
 
 typedef struct
 {
-  Obj obj;
-  Value receiver;
-  ObjClosure *method;
+    Obj obj;
+    Value receiver;
+    ObjClosure *method;
 } ObjBoundMethod;
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
@@ -152,7 +153,7 @@ void printObject(Value value);
 
 static inline bool isObjType(Value value, ObjType type)
 {
-  return IS_OBJ(value) && AS_OBJ(value)->type == type;
+    return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
 
 #endif

@@ -207,10 +207,8 @@ void printObject(Value value)
     switch (OBJ_TYPE(value))
     {
     case OBJ_CLASS:
-        printf("%s", AS_CLASS(value)->name->chars);
-        break;
     case OBJ_NATIVE_CLASS:
-        printf("<native class %s>", AS_CLASS(value)->name->chars);
+        printf("%s", AS_CLASS(value)->name->chars);
         break;
     case OBJ_NATIVE_METHOD:
         printf("<native method>");

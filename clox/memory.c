@@ -103,6 +103,12 @@ static void blackenObject(Obj *object)
         markTable(&klass->klass.methods);
         break;
     }
+    case OBJ_NATIVE_METHOD:
+    {
+        ObjNativeMethod *method = (ObjNativeMethod *)object;
+        markValue(method->receiver);
+        break;
+    }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
@@ -165,6 +171,11 @@ static void freeObject(Obj *object)
         ObjNativeClass *klass = (ObjNativeClass *)object;
         freeTable(&klass->klass.methods);
         FREE(ObjNativeClass, object);
+        break;
+    }
+    case OBJ_NATIVE_METHOD:
+    {
+        FREE(ObjNativeMethod, object);
         break;
     }
     case OBJ_CLOSURE:

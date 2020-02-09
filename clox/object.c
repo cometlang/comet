@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "memory.h"
 #include "object.h"
@@ -105,7 +106,8 @@ Obj *newInstance(ObjClass *klass)
         }
         default:
         {
-            // this is an error - how do I abort?
+            fprintf(stderr, "Can't instantiate something that isn't a class\n");
+            abort();
             return NULL;
         }
     }
@@ -116,6 +118,14 @@ ObjNative *newNative(NativeFn function)
     ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
+}
+
+ObjNativeMethod *newNativeMethod(Value receiver, NativeFn function)
+{
+    ObjNativeMethod *method = ALLOCATE_OBJ(ObjNativeMethod, OBJ_NATIVE_METHOD);
+    method->receiver = receiver;
+    method->function = function;
+    return method;
 }
 
 static ObjString *allocateString(char *chars, int length,
@@ -201,6 +211,9 @@ void printObject(Value value)
         break;
     case OBJ_NATIVE_CLASS:
         printf("<native class %s>", AS_CLASS(value)->name->chars);
+        break;
+    case OBJ_NATIVE_METHOD:
+        printf("<native method>");
         break;
     case OBJ_BOUND_METHOD:
         printFunction(AS_BOUND_METHOD(value)->method->function);

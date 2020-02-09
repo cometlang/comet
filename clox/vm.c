@@ -182,6 +182,11 @@ static bool callValue(Value callee, int argCount)
     return false;
 }
 
+static bool callNativeMethod(ObjClass UNUSED(*klass), ObjNativeMethod UNUSED(*method), int UNUSED(argCount))
+{
+    return true;
+}
+
 static bool invokeFromClass(ObjClass *klass, ObjString *name,
                             int argCount)
 {
@@ -192,8 +197,19 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
     }
-
-    return call(AS_CLOSURE(method), argCount);
+    if (OBJ_TYPE(method) == OBJ_CLOSURE)
+    {
+        return call(AS_CLOSURE(method), argCount);
+    }
+    else if (OBJ_TYPE(method) == OBJ_NATIVE_METHOD)
+    {
+        return callNativeMethod(klass, AS_NATIVE_METHOD(method), argCount);
+    }
+    else
+    {
+        runtimeError("Only methods can be invoked");
+        return false;
+    }
 }
 
 static bool invoke(ObjString *name, int argCount)
@@ -284,10 +300,10 @@ static void defineMethod(ObjString *name)
     pop();
 }
 
-void defineNativeMethod(Value owner, NativeFn function, ObjString *name)
+void defineNativeMethod(ObjClass *klass, NativeFn function, ObjString *name)
 {
-    push(owner);
-    ObjNative *method = newNative(function);
+    push(OBJ_VAL(klass));
+    ObjNativeMethod *method = newNativeMethod(OBJ_VAL(klass), function);
     push(OBJ_VAL(method));
     defineMethod(name);
 }

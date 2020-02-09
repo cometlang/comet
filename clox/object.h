@@ -21,6 +21,7 @@
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod *)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
 #define AS_NATIVE_CLASS(value) ((ObjNativeClass *)AS_OBJ(value))
+#define AS_NATIVE_METHOD(value) ((ObjNativeMethod *)AS_OBJ(value))
 #define AS_CLOSURE(value) ((ObjClosure *)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction *)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
@@ -34,6 +35,7 @@ typedef enum
   OBJ_BOUND_METHOD,
   OBJ_CLASS,
   OBJ_NATIVE_CLASS,
+  OBJ_NATIVE_METHOD,
   OBJ_CLOSURE,
   OBJ_FUNCTION,
   OBJ_INSTANCE,
@@ -108,6 +110,13 @@ typedef struct sNativeClass
   NativeDestructor *destructor;
 } ObjNativeClass;
 
+typedef struct sNativeMethod
+{
+  Obj obj;
+  Value receiver;
+  NativeFn function;
+} ObjNativeMethod;
+
 typedef struct
 {
   Obj obj;
@@ -131,6 +140,7 @@ typedef struct
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(ObjString *name);
 ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor);
+ObjNativeMethod *newNativeMethod(Value receiver, NativeFn function);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(ObjClass *klass);

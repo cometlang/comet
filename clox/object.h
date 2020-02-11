@@ -99,6 +99,7 @@ typedef struct sObjClass
     Obj obj;
     ObjString *name;
     Table methods;
+    Table staticMethods;
 } ObjClass;
 
 typedef void *(NativeConstructor)(void);

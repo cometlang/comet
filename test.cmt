@@ -1,0 +1,9 @@
+class File
+{
+    static open(filename)
+    {
+        print filename;
+    }
+}
+
+File.open("This is a the filename");

@@ -216,6 +216,12 @@ static bool invoke(ObjString *name, int argCount)
 {
     Value receiver = peek(argCount);
 
+    if (IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver))
+    {
+        runtimeError("Static methods haven't been implemented yet.");
+        return false;
+    }
+
     if (!IS_INSTANCE(receiver))
     {
         runtimeError("Only instances have methods.");
@@ -291,21 +297,28 @@ static void closeUpvalues(Value *last)
     }
 }
 
-static void defineMethod(ObjString *name)
+static void defineMethod(ObjString *name, bool isStatic)
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
-    tableSet(&klass->methods, name, method);
+    if (isStatic)
+    {
+        tableSet(&klass->staticMethods, name, method);
+    }
+    else
+    {
+        tableSet(&klass->methods, name, method);
+    }
     pop();
     pop();
 }
 
-void defineNativeMethod(ObjClass *klass, NativeFn function, ObjString *name)
+void defineNativeMethod(ObjClass *klass, NativeFn function, ObjString *name, bool isStatic)
 {
     push(OBJ_VAL(klass));
     ObjNativeMethod *method = newNativeMethod(OBJ_VAL(klass), function);
     push(OBJ_VAL(method));
-    defineMethod(name);
+    defineMethod(name, isStatic);
 }
 
 static bool isFalsey(Value value)
@@ -661,7 +674,10 @@ static InterpretResult run(void)
             break;
         }
         case OP_METHOD:
-            defineMethod(READ_STRING());
+            defineMethod(READ_STRING(), false);
+            break;
+        case OP_STATIC_METHOD:
+            defineMethod(READ_STRING(), true);
             break;
         }
     }

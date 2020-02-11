@@ -870,6 +870,8 @@ static void function(FunctionType type)
 
 static void method()
 {
+    bool isStatic = match(TOKEN_STATIC);
+
     consume(TOKEN_IDENTIFIER, "Expect method name.");
     uint8_t constant = identifierConstant(&parser.previous);
 
@@ -883,7 +885,14 @@ static void method()
 
     function(type);
 
-    emitBytes(OP_METHOD, constant);
+    if (isStatic)
+    {
+        emitBytes(OP_STATIC_METHOD, constant);
+    }
+    else
+    {
+        emitBytes(OP_METHOD, constant);
+    }
 }
 
 static void classDeclaration()

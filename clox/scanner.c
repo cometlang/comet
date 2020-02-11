@@ -168,7 +168,31 @@ static TokenType identifierType()
     case 'o':
         return checkKeyword(1, 1, "r", TOKEN_OR);
     case 'p':
-        return checkKeyword(1, 4, "rint", TOKEN_PRINT);
+        if (scanner.current - scanner.start > 4)
+        {
+            if (scanner.start[1] == 'r')
+            {
+                switch (scanner.start[2])
+                {
+                    case 'i':
+                    {
+                        switch (scanner.start[3])
+                        {
+                            case 'v':
+                                return checkKeyword(4, 3, "ate", TOKEN_PRIVATE);
+                            case 'n':
+                                return checkKeyword(4, 1, "t", TOKEN_PRINT);
+                        }
+                        break;
+                    }
+                    case 'o':
+                        return checkKeyword(3, 6, "tected", TOKEN_PROTECTED);
+                    case 'u':
+                       return checkKeyword(3, 4, "blic", TOKEN_PUBLIC);
+                }
+            }
+        }
+        break;
     case 'r':
         return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
     case 's':

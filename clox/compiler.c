@@ -775,6 +775,10 @@ ParseRule rules[] = {
     {literal, NULL, PREC_NONE},      // TOKEN_TRUE
     {NULL, NULL, PREC_NONE},         // TOKEN_VAR
     {NULL, NULL, PREC_NONE},         // TOKEN_WHILE
+    {NULL, NULL, PREC_NONE},         // TOKEN_PRIVATE
+    {NULL, NULL, PREC_NONE},         // TOKEN_PROTECTED
+    {NULL, NULL, PREC_NONE},         // TOKEN_PUBLIC
+    {NULL, NULL, PREC_NONE},         // TOKEN_STATIC
     {NULL, NULL, PREC_NONE},         // TOKEN_ERROR
     {NULL, NULL, PREC_NONE},         // TOKEN_EOF
 };

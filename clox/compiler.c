@@ -747,6 +747,7 @@ ParseRule rules[] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_SEMICOLON
     {NULL, binary, PREC_FACTOR},     // TOKEN_SLASH
     {NULL, binary, PREC_FACTOR},     // TOKEN_STAR
+    {NULL, NULL, PREC_NONE},         // TOKEN_COLON
     {unary, NULL, PREC_NONE},        // TOKEN_BANG
     {NULL, binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_EQUAL
@@ -897,7 +898,7 @@ static void classDeclaration()
     classCompiler.enclosing = currentClass;
     currentClass = &classCompiler;
 
-    if (match(TOKEN_LESS))
+    if (match(TOKEN_COLON))
     {
         consume(TOKEN_IDENTIFIER, "Expect superclass name.");
 

@@ -187,6 +187,23 @@ static bool callNativeMethod(ObjClass UNUSED(*klass), ObjNativeMethod UNUSED(*me
     return true;
 }
 
+static bool staticInvoke(Value receiver, ObjString *name, int argCount)
+{
+    switch (OBJ_TYPE(receiver))
+    {
+        case OBJ_CLASS:
+        {
+            Value method;
+            if (!tableGet(&AS_CLASS(receiver)->staticMethods, name, &method))
+            {
+                runtimeError("Undefined static property '%s'.", name->chars);
+                return false;
+            }
+        }
+    }
+    runtimeError("Static methods haven't been implemented yet.");
+}
+
 static bool invokeFromClass(ObjClass *klass, ObjString *name,
                             int argCount)
 {
@@ -218,8 +235,7 @@ static bool invoke(ObjString *name, int argCount)
 
     if (IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver))
     {
-        runtimeError("Static methods haven't been implemented yet.");
-        return false;
+        return staticInvoke(receiver, name, argCount);
     }
 
     if (!IS_INSTANCE(receiver))

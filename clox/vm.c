@@ -182,26 +182,12 @@ static bool callValue(Value callee, int argCount)
     return false;
 }
 
-static bool callNativeMethod(ObjClass UNUSED(*klass), ObjNativeMethod UNUSED(*method), int UNUSED(argCount))
+static bool callNativeMethod(ObjClass UNUSED(*klass), ObjNativeMethod *method, int argCount)
 {
+    Value result = method->function(method->receiver, argCount, vm.stackTop - argCount);
+    vm.stackTop -= argCount + 1;
+    push(result);
     return true;
-}
-
-static bool staticInvoke(Value receiver, ObjString *name, int argCount)
-{
-    switch (OBJ_TYPE(receiver))
-    {
-        case OBJ_CLASS:
-        {
-            Value method;
-            if (!tableGet(&AS_CLASS(receiver)->staticMethods, name, &method))
-            {
-                runtimeError("Undefined static property '%s'.", name->chars);
-                return false;
-            }
-        }
-    }
-    runtimeError("Static methods haven't been implemented yet.");
 }
 
 static bool invokeFromClass(ObjClass *klass, ObjString *name,
@@ -209,7 +195,8 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 {
     // Look for the method.
     Value method;
-    if (!tableGet(&klass->methods, name, &method))
+    if (!(tableGet(&klass->staticMethods, name, &method) ||
+          tableGet(&klass->methods, name, &method)))
     {
         runtimeError("Undefined property '%s'.", name->chars);
         return false;
@@ -233,30 +220,29 @@ static bool invoke(ObjString *name, int argCount)
 {
     Value receiver = peek(argCount);
 
-    if (IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver))
+    if (!(IS_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
-        return staticInvoke(receiver, name, argCount);
-    }
-
-    if (!IS_INSTANCE(receiver))
-    {
-        runtimeError("Only instances have methods.");
+        runtimeError("%s can't be invoked from a %s.", name->chars, objTypeName(OBJ_TYPE(receiver)));
         return false;
     }
 
-    ObjInstance *instance = AS_INSTANCE(receiver);
-
-    // First look for a field which may shadow a method.
-    Value value;
-    if (tableGet(&instance->fields, name, &value))
+    if (IS_INSTANCE(receiver))
     {
-        // Load the field onto the stack in place of the receiver.
-        vm.stackTop[-argCount - 1] = value;
-        // Try to invoke it like a function.
-        return callValue(value, argCount);
-    }
+        ObjInstance *instance = AS_INSTANCE(receiver);
 
-    return invokeFromClass(instance->klass, name, argCount);
+        // First look for a field which may shadow a method.
+        Value value;
+        if (tableGet(&instance->fields, name, &value))
+        {
+            // Load the field onto the stack in place of the receiver.
+            vm.stackTop[-argCount - 1] = value;
+            // Try to invoke it like a function.
+            return callValue(value, argCount);
+        }
+
+        return invokeFromClass(instance->klass, name, argCount);
+    }
+    return invokeFromClass(AS_CLASS(receiver), name, argCount);
 }
 
 static bool bindMethod(ObjClass *klass, ObjString *name)
@@ -329,13 +315,13 @@ static void defineMethod(ObjString *name, bool isStatic)
     pop();
 }
 
-void defineNativeMethod(ObjClass *klass, NativeFn function, ObjString *name, bool isStatic)
-{
-    push(OBJ_VAL(klass));
-    ObjNativeMethod *method = newNativeMethod(OBJ_VAL(klass), function);
-    push(OBJ_VAL(method));
-    defineMethod(name, isStatic);
-}
+// static void defineNativeMethod(ObjClass *klass, NativeMethod function, ObjString *name, bool isStatic)
+// {
+//     push(OBJ_VAL(klass));
+//     ObjNativeMethod *method = newNativeMethod(OBJ_VAL(klass), function);
+//     push(OBJ_VAL(method));
+//     defineMethod(name, isStatic);
+// }
 
 static bool isFalsey(Value value)
 {

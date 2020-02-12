@@ -85,31 +85,31 @@ Obj *newInstance(ObjClass *klass)
     Obj *obj = (Obj *)klass;
     switch (obj->type)
     {
-        case OBJ_CLASS:
+    case OBJ_CLASS:
+    {
+        ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+        instance->klass = klass;
+        initTable(&instance->fields);
+        return (Obj *)instance;
+    }
+    case OBJ_NATIVE_CLASS:
+    {
+        ObjNativeInstance *instance = ALLOCATE_OBJ(ObjNativeInstance, OBJ_NATIVE_INSTANCE);
+        instance->instance.klass = klass;
+        initTable(&instance->instance.fields);
+        ObjNativeClass *native_klass = (ObjNativeClass *)klass;
+        if (native_klass->constructor != NULL)
         {
-            ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-            instance->klass = klass;
-            initTable(&instance->fields);
-            return (Obj *)instance;
+            instance->data = native_klass->constructor();
         }
-        case OBJ_NATIVE_CLASS:
-        {
-            ObjNativeInstance *instance = ALLOCATE_OBJ(ObjNativeInstance, OBJ_NATIVE_INSTANCE);
-            instance->instance.klass = klass;
-            initTable(&instance->instance.fields);
-            ObjNativeClass *native_klass = (ObjNativeClass *)klass;
-            if (native_klass->constructor != NULL)
-            {
-                instance->data = native_klass->constructor();
-            }
-            return (Obj *)instance;
-        }
-        default:
-        {
-            fprintf(stderr, "Can't instantiate something that isn't a class\n");
-            abort();
-            return NULL;
-        }
+        return (Obj *)instance;
+    }
+    default:
+    {
+        fprintf(stderr, "Can't instantiate something that isn't a class\n");
+        abort();
+        return NULL;
+    }
     }
 }
 
@@ -120,7 +120,7 @@ ObjNative *newNative(NativeFn function)
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(Value receiver, NativeFn function)
+ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function)
 {
     ObjNativeMethod *method = ALLOCATE_OBJ(ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->receiver = receiver;
@@ -236,4 +236,35 @@ void printObject(Value value)
         printf("upvalue");
         break;
     }
+}
+
+const char *objTypeName(ObjType type)
+{
+    switch (type)
+    {
+    case OBJ_BOUND_METHOD:
+        return "method";
+    case OBJ_CLASS:
+        return "class";
+    case OBJ_NATIVE_CLASS:
+        return "native class";
+    case OBJ_NATIVE_METHOD:
+        return "native method";
+    case OBJ_CLOSURE:
+        return "closure";
+    case OBJ_FUNCTION:
+        return "function";
+    case OBJ_INSTANCE:
+        return "instance";
+    case OBJ_NATIVE_INSTANCE:
+        return "native instance";
+    case OBJ_NATIVE:
+        return "native function";
+    case OBJ_STRING:
+        return "string";
+    case OBJ_UPVALUE:
+        return "upvalue";
+    }
+
+    return "unknown";
 }

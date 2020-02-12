@@ -6,4 +6,4 @@ class File
     }
 }
 
-File.open("This is a the filename");
+File.open("This is the filename");

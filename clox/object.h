@@ -104,6 +104,7 @@ typedef struct sObjClass
 
 typedef void *(NativeConstructor)(void);
 typedef void(NativeDestructor)(void *);
+typedef Value (*NativeMethod)(Value receiver, int argCount, Value *args);
 
 typedef struct sNativeClass
 {
@@ -116,7 +117,7 @@ typedef struct sNativeMethod
 {
     Obj obj;
     Value receiver;
-    NativeFn function;
+    NativeMethod function;
 } ObjNativeMethod;
 
 typedef struct
@@ -142,7 +143,7 @@ typedef struct
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(ObjString *name);
 ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor);
-ObjNativeMethod *newNativeMethod(Value receiver, NativeFn function);
+ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(ObjClass *klass);
@@ -151,6 +152,7 @@ ObjString *takeString(char *chars, int length);
 ObjString *copyString(const char *chars, int length);
 ObjUpvalue *newUpvalue(Value *slot);
 void printObject(Value value);
+const char *objTypeName(ObjType type);
 
 static inline bool isObjType(Value value, ObjType type)
 {

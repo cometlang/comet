@@ -27,7 +27,7 @@ void file_destructor(void *data)
     free(file_data);
 }
 
-VALUE file_static_open(int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_open(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
@@ -62,17 +62,17 @@ VALUE file_sync(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return NIL_VAL;
 }
 
-VALUE file_static_exists_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE file_static_directory_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE file_static_file_q(int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }

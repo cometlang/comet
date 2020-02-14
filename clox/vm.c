@@ -9,7 +9,11 @@
 #include "object.h"
 #include "memory.h"
 
+#include "comet.h"
+
 VM vm;
+
+static void defineMethod(ObjString *name, bool isStatic);
 
 static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
 {
@@ -62,6 +66,29 @@ static void defineNative(const char *name, NativeFn function)
     pop();
 }
 
+VALUE defineNativeClass(const char *name, NativeConstructor *constructor, NativeDestructor *destructor, const char UNUSED(*super))
+{
+    push(OBJ_VAL(copyString(name, strlen(name))));
+    push(OBJ_VAL(newNativeClass(AS_STRING(peek(0)), constructor, destructor)));
+    if (tableSet(&vm.globals, AS_STRING(peek(1)), peek(0)))
+    {
+        VALUE result = pop();
+        pop();
+        return result;
+    }
+    runtimeError("Redefining class %s", name);
+    return NIL_VAL;
+}
+
+void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
+{
+    push(OBJ_VAL(copyString(name, strlen(name))));
+    push(klass);
+    push(OBJ_VAL(newNativeMethod(klass, function)));
+    defineMethod(AS_STRING(peek(2)), isStatic);
+    pop();
+}
+
 void initVM(void)
 {
     resetStack();
@@ -77,6 +104,7 @@ void initVM(void)
     vm.initString = copyString("init", 4);
 
     defineNative("clock", clockNative);
+    init_stdlib();
 }
 
 void freeVM(void)
@@ -99,7 +127,7 @@ Value pop(void)
     return *vm.stackTop;
 }
 
-static Value peek(int distance)
+Value peek(int distance)
 {
     return vm.stackTop[-1 - distance];
 }
@@ -142,6 +170,7 @@ static bool callValue(Value callee, int argCount)
             vm.stackTop[-argCount - 1] = bound->receiver;
             return call(bound->method, argCount);
         }
+        case OBJ_NATIVE_CLASS:
         case OBJ_CLASS:
         {
             ObjClass *klass = AS_CLASS(callee);
@@ -182,51 +211,62 @@ static bool callValue(Value callee, int argCount)
     return false;
 }
 
-static bool callNativeMethod(ObjClass UNUSED(*klass), ObjNativeMethod *method, int argCount)
+static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCount)
 {
-    Value result = method->function(method->receiver, argCount, vm.stackTop - argCount);
+    Value result = method->function(receiver, argCount, vm.stackTop - argCount);
     vm.stackTop -= argCount + 1;
     push(result);
     return true;
 }
 
-static bool invokeFromClass(ObjClass *klass, ObjString *name,
-                            int argCount)
+static Value findMethod(ObjClass *klass, ObjString *name)
 {
-    // Look for the method.
     Value method;
     if (!(tableGet(&klass->staticMethods, name, &method) ||
           tableGet(&klass->methods, name, &method)))
     {
-        runtimeError("Undefined property '%s'.", name->chars);
-        return false;
+        runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
+        return NIL_VAL;
     }
-    if (OBJ_TYPE(method) == OBJ_CLOSURE)
+    return method;
+}
+
+static bool invokeFromClass(ObjClass *klass, ObjString *name,
+                            int argCount)
+{
+    Value method = findMethod(klass, name);
+    if (IS_NIL(method))
+        return false;
+
+    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
         return call(AS_CLOSURE(method), argCount);
     }
-    else if (OBJ_TYPE(method) == OBJ_NATIVE_METHOD)
-    {
-        return callNativeMethod(klass, AS_NATIVE_METHOD(method), argCount);
-    }
-    else
-    {
-        runtimeError("Only methods can be invoked");
+
+    runtimeError("Can't call method %s from a %s", name->chars, objTypeName(OBJ_TYPE(OBJ_VAL(klass))));
+    return false;
+}
+
+static bool invokeFromNativeInstance(ObjNativeInstance *instance, ObjString *name, int argCount)
+{
+    Value method = findMethod(instance->instance.klass, name);
+    if (IS_NIL(method))
         return false;
-    }
+
+    return callNativeMethod(OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
 }
 
 static bool invoke(ObjString *name, int argCount)
 {
     Value receiver = peek(argCount);
 
-    if (!(IS_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
+    if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
         runtimeError("%s can't be invoked from a %s.", name->chars, objTypeName(OBJ_TYPE(receiver)));
         return false;
     }
 
-    if (IS_INSTANCE(receiver))
+    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
     {
         ObjInstance *instance = AS_INSTANCE(receiver);
 
@@ -240,6 +280,11 @@ static bool invoke(ObjString *name, int argCount)
             return callValue(value, argCount);
         }
 
+        if (IS_NATIVE_INSTANCE(receiver))
+        {
+            return invokeFromNativeInstance(AS_NATIVE_INSTANCE(receiver), name, argCount);
+        }
+
         return invokeFromClass(instance->klass, name, argCount);
     }
     return invokeFromClass(AS_CLASS(receiver), name, argCount);
@@ -250,7 +295,7 @@ static bool bindMethod(ObjClass *klass, ObjString *name)
     Value method;
     if (!tableGet(&klass->methods, name, &method))
     {
-        runtimeError("Undefined property '%s'.", name->chars);
+        runtimeError("Undefined method '%s'.", name->chars);
         return false;
     }
 
@@ -314,14 +359,6 @@ static void defineMethod(ObjString *name, bool isStatic)
     pop();
     pop();
 }
-
-// static void defineNativeMethod(ObjClass *klass, NativeMethod function, ObjString *name, bool isStatic)
-// {
-//     push(OBJ_VAL(klass));
-//     ObjNativeMethod *method = newNativeMethod(OBJ_VAL(klass), function);
-//     push(OBJ_VAL(method));
-//     defineMethod(name, isStatic);
-// }
 
 static bool isFalsey(Value value)
 {

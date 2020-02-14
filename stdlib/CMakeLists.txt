@@ -4,10 +4,11 @@ project (stdlib)
 
 include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../comet"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../clox"
-  "${CMAKE_CURRENT_SOURCE_DIR}/../eral")
+  ../comet
+  ../clox
+  ../eral)
 set(SOURCE 
+  _init.c
   # boolean.c
   # datetime.c
   file.c

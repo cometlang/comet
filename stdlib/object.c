@@ -30,5 +30,11 @@ VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return BOOL_VAL(false);
 }
 
-// make a type
-// add the functions
+void init_object(void)
+{
+    VALUE klass = defineNativeClass("Object", NULL, NULL, NULL);
+    defineNativeMethod(klass, &obj_equals, "equals", false);
+    defineNativeMethod(klass, &obj_hash, "hash", false);
+    defineNativeMethod(klass, &obj_to_string, "to_string", false);
+    defineNativeMethod(klass, &obj_nil_q, "nil?", false);
+}

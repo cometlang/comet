@@ -77,3 +77,7 @@ VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSE
     return NIL_VAL;
 }
 
+void init_file(void)
+{
+    
+}

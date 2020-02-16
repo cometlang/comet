@@ -70,6 +70,20 @@ VALUE defineNativeClass(const char *name, NativeConstructor *constructor, Native
 {
     push(OBJ_VAL(copyString(name, strlen(name))));
     push(OBJ_VAL(newNativeClass(AS_STRING(peek(0)), constructor, destructor)));
+    if (strcmp(name, "Object") != 0)
+    {
+        Value parent;
+        if (super == NULL)
+        {
+            super = "Object";
+        }
+        if (!tableGet(&vm.globals, copyString(super, strlen(super)), &parent))
+        {
+            runtimeError("Could not inherit from unknown class '%s'", super);
+        }
+
+        tableAddAll(&AS_CLASS(parent)->methods, &AS_CLASS(peek(0))->methods);
+    }
     if (tableSet(&vm.globals, AS_STRING(peek(1)), peek(0)))
     {
         VALUE result = pop();
@@ -241,6 +255,12 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
         return call(AS_CLOSURE(method), argCount);
+    }
+
+    // Need to limit this to only statics, somehow.
+    if (IS_NATIVE_METHOD(method))
+    {
+        return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
     }
 
     runtimeError("Can't call method %s from a %s", name->chars, objTypeName(OBJ_TYPE(OBJ_VAL(klass))));

@@ -1,9 +1,1 @@
-class File
-{
-    static open(filename)
-    {
-        print filename;
-    }
-}
-
 File.open("This is the filename");

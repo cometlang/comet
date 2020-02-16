@@ -13,8 +13,6 @@
 
 VM vm;
 
-static void defineMethod(ObjString *name, bool isStatic);
-
 static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
 {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
@@ -27,7 +25,7 @@ static void resetStack(void)
     vm.openUpvalues = NULL;
 }
 
-static void runtimeError(const char *format, ...)
+void runtimeError(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -55,52 +53,6 @@ static void runtimeError(const char *format, ...)
     }
 
     resetStack();
-}
-
-static void defineNative(const char *name, NativeFn function)
-{
-    push(OBJ_VAL(copyString(name, (int)strlen(name))));
-    push(OBJ_VAL(newNative(function)));
-    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
-    pop();
-    pop();
-}
-
-VALUE defineNativeClass(const char *name, NativeConstructor *constructor, NativeDestructor *destructor, const char UNUSED(*super))
-{
-    push(OBJ_VAL(copyString(name, strlen(name))));
-    push(OBJ_VAL(newNativeClass(AS_STRING(peek(0)), constructor, destructor)));
-    if (strcmp(name, "Object") != 0)
-    {
-        Value parent;
-        if (super == NULL)
-        {
-            super = "Object";
-        }
-        if (!tableGet(&vm.globals, copyString(super, strlen(super)), &parent))
-        {
-            runtimeError("Could not inherit from unknown class '%s'", super);
-        }
-
-        tableAddAll(&AS_CLASS(parent)->methods, &AS_CLASS(peek(0))->methods);
-    }
-    if (tableSet(&vm.globals, AS_STRING(peek(1)), peek(0)))
-    {
-        VALUE result = pop();
-        pop();
-        return result;
-    }
-    runtimeError("Redefining class %s", name);
-    return NIL_VAL;
-}
-
-void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
-{
-    push(OBJ_VAL(copyString(name, strlen(name))));
-    push(klass);
-    push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
-    defineMethod(AS_STRING(peek(2)), isStatic);
-    pop();
 }
 
 void initVM(void)
@@ -363,7 +315,7 @@ static void closeUpvalues(Value *last)
     }
 }
 
-static void defineMethod(ObjString *name, bool isStatic)
+void defineMethod(ObjString *name, bool isStatic)
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));

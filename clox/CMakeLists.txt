@@ -24,6 +24,8 @@ debug.h
 main.c
 memory.c
 memory.h
+native.c
+native.h
 object.c
 object.h
 scanner.c

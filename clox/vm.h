@@ -48,6 +48,8 @@ void initVM(void);
 void freeVM(void);
 
 InterpretResult interpret(const char *source);
+void runtimeError(const char *format, ...);
+void defineMethod(ObjString *name, bool isStatic);
 
 void push(Value value);
 Value pop(void);

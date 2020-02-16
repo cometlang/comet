@@ -27,6 +27,9 @@ VALUE nil_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE U
 }
 
 
-// create type
-// extend object
-// override method
+void init_nil(void)
+{
+    VALUE klass = defineNativeClass("nil", NULL, NULL, "Object");
+    defineNativeMethod(klass, nil_nil_q, "nil?", true);
+    defineNativeMethod(klass, nil_nil_q, "nil?", true);
+}

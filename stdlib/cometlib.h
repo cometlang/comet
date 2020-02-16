@@ -3,5 +3,7 @@
 
 void init_object(void);
 void init_file(void);
+void init_iterable(void);
+void init_nil(void);
 
 #endif

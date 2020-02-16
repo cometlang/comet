@@ -120,11 +120,12 @@ ObjNative *newNative(NativeFn function)
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function)
+ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic)
 {
     ObjNativeMethod *method = ALLOCATE_OBJ(ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->receiver = receiver;
     method->function = function;
+    method->isStatic = isStatic;
     return method;
 }
 

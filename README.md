@@ -1,6 +1,6 @@
 # The Comet Programming Language
 
-This is mostly built for fun and a way of taking things apart to see how they work.
+This is mostly built for fun and a way of taking things apart to see how they work.  It is based on the interpreter from [Crafting Interpreters](https://github.com/munificent/craftinginterpreters)
 
 After programming for a while, there are specific things about the dynamic languages that I've
 used that really annoy me, so I'm making my own language to improve some of those.  No doubt I will add things that are annoying.

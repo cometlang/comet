@@ -3,7 +3,7 @@ import Module
 
 class MyClass : Object
 {
-    def constructor(a)
+    public constructor(a)
     {
         self.a = a
         self.list = []
@@ -11,13 +11,13 @@ class MyClass : Object
         self.set = Set()
     }
 
-    def this_is_a_method()
+    private this_is_a_method()
     {
         print("interpolated string ${self.a}")
         print('literal string')
     }
 
-    def this_is_a_different_method(a, b=1, c=nil)
+    public this_is_a_different_method(a, b=1, c=nil)
     {
         while (expression)
         {
@@ -27,12 +27,12 @@ class MyClass : Object
         }
     }
 
-    def this_method_is_destructive!()
+    protected this_method_is_destructive!()
     {
 
     }
 
-    def this_method_returns_a_bool?()
+    public this_method_returns_a_bool?()
     {
         return false
     }

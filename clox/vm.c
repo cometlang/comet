@@ -98,7 +98,7 @@ void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bo
 {
     push(OBJ_VAL(copyString(name, strlen(name))));
     push(klass);
-    push(OBJ_VAL(newNativeMethod(klass, function)));
+    push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(AS_STRING(peek(2)), isStatic);
     pop();
 }
@@ -257,8 +257,7 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         return call(AS_CLOSURE(method), argCount);
     }
 
-    // Need to limit this to only statics, somehow.
-    if (IS_NATIVE_METHOD(method))
+    if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
     }
@@ -721,7 +720,7 @@ static InterpretResult run(void)
         case OP_INHERIT:
         {
             Value superclass = peek(1);
-            if (!IS_CLASS(superclass))
+            if (!(IS_CLASS(superclass) || IS_NATIVE_CLASS(superclass)))
             {
                 runtimeError("Superclass must be a class.");
                 return INTERPRET_RUNTIME_ERROR;

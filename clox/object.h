@@ -118,6 +118,7 @@ typedef struct sNativeMethod
     Obj obj;
     Value receiver;
     NativeMethod function;
+    bool isStatic;
 } ObjNativeMethod;
 
 typedef struct
@@ -143,7 +144,7 @@ typedef struct
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(ObjString *name);
 ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor);
-ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function);
+ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(ObjClass *klass);

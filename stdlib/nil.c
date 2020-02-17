@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "comet.h"
 
-VALUE nil_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE nil_nil_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return BOOL_VAL(true);
 }
@@ -31,5 +31,6 @@ void init_nil(void)
 {
     VALUE klass = defineNativeClass("nil", NULL, NULL, "Object");
     defineNativeMethod(klass, nil_nil_q, "nil?", true);
-    defineNativeMethod(klass, nil_nil_q, "nil?", true);
+    defineNativeMethod(klass, nil_to_string, "to_string", true);
+    defineNativeMethod(klass, nil_iterable_contains_q, "contains?", true);
 }

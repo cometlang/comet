@@ -16,8 +16,8 @@ void *reallocate(void *previous, size_t UNUSED(oldSize), size_t newSize)
     vm.bytesAllocated += newSize - oldSize;
     if (newSize > oldSize)
     {
-#if DEBUG_STRESS_GC
         collectGarbage();
+#if DEBUG_STRESS_GC
         if (vm.bytesAllocated > vm.nextGC)
         {
             collectGarbage();

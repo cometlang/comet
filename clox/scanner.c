@@ -232,6 +232,9 @@ static Token identifier()
     while (isAlpha(peek()) || isDigit(peek()))
         advance();
 
+    if (peek() == '!' || peek() == '?')
+        advance();
+
     return makeToken(identifierType());
 }
 

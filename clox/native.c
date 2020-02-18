@@ -8,7 +8,7 @@ void defineNative(const char *name, NativeFn function)
 {
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function)));
-    tableSet(&vm.globals, AS_STRING(vm.stack[0]), vm.stack[1]);
+    addGlobal(AS_STRING(vm.stack[0]), vm.stack[1]);
     pop();
     pop();
 }
@@ -24,14 +24,15 @@ VALUE defineNativeClass(const char *name, NativeConstructor *constructor, Native
         {
             super = "Object";
         }
-        if (!tableGet(&vm.globals, copyString(super, strlen(super)), &parent))
+        if (!findGlobal(copyString(super, strlen(super)), &parent))
         {
             runtimeError("Could not inherit from unknown class '%s'", super);
+            return NIL_VAL;
         }
 
         tableAddAll(&AS_CLASS(parent)->methods, &AS_CLASS(peek(0))->methods);
     }
-    if (tableSet(&vm.globals, AS_STRING(peek(1)), peek(0)))
+    if (addGlobal(AS_STRING(peek(1)), peek(0)))
     {
         VALUE result = pop();
         pop();

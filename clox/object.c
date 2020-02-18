@@ -138,7 +138,7 @@ static ObjString *allocateString(char *chars, int length,
     string->hash = hash;
 
     push(OBJ_VAL(string));
-    tableSet(&vm.strings, string, NIL_VAL);
+    addString(string);
     pop();
 
     return string;
@@ -160,8 +160,7 @@ static uint32_t hashString(const char *key, int length)
 ObjString *takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = tableFindString(&vm.strings, chars, length,
-                                          hash);
+    ObjString *interned = findString(chars, length, hash);
     if (interned != NULL)
     {
         FREE_ARRAY(char, chars, length + 1);
@@ -173,8 +172,7 @@ ObjString *takeString(char *chars, int length)
 ObjString *copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = tableFindString(&vm.strings, chars, length,
-                                          hash);
+    ObjString *interned = findString(chars, length, hash);
     if (interned != NULL)
         return interned;
     char *heapChars = ALLOCATE(char, length + 1);

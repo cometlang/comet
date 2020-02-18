@@ -22,8 +22,6 @@ typedef struct
     int frameCount;
     Value stack[STACK_MAX];
     Value *stackTop;
-    Table globals;
-    Table strings;
     ObjString *initString;
     ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
@@ -41,11 +39,20 @@ typedef enum
     INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
 
-extern VM vm;
+extern __thread VM vm;
 
 void initVM(void);
 
 void freeVM(void);
+
+ObjString *findString(const char *chars, const size_t length, uint32_t hash);
+
+bool addString(ObjString *string);
+void markGlobals(void);
+void removeWhiteStrings(void);
+
+bool addGlobal(ObjString *name, Value value);
+bool findGlobal(ObjString *name, Value *value);
 
 InterpretResult interpret(const char *source);
 void runtimeError(const char *format, ...);

@@ -246,7 +246,7 @@ static void markRoots()
         markObject((Obj *)upvalue);
     }
 
-    markTable(&vm.globals);
+    markGlobals();
     markCompilerRoots();
     markObject((Obj *)vm.initString);
 }
@@ -300,7 +300,7 @@ void collectGarbage()
 
     markRoots();
     traceReferences();
-    tableRemoveWhite(&vm.strings);
+    removeWhiteStrings();
     sweep();
 
     vm.nextGC = vm.bytesAllocated * GC_HEAP_GROW_FACTOR;

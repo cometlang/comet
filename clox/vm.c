@@ -11,11 +11,43 @@
 
 #include "comet.h"
 
-VM vm;
+__thread VM vm;
+static Table globals;
+static Table strings;
 
 static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
 {
     return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
+}
+
+void markGlobals(void)
+{
+    markTable(&globals);
+}
+
+void removeWhiteStrings(void)
+{
+    tableRemoveWhite(&strings);
+}
+
+ObjString *findString(const char *chars, const size_t length, uint32_t hash)
+{
+    return tableFindString(&strings, chars, length, hash);
+}
+
+bool addString(ObjString *string)
+{
+    return tableSet(&strings, string, NIL_VAL);
+}
+
+bool findGlobal(ObjString *name, Value *value)
+{
+    return tableGet(&globals, name, value);
+}
+
+bool addGlobal(ObjString *name, Value value)
+{
+    return tableSet(&globals, name, value);
 }
 
 static void resetStack(void)
@@ -64,8 +96,8 @@ void initVM(void)
     vm.grayCount = 0;
     vm.grayCapacity = 0;
     vm.grayStack = NULL;
-    initTable(&vm.globals);
-    initTable(&vm.strings);
+    initTable(&globals);
+    initTable(&strings);
 
     vm.initString = copyString("init", 4);
 
@@ -75,8 +107,8 @@ void initVM(void)
 
 void freeVM(void)
 {
-    freeTable(&vm.globals);
-    freeTable(&vm.strings);
+    freeTable(&globals);
+    freeTable(&strings);
     vm.initString = NULL;
     freeObjects();
 }
@@ -416,7 +448,7 @@ static InterpretResult run(void)
         {
             ObjString *name = READ_STRING();
             Value value;
-            if (!tableGet(&vm.globals, name, &value))
+            if (!tableGet(&globals, name, &value))
             {
                 runtimeError("Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
@@ -427,7 +459,7 @@ static InterpretResult run(void)
         case OP_DEFINE_GLOBAL:
         {
             ObjString *name = READ_STRING();
-            tableSet(&vm.globals, name, peek(0));
+            tableSet(&globals, name, peek(0));
             pop();
             break;
         }
@@ -446,9 +478,9 @@ static InterpretResult run(void)
         case OP_SET_GLOBAL:
         {
             ObjString *name = READ_STRING();
-            if (tableSet(&vm.globals, name, peek(0)))
+            if (tableSet(&globals, name, peek(0)))
             {
-                tableDelete(&vm.globals, name);
+                tableDelete(&globals, name);
                 runtimeError("Undefined variable '%s'.", name->chars);
                 return INTERPRET_RUNTIME_ERROR;
             }

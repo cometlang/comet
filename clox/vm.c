@@ -221,8 +221,7 @@ static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCou
 static Value findMethod(ObjClass *klass, ObjString *name)
 {
     Value method;
-    if (!(tableGet(&klass->staticMethods, name, &method) ||
-          tableGet(&klass->methods, name, &method)))
+    if (!(tableGet(&klass->methods, name, &method)))
     {
         runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
         return NIL_VAL;
@@ -348,18 +347,11 @@ static void closeUpvalues(Value *last)
     }
 }
 
-void defineMethod(ObjString *name, bool isStatic)
+void defineMethod(ObjString *name, bool UNUSED(isStatic))
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
-    if (isStatic)
-    {
-        tableSet(&klass->staticMethods, name, method);
-    }
-    else
-    {
-        tableSet(&klass->methods, name, method);
-    }
+    tableSet(&klass->methods, name, method);
     pop();
     pop();
 }

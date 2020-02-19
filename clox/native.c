@@ -9,16 +9,17 @@ void defineNative(const char *name, NativeFn function)
 {
     push(OBJ_VAL(newNative(function)));
     push(OBJ_VAL(copyString(name, (int)strlen(name))));
-    addGlobal(AS_STRING(vm.stack[0]), vm.stack[1]);
+    addGlobal(AS_STRING(peek(0)), peek(1));
     pop();
     pop();
 }
 
 VALUE defineNativeClass(const char *name, NativeConstructor *constructor, NativeDestructor *destructor, const char UNUSED(*super))
 {
-    push(OBJ_VAL(copyString(name, strlen(name))));
-    push(OBJ_VAL(newNativeClass(AS_STRING(peek(0)), constructor, destructor)));
-    if (strcmp(name, "Object") != 0)
+    ObjString *name_string = copyString(name, strlen(name));
+    push(OBJ_VAL(name_string));
+    push(OBJ_VAL(newNativeClass(name_string, constructor, destructor)));
+    if (strncmp(name_string->chars, "Object", name_string->length) != 0)
     {
         Value parent;
         if (super == NULL)
@@ -31,9 +32,9 @@ VALUE defineNativeClass(const char *name, NativeConstructor *constructor, Native
             return NIL_VAL;
         }
 
-        tableAddAll(&AS_CLASS(parent)->methods, &AS_CLASS(peek(0))->methods);
+        tableAddAll(&(AS_CLASS(parent)->methods), &AS_CLASS(peek(0))->methods);
     }
-    if (addGlobal(AS_STRING(peek(1)), peek(0)))
+    if (addGlobal(name_string, peek(0)))
     {
         VALUE result = pop();
         pop();
@@ -45,9 +46,10 @@ VALUE defineNativeClass(const char *name, NativeConstructor *constructor, Native
 
 void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
 {
-    push(OBJ_VAL(copyString(name, strlen(name))));
+    ObjString *name_string = copyString(name, strlen(name));
+    push(OBJ_VAL(name_string));
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
-    defineMethod(AS_STRING(peek(2)), isStatic);
+    defineMethod(name_string, isStatic);
     pop();
 }

@@ -152,7 +152,7 @@ static void blackenObject(Obj *object)
 static void freeObject(Obj *object)
 {
 #if DEBUG_LOG_GC
-    printf("%p free type %d\n", (void *)object, object->type);
+    printf("%p free %s\n", (void *)object, objTypeName(object->type));
 #endif
     switch (object->type)
     {

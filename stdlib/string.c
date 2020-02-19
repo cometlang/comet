@@ -91,3 +91,7 @@ VALUE string_to_upper(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*a
 {
     return NIL_VAL;
 }
+
+void init_string(void)
+{
+}

@@ -11,7 +11,7 @@
 
 #define GC_HEAP_GROW_FACTOR 2
 
-void *reallocate(void *previous, size_t UNUSED(oldSize), size_t newSize)
+void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
     vm.bytesAllocated += newSize - oldSize;
     if (newSize > oldSize)

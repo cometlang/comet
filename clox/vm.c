@@ -23,6 +23,7 @@ static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
 void markGlobals(void)
 {
     markTable(&globals);
+    markObject((Obj *)vm.initString);
 }
 
 void removeWhiteStrings(void)

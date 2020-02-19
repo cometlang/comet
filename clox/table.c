@@ -89,7 +89,7 @@ static void adjustCapacity(Table *table, int capacityMask)
         dest->value = entry->value;
         table->count++;
     }
-    FREE_ARRAY(Entry, table->entries, table->capacityMask);
+    FREE_ARRAY(Entry, table->entries, table->capacityMask + 1);
 
     table->entries = entries;
     table->capacityMask = capacityMask;
@@ -176,7 +176,7 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
 
 void tableRemoveWhite(Table *table)
 {
-    for (int i = 0; i < table->capacityMask; i++)
+    for (int i = 0; i <= table->capacityMask; i++)
     {
         Entry *entry = &table->entries[i];
         if (entry->key != NULL && !entry->key->obj.isMarked)

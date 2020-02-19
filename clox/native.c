@@ -3,11 +3,12 @@
 #include "vm.h"
 
 #include <string.h>
+#include <stdio.h>
 
 void defineNative(const char *name, NativeFn function)
 {
-    push(OBJ_VAL(copyString(name, (int)strlen(name))));
     push(OBJ_VAL(newNative(function)));
+    push(OBJ_VAL(copyString(name, (int)strlen(name))));
     addGlobal(AS_STRING(vm.stack[0]), vm.stack[1]);
     pop();
     pop();

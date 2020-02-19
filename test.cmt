@@ -1,1 +1,43 @@
+class Object
+{
+    equals()
+    {
+        return false;
+    }
+
+    hash()
+    {
+        return 0;
+    }
+
+    to_string()
+    {
+        return "Some object";
+    }
+
+    nil()
+    {
+        return false;
+    }
+}
+
+class File
+{
+    open(filename)
+    {
+        print filename;
+    }
+
+    close()
+    {
+        return 0;
+    }
+
+    write(contents)
+    {
+        return 0;
+    }
+}
+
 File.open("This is the filename");
+

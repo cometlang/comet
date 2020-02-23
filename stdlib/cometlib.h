@@ -4,6 +4,7 @@
 void init_object(void);
 void init_file(void);
 void init_iterable(void);
+void init_list(void);
 void init_nil(void);
 void init_string(void);
 void init_socket(void);

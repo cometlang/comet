@@ -7,7 +7,7 @@ declaration    → classDecl
                | statement ;
 
 classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
-                 "{" function* "}" ;
+                 "{" method* "}" ;
 funDecl        → "fun" function ;
 varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
 
@@ -47,9 +47,12 @@ primary        → "true" | "false" | "nil" | "this"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "super" "." IDENTIFIER ;
 
+method         → scope function
 function       → IDENTIFIER "(" parameters? ")" block ;
 parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
 arguments      → expression ( "," expression )* ;
+
+scope          → private | protected | public
 
 NUMBER         → DIGIT+ ( "." DIGIT+ )? ;
 STRING         → '"' <any char except '"'>* '"' ;

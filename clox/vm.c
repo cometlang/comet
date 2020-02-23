@@ -223,7 +223,6 @@ static Value findMethod(ObjClass *klass, ObjString *name)
     Value method;
     if (!(tableGet(&klass->methods, name, &method)))
     {
-        runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
         return NIL_VAL;
     }
     return method;
@@ -233,17 +232,21 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
                             int argCount)
 {
     Value method = findMethod(klass, name);
-    if (IS_NIL(method))
-        return false;
-
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
         return call(AS_CLOSURE(method), argCount);
     }
 
+    method = tableGet(&klass->staticMethods, name, &method);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
+    }
+
+    if (IS_NIL(method))
+    {
+        runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
+        return false;
     }
 
     runtimeError("Can't call method %s from a %s", name->chars, objTypeName(OBJ_TYPE(OBJ_VAL(klass))));
@@ -351,7 +354,14 @@ void defineMethod(ObjString *name, bool UNUSED(isStatic))
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
-    tableSet(&klass->methods, name, method);
+    if (isStatic)
+    {
+        tableSet(&klass->staticMethods, name, method);
+    }
+    else
+    {
+        tableSet(&klass->methods, name, method);
+    }
     pop();
     pop();
 }

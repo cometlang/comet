@@ -5,7 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
+
 
 typedef struct fileData
 {
@@ -99,19 +102,28 @@ VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    struct stat statbuf;
+    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+        return BOOL_VAL(true);
+    return BOOL_VAL(false);
 }
 
-VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    struct stat statbuf;
+    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+        return BOOL_VAL(statbuf.st_mode & __S_IFDIR);
+    return BOOL_VAL(false);
 }
 
-VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    struct stat statbuf;
+    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+        return BOOL_VAL(statbuf.st_mode & __S_IFREG);
+    return BOOL_VAL(false);
 }
 
 void init_file(void)
@@ -120,4 +132,9 @@ void init_file(void)
     defineNativeMethod(klass, file_static_open, "open", true);
     defineNativeMethod(klass, file_close, "close", false);
     defineNativeMethod(klass, file_write, "write", false);
+    defineNativeMethod(klass, file_sync, "sync", false);
+    defineNativeMethod(klass, file_flush, "flush", false);
+    defineNativeMethod(klass, file_static_exists_q, "exists?", true);
+    defineNativeMethod(klass, file_static_directory_q, "directory?", true);
+    defineNativeMethod(klass, file_static_file_q, "file?", true);
 }

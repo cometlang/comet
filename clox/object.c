@@ -42,6 +42,7 @@ ObjClass *newClass(ObjString *name)
     ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
     initTable(&klass->methods);
+    initTable(&klass->staticMethods);
     return klass;
 }
 
@@ -50,6 +51,7 @@ ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, 
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
     klass->klass.name = name;
     initTable(&klass->klass.methods);
+    initTable(&klass->klass.staticMethods);
     klass->constructor = constructor;
     klass->destructor = destructor;
     return klass;

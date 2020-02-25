@@ -238,6 +238,7 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
     }
 
     method = tableGet(&klass->staticMethods, name, &method);
+    // printf("0x%lX\n", method);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -249,7 +250,11 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         return false;
     }
 
-    runtimeError("Can't call method %s from a %s", name->chars, objTypeName(OBJ_TYPE(OBJ_VAL(klass))));
+    printf("This is the method: ");
+    printValue(method);
+    printf("\n");
+
+    runtimeError("Can't call method '%s' from '%s'", name->chars, klass->name->chars);
     return false;
 }
 
@@ -268,7 +273,7 @@ static bool invoke(ObjString *name, int argCount)
 
     if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
-        runtimeError("%s can't be invoked from a %s.", name->chars, objTypeName(OBJ_TYPE(receiver)));
+        runtimeError("'%s' can't be invoked from a '%s'.", name->chars, objTypeName(OBJ_TYPE(receiver)));
         return false;
     }
 
@@ -350,7 +355,7 @@ static void closeUpvalues(Value *last)
     }
 }
 
-void defineMethod(ObjString *name, bool UNUSED(isStatic))
+void defineMethod(ObjString *name, bool isStatic)
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));

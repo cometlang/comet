@@ -46,7 +46,7 @@ ObjClass *newClass(ObjString *name)
     return klass;
 }
 
-ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor)
+ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor constructor, NativeDestructor destructor)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
     klass->klass.name = name;

@@ -16,7 +16,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     vm.bytesAllocated += newSize - oldSize;
     if (newSize > oldSize)
     {
-        collectGarbage();
+        // collectGarbage();
 #if DEBUG_STRESS_GC
         if (vm.bytesAllocated > vm.nextGC)
         {
@@ -94,6 +94,7 @@ static void blackenObject(Obj *object)
         ObjClass *klass = (ObjClass *)object;
         markObject((Obj *)klass->name);
         markTable(&klass->methods);
+        markTable(&klass->staticMethods);
         break;
     }
     case OBJ_NATIVE_CLASS:
@@ -101,6 +102,7 @@ static void blackenObject(Obj *object)
         ObjNativeClass *klass = (ObjNativeClass *)object;
         markObject((Obj *)klass->klass.name);
         markTable(&klass->klass.methods);
+        markTable(&klass->klass.staticMethods);
         break;
     }
     case OBJ_NATIVE_METHOD:
@@ -163,6 +165,7 @@ static void freeObject(Obj *object)
     {
         ObjClass *klass = (ObjClass *)object;
         freeTable(&klass->methods);
+        freeTable(&klass->staticMethods);
         FREE(ObjClass, object);
         break;
     }
@@ -170,6 +173,7 @@ static void freeObject(Obj *object)
     {
         ObjNativeClass *klass = (ObjNativeClass *)object;
         freeTable(&klass->klass.methods);
+        freeTable(&klass->klass.staticMethods);
         FREE(ObjNativeClass, object);
         break;
     }

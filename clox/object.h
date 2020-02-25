@@ -102,15 +102,15 @@ typedef struct sObjClass
     Table staticMethods;
 } ObjClass;
 
-typedef void *(NativeConstructor)(void);
-typedef void(NativeDestructor)(void *);
+typedef void *(*NativeConstructor)(void);
+typedef void(*NativeDestructor)(void *data);
 typedef Value (*NativeMethod)(Value receiver, int argCount, Value *args);
 
 typedef struct sNativeClass
 {
     ObjClass klass;
-    NativeConstructor *constructor;
-    NativeDestructor *destructor;
+    NativeConstructor constructor;
+    NativeDestructor destructor;
 } ObjNativeClass;
 
 typedef struct sNativeMethod
@@ -143,7 +143,7 @@ typedef struct
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(ObjString *name);
-ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor *constructor, NativeDestructor *destructor);
+ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor constructor, NativeDestructor destructor);
 ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();

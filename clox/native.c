@@ -14,7 +14,7 @@ void defineNative(const char *name, NativeFn function)
     pop();
 }
 
-VALUE defineNativeClass(const char *name, NativeConstructor *constructor, NativeDestructor *destructor, const char UNUSED(*super))
+VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char UNUSED(*super))
 {
     ObjString *name_string = copyString(name, strlen(name));
     push(OBJ_VAL(name_string));
@@ -51,5 +51,4 @@ void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bo
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
-    pop();
 }

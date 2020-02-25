@@ -887,6 +887,7 @@ static void method()
 
     if (isStatic)
     {
+        printf("Static method name: %s\n", parser.current.start);
         emitBytes(OP_STATIC_METHOD, constant);
     }
     else

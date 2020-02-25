@@ -1,2 +1,18 @@
-File.open("This is the filename", "w");
+class File
+{
+    static exists?(filename)
+    {
+        print filename;
+    }
+
+    static open(filename, mode)
+    {
+        print filename;
+        print mode;
+    }
+}
+
+File.exists?("filename");
+
+File.open("filename", "w");
 

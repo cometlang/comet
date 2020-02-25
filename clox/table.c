@@ -175,6 +175,20 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
     }
 }
 
+void tablePrintKeys(Table *table)
+{
+    for (int i = 0; i <= table->capacityMask; i++)
+    {
+        Entry *entry = &table->entries[i];
+        if (entry->key != NULL)
+        {
+            printValue(OBJ_VAL(entry->key));
+            printf("\n");
+        }
+    }
+}
+
+
 void tableRemoveWhite(Table *table)
 {
     for (int i = 0; i <= table->capacityMask; i++)

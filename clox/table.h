@@ -28,4 +28,6 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
 void tableRemoveWhite(Table *table);
 void markTable(Table *table);
 
+void tablePrintKeys(Table *table);
+
 #endif

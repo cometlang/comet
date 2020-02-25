@@ -23,6 +23,7 @@ static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
 void markGlobals(void)
 {
     markTable(&globals);
+    markTable(&strings);
     markObject((Obj *)vm.initString);
 }
 
@@ -31,12 +32,12 @@ void removeWhiteStrings(void)
     tableRemoveWhite(&strings);
 }
 
-ObjString *findString(const char *chars, const size_t length, uint32_t hash)
+ObjString *findInternedString(const char *chars, const size_t length, uint32_t hash)
 {
     return tableFindString(&strings, chars, length, hash);
 }
 
-bool addString(ObjString *string)
+bool internString(ObjString *string)
 {
     return tableSet(&strings, string, NIL_VAL);
 }
@@ -237,11 +238,15 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         return call(AS_CLOSURE(method), argCount);
     }
 
-    method = tableGet(&klass->staticMethods, name, &method);
-    // printf("0x%lX\n", method);
+    tableGet(&klass->staticMethods, name, &method);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
+    }
+
+    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
+    {
+        return call(AS_CLOSURE(method), argCount);
     }
 
     if (IS_NIL(method))
@@ -249,10 +254,6 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
         return false;
     }
-
-    printf("This is the method: ");
-    printValue(method);
-    printf("\n");
 
     runtimeError("Can't call method '%s' from '%s'", name->chars, klass->name->chars);
     return false;

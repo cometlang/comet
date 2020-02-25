@@ -880,6 +880,8 @@ static void method()
     if (parser.previous.length == 4 &&
         memcmp(parser.previous.start, "init", 4) == 0)
     {
+        if (isStatic)
+            error("Initializer can't be declared static");
         type = TYPE_INITIALIZER;
     }
 
@@ -887,7 +889,6 @@ static void method()
 
     if (isStatic)
     {
-        printf("Static method name: %s\n", parser.current.start);
         emitBytes(OP_STATIC_METHOD, constant);
     }
     else

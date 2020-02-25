@@ -45,9 +45,9 @@ void initVM(void);
 
 void freeVM(void);
 
-ObjString *findString(const char *chars, const size_t length, uint32_t hash);
+ObjString *findInternedString(const char *chars, const size_t length, uint32_t hash);
 
-bool addString(ObjString *string);
+bool internString(ObjString *string);
 void markGlobals(void);
 void removeWhiteStrings(void);
 

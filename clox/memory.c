@@ -10,13 +10,14 @@
 #endif
 
 #define GC_HEAP_GROW_FACTOR 2
+#define MINIMUM_GC_MARK 8192
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
     vm.bytesAllocated += newSize - oldSize;
-    if (newSize > oldSize)
+    if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        // collectGarbage();
+        collectGarbage();
 #if DEBUG_STRESS_GC
         if (vm.bytesAllocated > vm.nextGC)
         {

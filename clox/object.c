@@ -140,7 +140,7 @@ static ObjString *allocateString(char *chars, int length,
     string->hash = hash;
 
     push(OBJ_VAL(string));
-    addString(string);
+    internString(string);
     pop();
 
     return string;
@@ -162,7 +162,7 @@ static uint32_t hashString(const char *key, int length)
 ObjString *takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findString(chars, length, hash);
+    ObjString *interned = findInternedString(chars, length, hash);
     if (interned != NULL)
     {
         FREE_ARRAY(char, chars, length + 1);
@@ -174,7 +174,7 @@ ObjString *takeString(char *chars, int length)
 ObjString *copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findString(chars, length, hash);
+    ObjString *interned = findInternedString(chars, length, hash);
     if (interned != NULL)
         return interned;
     char *heapChars = ALLOCATE(char, length + 1);
@@ -209,7 +209,7 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
     case OBJ_NATIVE_CLASS:
-        printf("%s", AS_CLASS(value)->name->chars);
+        printf("%s Class", AS_CLASS(value)->name->chars);
         break;
     case OBJ_NATIVE_METHOD:
         printf("<native method>");

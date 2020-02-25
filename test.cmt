@@ -1,8 +1,11 @@
+var old = File;
+
 class File
 {
     static exists?(filename)
     {
         print filename;
+        return false;
     }
 
     static open(filename, mode)
@@ -12,7 +15,9 @@ class File
     }
 }
 
-File.exists?("filename");
+print old.exists?("filename");
+
+print File.exists?("filename");
 
 File.open("filename", "w");
 

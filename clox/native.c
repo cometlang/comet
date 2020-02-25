@@ -33,6 +33,7 @@ VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeD
         }
 
         tableAddAll(&(AS_CLASS(parent)->methods), &AS_CLASS(peek(0))->methods);
+        tableAddAll(&(AS_CLASS(parent)->staticMethods), &AS_CLASS(peek(0))->staticMethods);
     }
     if (addGlobal(name_string, peek(0)))
     {
@@ -51,4 +52,5 @@ void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bo
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
+    pop();
 }

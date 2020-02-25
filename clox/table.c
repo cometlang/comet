@@ -79,7 +79,7 @@ static void adjustCapacity(Table *table, int capacityMask)
     }
 
     table->count = 0;
-    for (int i = 0; i < table->capacityMask; i++)
+    for (int i = 0; i <= table->capacityMask; i++)
     {
         Entry *entry = &table->entries[i];
         if (entry->key == NULL)

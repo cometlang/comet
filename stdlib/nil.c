@@ -3,7 +3,7 @@
 
 VALUE nil_nil_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return BOOL_VAL(true);
+    return TRUE_VAL;
 }
 
 VALUE nil_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -13,7 +13,7 @@ VALUE nil_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
 
 VALUE nil_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return BOOL_VAL(true);
+    return TRUE_VAL;
 }
 
 VALUE nil_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -23,7 +23,7 @@ VALUE nil_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNU
 
 VALUE nil_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return BOOL_VAL(false);
+    return FALSE_VAL;
 }
 
 

@@ -27,7 +27,7 @@ VALUE obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
 
 VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return BOOL_VAL(false);
+    return FALSE_VAL;
 }
 
 void init_object(void)

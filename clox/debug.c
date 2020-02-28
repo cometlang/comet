@@ -164,6 +164,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_INHERIT", offset);
     case OP_METHOD:
         return constantInstruction("OP_METHOD", chunk, offset);
+    case OP_ENUM:
+        return constantInstruction("OP_ENUM", chunk, offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

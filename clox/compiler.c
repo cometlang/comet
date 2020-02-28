@@ -762,6 +762,7 @@ ParseRule rules[] = {
     {NULL, and_, PREC_AND},          // TOKEN_AND
     {NULL, NULL, PREC_NONE},         // TOKEN_CLASS
     {NULL, NULL, PREC_NONE},         // TOKEN_ELSE
+    {NULL, NULL, PREC_NONE},         // TOKEN_ENUM
     {literal, NULL, PREC_NONE},      // TOKEN_FALSE
     {NULL, NULL, PREC_NONE},         // TOKEN_FOR
     {NULL, NULL, PREC_NONE},         // TOKEN_FUN
@@ -959,6 +960,23 @@ static void funDeclaration()
     defineVariable(global);
 }
 
+static void enumDeclaration()
+{
+    consume(TOKEN_IDENTIFIER, "Expect enum name.");
+    uint8_t enumName = identifierConstant(&parser.previous);
+    declareVariable();
+
+    emitBytes(OP_ENUM, enumName);
+    defineVariable(enumName);
+
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+    while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
+    {
+        advance();
+    }
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+}
+
 static void varDeclaration()
 {
     uint8_t global = parseVariable("Expect variable name.");
@@ -1144,6 +1162,10 @@ static void declaration()
     else if (match(TOKEN_FUN))
     {
         funDeclaration();
+    }
+    else if (match(TOKEN_ENUM))
+    {
+        enumDeclaration();
     }
     else if (match(TOKEN_VAR))
     {

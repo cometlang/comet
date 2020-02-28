@@ -730,6 +730,11 @@ static InterpretResult run(void)
         case OP_STATIC_METHOD:
             defineMethod(READ_STRING(), true);
             break;
+        case OP_ENUM:
+            // An enum is a class that inherits from Enum and has a bunch of static properties
+            // That are instances of said class.
+            // push(OBJ_VAL(newEnum(READ_STRING())));
+            break;
         }
     }
 

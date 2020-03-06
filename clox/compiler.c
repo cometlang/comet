@@ -969,12 +969,12 @@ static void enumDeclaration()
     emitBytes(OP_ENUM, enumName);
     defineVariable(enumName);
 
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
         advance();
     }
-    consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+    consume(TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
 }
 
 static void varDeclaration()
@@ -1142,6 +1142,7 @@ static void synchronize()
         case TOKEN_WHILE:
         case TOKEN_PRINT:
         case TOKEN_RETURN:
+        case TOKEN_STATIC:
             return;
 
         default:

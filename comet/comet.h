@@ -5,6 +5,7 @@
 #include "compiler.h"
 #include "object.h"
 #include "native.h"
+#include "memory.h"
 
 void init_stdlib();
 

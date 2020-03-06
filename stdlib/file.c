@@ -41,8 +41,8 @@ VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
         // Throw an exception
         return NIL_VAL;
     }
-    const char *path = AS_STRING(arguments[0])->chars;
-    const char *mode = AS_STRING(arguments[1])->chars;
+    const char *path = AS_CSTRING(arguments[0]);
+    const char *mode = AS_CSTRING(arguments[1]);
     FILE *fp = fopen(path, mode);
     //should probably check for NULL and free the object, returning NIL, or throwing an exception or something
     ((FileData *)instance->data)->fp = fp;
@@ -62,15 +62,24 @@ VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
-    int result = fprintf(data->fp, "%s", AS_STRING(arguments[0])->chars);
+    int result = fprintf(data->fp, "%s", AS_CSTRING(arguments[0]));
     return NUMBER_VAL(result);
 }
 
 VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData UNUSED(*data) = (FileData *)instance->data;
-    return NIL_VAL;
+    FileData *data = (FileData *)instance->data;
+
+    fseek(data->fp, 0L, SEEK_END);
+    size_t fileSize = ftell(data->fp);
+    rewind(data->fp);
+
+    char *buffer = ALLOCATE(char, fileSize + 1);
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
+    buffer[bytesRead] = '\0';
+
+    return OBJ_VAL(takeString(buffer, fileSize));
 }
 
 VALUE file_read_lines(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -104,7 +113,7 @@ VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(true);
     return BOOL_VAL(false);
 }
@@ -112,7 +121,7 @@ VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *ar
 VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(statbuf.st_mode & __S_IFDIR);
     return BOOL_VAL(false);
 }
@@ -120,7 +129,7 @@ VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE 
 VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_STRING(arguments[0])->chars, &statbuf) == 0)
+    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(statbuf.st_mode & __S_IFREG);
     return BOOL_VAL(false);
 }

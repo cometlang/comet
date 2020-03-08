@@ -3,7 +3,14 @@
 
 #include <stdlib.h>
 
+typedef struct list_node {
+    struct list_node *next;
+    VALUE item;
+} list_node_t;
+
 typedef struct {
+    list_node_t *head;
+    list_node_t *tail;
     int length;
 } ListData;
 
@@ -12,6 +19,8 @@ void *list_constructor(void)
 {
     ListData *data = (ListData *) malloc(sizeof(ListData));
     data->length = 0;
+    data->head = NULL;
+    data->tail = NULL;
     return data;
 }
 
@@ -20,8 +29,26 @@ void list_destructor(void *data)
     free(data);
 }
 
-VALUE list_add(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
 {
+    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
+    ListData *data = instance->data;
+    for (int i = 0; i < arg_count; i++)
+    {
+        list_node_t *node = (list_node_t *) malloc(sizeof(list_node_t));
+        node->item = arguments[i];
+        node->next = NULL;
+        if (data->head == NULL)
+        {
+            data->head = data->tail = node;
+        }
+        else
+        {
+            data->tail->next = node;
+            data->tail = node;
+        }
+        data->length++;
+    }
     return NIL_VAL;
 }
 

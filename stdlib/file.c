@@ -54,7 +54,10 @@ VALUE file_close(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
     if (data->fp != NULL)
+    {
         fclose(data->fp);
+        data->fp = NULL;
+    }
     return NIL_VAL;
 }
 
@@ -75,14 +78,14 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     size_t fileSize = ftell(data->fp);
     rewind(data->fp);
 
-    char *buffer = ALLOCATE(char, fileSize + 1);
+    char *buffer = (char *) malloc(sizeof(char) * (fileSize + 1));
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
     return OBJ_VAL(takeString(buffer, fileSize));
 }
 
-VALUE file_read_lines(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_read_lines(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData UNUSED(*data) = (FileData *)instance->data;
@@ -140,6 +143,7 @@ void init_file(void)
     defineNativeMethod(klass, &file_static_open, "open", true);
     defineNativeMethod(klass, &file_close, "close", false);
     defineNativeMethod(klass, &file_write, "write", false);
+    defineNativeMethod(klass, &file_read, "read", false);
     defineNativeMethod(klass, &file_sync, "sync", false);
     defineNativeMethod(klass, &file_flush, "flush", false);
     defineNativeMethod(klass, &file_static_exists_q, "exists?", true);

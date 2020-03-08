@@ -1,23 +1,9 @@
-var old = File;
+var file = File.open("filename.txt", "w");
 
-class File
-{
-    static exists?(filename)
-    {
-        print filename;
-        return false;
-    }
+file.write("This is some content!");
+file.close();
 
-    static open(filename, mode)
-    {
-        print filename;
-        print mode;
-    }
-}
+file = File.open("filename.txt", "r");
+var contents = file.read();
 
-print old.exists?("filename");
-
-print File.exists?("filename");
-
-File.open("filename", "w");
-
+print contents;

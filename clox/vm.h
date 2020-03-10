@@ -62,4 +62,6 @@ void push(Value value);
 Value pop(void);
 Value peek(int distance);
 
+Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...);
+
 #endif

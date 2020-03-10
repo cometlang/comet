@@ -3,21 +3,22 @@
 
 #include <stdlib.h>
 
-typedef struct list_node {
+typedef struct list_node
+{
     struct list_node *next;
     VALUE item;
 } list_node_t;
 
-typedef struct {
+typedef struct
+{
     list_node_t *head;
     list_node_t *tail;
     int length;
 } ListData;
 
-
 void *list_constructor(void)
 {
-    ListData *data = (ListData *) malloc(sizeof(ListData));
+    ListData *data = (ListData *)malloc(sizeof(ListData));
     data->length = 0;
     data->head = NULL;
     data->tail = NULL;
@@ -35,7 +36,7 @@ VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
     ListData *data = instance->data;
     for (int i = 0; i < arg_count; i++)
     {
-        list_node_t *node = (list_node_t *) malloc(sizeof(list_node_t));
+        list_node_t *node = (list_node_t *)malloc(sizeof(list_node_t));
         node->item = arguments[i];
         node->next = NULL;
         if (data->head == NULL)
@@ -54,17 +55,30 @@ VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
 
 VALUE list_remove(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    // valuesEqual
     return NIL_VAL;
 }
 
-VALUE list_get_at(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_get_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
+    ListData *data = (ListData *)instance->data;
+    int index = (int)AS_NUMBER(arguments[0]);
+    list_node_t *current = data->head;
+    for (int i = 0; i < data->length; i++)
+    {
+        if (i == index)
+            return current->item;
+        current = current->next;
+    }
     return NIL_VAL;
 }
 
-VALUE list_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_iterable_empty_q(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
+    ListData *data = (ListData *)instance->data;
+    return BOOL_VAL(data->length == 0);
 }
 
 VALUE list_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -72,9 +86,20 @@ VALUE list_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UN
     return NIL_VAL;
 }
 
-VALUE list_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_iterable_contains_q(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
+    ListData *data = (ListData *)instance->data;
+    VALUE contains = arguments[0];
+    list_node_t *current = data->head;
+    while (current != NULL)
+    {
+        if (valuesEqual(current->item, contains))
+            return TRUE_VAL;
+
+        current = current->next;
+    }
+    return FALSE_VAL;
 }
 
 VALUE list_sort(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -82,8 +107,29 @@ VALUE list_sort(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return NIL_VAL;
 }
 
+VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
+    ListData *data = (ListData *)instance->data;
+    VALUE contains = arguments[0];
+    list_node_t *current = data->head;
+    while (current != NULL)
+    {
+        if (valuesEqual(current->item, contains))
+            return TRUE_VAL;
+
+        current = current->next;
+    }
+
+    return NIL_VAL;
+}
+
 void init_list(void)
 {
     VALUE klass = defineNativeClass("List", list_constructor, list_destructor, NULL);
     defineNativeMethod(klass, list_add, "add", false);
+    defineNativeMethod(klass, list_add, "push", false);
+    defineNativeMethod(klass, list_iterable_contains_q, "contains?", false);
+    defineNativeMethod(klass, list_iterable_empty_q, "empty?", false);
+    defineNativeMethod(klass, list_get_at, "get_at", false);
 }

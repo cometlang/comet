@@ -302,6 +302,25 @@ static bool invoke(ObjString *name, int argCount)
     return invokeFromClass(AS_CLASS(receiver), name, argCount);
 }
 
+Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...)
+{
+    push(receiver);
+    va_list args;
+    va_start(args, arg_count);
+    for (int i = 0; i < arg_count; i++)
+    {
+        push(va_arg(args, Value));
+    }
+    va_end(args);
+
+    if (invoke(method_name, arg_count))
+    {
+        // Should this be a peek or a pop?
+        return peek(0);
+    }
+    return NIL_VAL;
+}
+
 static bool bindMethod(ObjClass *klass, ObjString *name)
 {
     Value method;

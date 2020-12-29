@@ -176,6 +176,10 @@ static TokenType identifierType()
     case 'n':
         return checkKeyword(1, 2, "il", TOKEN_NIL);
     case 'o':
+        if (scanner.current - scanner.start > 1)
+        {
+            return checkKeyword(1, 7, "perator", TOKEN_FALSE);
+        }
         return checkKeyword(1, 1, "r", TOKEN_OR);
     case 'p':
         if (scanner.current - scanner.start > 4)
@@ -308,6 +312,10 @@ Token scanToken()
         return makeToken(TOKEN_LEFT_BRACE);
     case '}':
         return makeToken(TOKEN_RIGHT_BRACE);
+    case '[':
+        return makeToken(TOKEN_LEFT_SQ_BRACKET);
+    case ']':
+        return makeToken(TOKEN_RIGHT_SQ_BRACKET);
     case ';':
         return makeToken(TOKEN_SEMICOLON);
     case ',':

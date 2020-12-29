@@ -1,9 +1,8 @@
-var file = File.open("filename.txt", "w");
+var list = List();
 
-file.write("This is some content!");
-file.close();
+list.add("This");
+list.add("is");
+list.add("a");
+list.add("list");
 
-file = File.open("filename.txt", "r");
-var contents = file.read();
-
-print contents;
+print list;

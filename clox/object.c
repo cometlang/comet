@@ -225,6 +225,7 @@ void printObject(Value value)
         break;
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
+        // obj.to_string();
         printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
         break;
     case OBJ_NATIVE:

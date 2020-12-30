@@ -1,3 +1,7 @@
+var test = [];
+test.add("hi");
+print test[0];
+
 var list = List();
 
 list.add("This");

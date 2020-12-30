@@ -124,11 +124,18 @@ VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argume
     return NIL_VAL;
 }
 
+VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
+{
+    return list_add(self, arg_count, arguments);
+}
+
 void init_list(void)
 {
     VALUE klass = defineNativeClass("List", list_constructor, list_destructor, NULL);
+    defineNativeMethod(klass, &list_init, "init", false);
     defineNativeMethod(klass, &list_add, "add", false);
     defineNativeMethod(klass, &list_add, "push", false);
+    defineNativeMethod(klass, &list_remove, "remove", false);
     defineNativeMethod(klass, &list_iterable_contains_q, "contains?", false);
     defineNativeMethod(klass, &list_iterable_empty_q, "empty?", false);
     defineNativeMethod(klass, &list_get_at, "get_at", false);

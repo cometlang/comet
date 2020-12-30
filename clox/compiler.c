@@ -464,10 +464,10 @@ static void defineVariable(uint8_t global)
     emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
-static uint8_t argumentList()
+static uint8_t argumentList(TokenType closingToken)
 {
     uint8_t argCount = 0;
-    if (!check(TOKEN_RIGHT_PAREN))
+    if (!check(closingToken))
     {
         do
         {
@@ -480,7 +480,8 @@ static uint8_t argumentList()
         } while (match(TOKEN_COMMA));
     }
 
-    consume(TOKEN_RIGHT_PAREN, "Expect ')' after arguments.");
+    // Need to sort out a string for the closing token
+    consume(closingToken, "Expect ')' after arguments.");
     return argCount;
 }
 
@@ -543,7 +544,7 @@ static void binary(bool UNUSED(canAssign))
 
 static void call(bool UNUSED(canAssign))
 {
-    uint8_t argCount = argumentList();
+    uint8_t argCount = argumentList(TOKEN_RIGHT_PAREN);
     emitBytes(OP_CALL, argCount);
 }
 
@@ -559,7 +560,7 @@ static void dot(bool canAssign)
     }
     else if (match(TOKEN_LEFT_PAREN))
     {
-        uint8_t argCount = argumentList();
+        uint8_t argCount = argumentList(TOKEN_RIGHT_PAREN);
         emitBytes(OP_INVOKE, argCount);
         emitByte(name);
     }
@@ -689,7 +690,7 @@ static void super_(bool UNUSED(canAssign))
 
     if (match(TOKEN_LEFT_PAREN))
     {
-        uint8_t argCount = argumentList();
+        uint8_t argCount = argumentList(TOKEN_RIGHT_PAREN);
 
         pushSuperclass();
         emitBytes(OP_SUPER, argCount);
@@ -735,11 +736,26 @@ static void unary(bool UNUSED(canAssign))
     }
 }
 
+static void literal_list(bool canAssign)
+{
+    namedVariable(syntheticToken("List"), canAssign);
+    uint8_t argCount = argumentList(TOKEN_RIGHT_SQ_BRACKET);
+    emitBytes(OP_CALL, argCount);
+}
+
+static void access(bool UNUSED(canAssign))
+{
+    uint8_t UNUSED(argCount) = argumentList(TOKEN_RIGHT_SQ_BRACKET);
+    printf("Parser thinks this is an access operator\n");
+}
+
 ParseRule rules[] = {
     {grouping, call, PREC_CALL},     // TOKEN_LEFT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_BRACE
+    {literal_list, access, PREC_CALL},// TOKEN_LEFT_SQ_BRACKET
+    {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_SQ_BRACKET
     {NULL, NULL, PREC_NONE},         // TOKEN_COMMA
     {NULL, dot, PREC_CALL},          // TOKEN_DOT
     {unary, binary, PREC_TERM},      // TOKEN_MINUS

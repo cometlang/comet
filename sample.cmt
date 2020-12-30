@@ -1,7 +1,7 @@
 #!/usr/bin/comet
 import Module
 
-class MyClass : Object
+class MyClass : SomeOtherClass
 {
     public constructor(a)
     {

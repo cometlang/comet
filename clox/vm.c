@@ -174,12 +174,21 @@ static bool callValue(Value callee, int argCount)
         case OBJ_CLASS:
         {
             ObjClass *klass = AS_CLASS(callee);
-            vm.stackTop[-argCount - 1] = OBJ_VAL(newInstance(klass));
+            Value instance = OBJ_VAL(newInstance(klass));
+            vm.stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
             if (tableGet(&klass->methods, vm.initString, &initializer))
             {
-                return call(AS_CLOSURE(initializer), argCount);
+                if (IS_NATIVE_METHOD(initializer))
+                {
+                    AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm.stackTop - argCount);
+                    return true;
+                }
+                else
+                {
+                    return call(AS_CLOSURE(initializer), argCount);
+                }
             }
             else if (argCount != 0)
             {

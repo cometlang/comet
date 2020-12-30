@@ -29,7 +29,7 @@ void string_destructor(void *data)
 
 VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    return FALSE_VAL;
 }
 
 VALUE string_hash(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -37,9 +37,9 @@ VALUE string_hash(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argum
     return NIL_VAL;
 }
 
-VALUE string_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    return self;
 }
 
 VALUE string_trim(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

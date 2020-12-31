@@ -5,7 +5,7 @@ project (stdlib)
 include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}"
   ../comet
-  ../clox
+  ../vmlib
   ../eral)
 set(SOURCE 
   _init.c

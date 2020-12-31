@@ -85,13 +85,6 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return OBJ_VAL(takeString(buffer, fileSize));
 }
 
-VALUE file_read_lines(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData UNUSED(*data) = (FileData *)instance->data;
-    return NIL_VAL;
-}
-
 VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
@@ -137,6 +130,11 @@ VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
     return BOOL_VAL(false);
 }
 
+VALUE file_static_read_all_lines(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 void init_file(void)
 {
     VALUE klass = defineNativeClass("File", &file_constructor, &file_destructor, "Object");
@@ -149,4 +147,5 @@ void init_file(void)
     defineNativeMethod(klass, &file_static_exists_q, "exists?", true);
     defineNativeMethod(klass, &file_static_directory_q, "directory?", true);
     defineNativeMethod(klass, &file_static_file_q, "file?", true);
+    defineNativeMethod(klass, &file_static_read_all_lines, "read_all_lines", true);
 }

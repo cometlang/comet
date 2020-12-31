@@ -37,14 +37,6 @@ vm.c
 vm.h
 )
 
-set(SOURCE
-main.c
-)
-
 add_library(vmlib STATIC ${VM_SOURCE})
 target_link_libraries(vmlib stdlib)
 target_include_directories(vmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
-
-add_executable(clox ${SOURCE})
-target_link_libraries(clox PUBLIC c m vmlib)
-

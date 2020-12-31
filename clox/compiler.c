@@ -746,7 +746,7 @@ static void literal_list(bool canAssign)
 static void access(bool UNUSED(canAssign))
 {
     uint8_t UNUSED(argCount) = argumentList(TOKEN_RIGHT_SQ_BRACKET);
-    printf("Parser thinks this is an access operator\n");
+    emitBytes(OP_INDEX, argCount);
 }
 
 ParseRule rules[] = {
@@ -784,6 +784,7 @@ ParseRule rules[] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_FUN
     {NULL, NULL, PREC_NONE},         // TOKEN_IF
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
+    {NULL, NULL, PREC_NONE},         // TOKEN_OPERATOR
     {NULL, or_, PREC_OR},            // TOKEN_OR
     {NULL, NULL, PREC_NONE},         // TOKEN_PRINT
     {NULL, NULL, PREC_NONE},         // TOKEN_RETURN
@@ -1153,6 +1154,7 @@ static void synchronize()
         case TOKEN_CLASS:
         case TOKEN_FUN:
         case TOKEN_VAR:
+        case TOKEN_OPERATOR:
         case TOKEN_FOR:
         case TOKEN_IF:
         case TOKEN_WHILE:

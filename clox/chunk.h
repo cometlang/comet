@@ -45,6 +45,7 @@ typedef enum
     OP_METHOD,
     OP_STATIC_METHOD,
     OP_ENUM,
+    OP_INDEX,
 } OpCode;
 
 typedef struct

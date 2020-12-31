@@ -57,6 +57,7 @@ bool findGlobal(ObjString *name, Value *value);
 InterpretResult interpret(const char *source);
 void runtimeError(const char *format, ...);
 void defineMethod(ObjString *name, bool isStatic);
+void defineOperator(OPERATOR operator);
 
 void push(Value value);
 Value pop(void);

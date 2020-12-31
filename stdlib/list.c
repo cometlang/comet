@@ -124,6 +124,11 @@ VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argume
     return NIL_VAL;
 }
 
+VALUE list_index_access(VALUE self, int arg_count, VALUE *arguments)
+{
+    return list_get_at(self, arg_count, arguments);
+}
+
 VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
 {
     return list_add(self, arg_count, arguments);
@@ -140,4 +145,5 @@ void init_list(void)
     defineNativeMethod(klass, &list_iterable_empty_q, "empty?", false);
     defineNativeMethod(klass, &list_get_at, "get_at", false);
     defineNativeMethod(klass, &list_obj_to_string, "to_string", false);
+    defineNativeOperator(klass, &list_index_access, OPERATOR_INDEX);
 }

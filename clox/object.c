@@ -43,6 +43,10 @@ ObjClass *newClass(ObjString *name)
     klass->name = name;
     initTable(&klass->methods);
     initTable(&klass->staticMethods);
+    for (int i = 0; i < NUM_OPERATORS; i++)
+    {
+        klass->operators[i] = NIL_VAL;
+    }
     return klass;
 }
 
@@ -268,5 +272,35 @@ const char *objTypeName(ObjType type)
         return "upvalue";
     }
 
+    return "unknown";
+}
+
+const char *getOperatorString(OPERATOR operator)
+{
+    switch (operator)
+    {
+        case OPERATOR_MULTIPLICATION:
+            return "*";
+        case OPERATOR_PLUS:
+            return "+";
+        case OPERATOR_MINUS:
+            return "-";
+        case OPERATOR_DIVISION:
+            return "/";
+        case OPERATOR_GREATER_THAN:
+            return ">";
+        case OPERATOR_LESS_THAN:
+            return "<";
+        case OPERATOR_GREATER_EQUAL:
+            return ">=";
+        case OPERATOR_LESS_EQUAL:
+            return "<=";
+        case OPERATOR_EQUALS:
+            return "==";
+        case OPERATOR_INDEX:
+            return "[]";
+        case NUM_OPERATORS:
+            return "unknown";
+    }
     return "unknown";
 }

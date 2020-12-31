@@ -36,4 +36,17 @@ class MyClass : SomeOtherClass
     {
         return false
     }
+
+    operator [] (arg)
+    {
+        print('This overloads how the operator identifier[1] will function')
+    }
+
+    public my_iterative_method(func)
+    {
+        foreach(var item in self.list)
+        {
+            func(item)
+        }
+    }
 }

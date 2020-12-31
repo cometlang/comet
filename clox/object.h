@@ -46,6 +46,21 @@ typedef enum
     OBJ_UPVALUE,
 } ObjType;
 
+typedef enum
+{
+    OPERATOR_MULTIPLICATION,
+    OPERATOR_PLUS,
+    OPERATOR_MINUS,
+    OPERATOR_DIVISION,
+    OPERATOR_GREATER_THAN,
+    OPERATOR_LESS_THAN,
+    OPERATOR_GREATER_EQUAL,
+    OPERATOR_LESS_EQUAL,
+    OPERATOR_EQUALS,
+    OPERATOR_INDEX,
+    NUM_OPERATORS,
+} OPERATOR;
+
 struct sObj
 {
     ObjType type;
@@ -100,6 +115,7 @@ typedef struct sObjClass
     ObjString *name;
     Table methods;
     Table staticMethods;
+    Value operators[NUM_OPERATORS];
 } ObjClass;
 
 typedef void *(*NativeConstructor)(void);
@@ -154,6 +170,7 @@ ObjString *copyString(const char *chars, int length);
 ObjUpvalue *newUpvalue(Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);
+const char *getOperatorString(OPERATOR operator);
 
 static inline bool isObjType(Value value, ObjType type)
 {

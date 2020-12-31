@@ -178,9 +178,15 @@ static TokenType identifierType()
     case 'o':
         if (scanner.current - scanner.start > 1)
         {
-            return checkKeyword(1, 7, "perator", TOKEN_FALSE);
+            switch (scanner.start[1])
+            {
+            case 'p':
+                return checkKeyword(2, 6, "erator", TOKEN_OPERATOR);
+            case 'r':
+                return TOKEN_OR;
+            }
         }
-        return checkKeyword(1, 1, "r", TOKEN_OR);
+        break;
     case 'p':
         if (scanner.current - scanner.start > 4)
         {

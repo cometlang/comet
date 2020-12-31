@@ -54,3 +54,10 @@ void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bo
     defineMethod(name_string, isStatic);
     pop();
 }
+
+void defineNativeOperator(VALUE klass, NativeMethod function, OPERATOR operator)
+{
+    push(klass);
+    push(OBJ_VAL(newNativeMethod(klass, function, false)));
+    defineOperator(operator);
+}

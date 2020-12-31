@@ -268,6 +268,32 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
     return false;
 }
 
+static bool callOperator(Value receiver, int argCount, OPERATOR operator)
+{
+    Obj UNUSED(*obj) = AS_OBJ(receiver);
+    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
+    {
+        ObjInstance *instance = AS_INSTANCE(receiver);
+        if (IS_NIL(instance->klass->operators[operator]))
+        {
+            runtimeError("Operator '%s' is not defined for class '%s'.",
+                getOperatorString(operator), instance->klass->name->chars);
+            return false;
+        }
+        if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
+        {
+            return callNativeMethod(receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
+        }
+        else
+        {
+            runtimeError("Not implemented, yet.");
+            return false;
+        }
+    }
+    runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(receiver));
+    return false;
+}
+
 static bool invokeFromNativeInstance(ObjNativeInstance *instance, ObjString *name, int argCount)
 {
     Value method = findMethod(instance->instance.klass, name);
@@ -396,6 +422,15 @@ void defineMethod(ObjString *name, bool isStatic)
     {
         tableSet(&klass->methods, name, method);
     }
+    pop();
+    pop();
+}
+
+void defineOperator(OPERATOR operator)
+{
+    Value method = peek(0);
+    ObjClass *klass = AS_CLASS(peek(1));
+    klass->operators[operator] = method;
     pop();
     pop();
 }
@@ -763,6 +798,16 @@ static InterpretResult run(void)
             // That are instances of said class.
             // push(OBJ_VAL(newEnum(READ_STRING())));
             break;
+        case OP_INDEX:
+        {
+            int argCount = READ_BYTE();
+            Value receiver = peek(argCount);
+            if (!callOperator(receiver, argCount, OPERATOR_INDEX))
+            {
+                return INTERPRET_RUNTIME_ERROR;;
+            }
+            break;
+        }
         }
     }
 

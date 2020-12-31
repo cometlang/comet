@@ -5,7 +5,6 @@ enable_testing()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -ggdb3 -Wall -Wextra -Werror -flto")
 set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
-#add_subdirectory(src)
 
 set(MEMORYCHECK_COMMAND_OPTIONS "--track-origins=yes --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 --log-fd=2")
 add_subdirectory(eral)
@@ -13,3 +12,4 @@ add_subdirectory(lexer)
 add_subdirectory(compiler)
 add_subdirectory(stdlib)
 add_subdirectory(clox)
+add_subdirectory(comet)

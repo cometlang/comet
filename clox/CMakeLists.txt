@@ -13,7 +13,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../comet
 )
 
-set(SOURCE
+set(VM_SOURCE
 chunk.c
 chunk.h
 common.h
@@ -21,7 +21,6 @@ compiler.c
 compiler.h
 debug.c
 debug.h
-main.c
 memory.c
 memory.h
 native.c
@@ -38,6 +37,14 @@ vm.c
 vm.h
 )
 
+set(SOURCE
+main.c
+)
+
+add_library(vmlib STATIC ${VM_SOURCE})
+target_link_libraries(vmlib stdlib)
+target_include_directories(vmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+
 add_executable(clox ${SOURCE})
-target_link_libraries(clox PUBLIC c m stdlib)
+target_link_libraries(clox PUBLIC c m vmlib)
 

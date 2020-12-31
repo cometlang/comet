@@ -784,6 +784,11 @@ static InterpretResult run(void)
 
             ObjClass *subclass = AS_CLASS(peek(0));
             tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
+            tableAddAll(&AS_CLASS(superclass)->staticMethods, &subclass->staticMethods);
+            for (int i = 0; i < NUM_OPERATORS; i++)
+            {
+                subclass->operators[i] = AS_CLASS(superclass)->operators[i];
+            }
             pop(); // Subclass.
             break;
         }

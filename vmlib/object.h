@@ -2,6 +2,7 @@
 #define clox_object_h
 
 #include "common.h"
+#include "scanner.h"
 #include "chunk.h"
 #include "value.h"
 #include "table.h"
@@ -59,6 +60,7 @@ typedef enum
     OPERATOR_EQUALS,
     OPERATOR_INDEX,
     NUM_OPERATORS,
+    OPERATOR_UNKNOWN,
 } OPERATOR;
 
 struct sObj
@@ -171,6 +173,7 @@ ObjUpvalue *newUpvalue(Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);
 const char *getOperatorString(OPERATOR operator);
+OPERATOR getOperatorFromToken(TokenType token);
 
 static inline bool isObjType(Value value, ObjType type)
 {

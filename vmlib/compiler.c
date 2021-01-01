@@ -561,8 +561,8 @@ static void dot(bool canAssign)
     else if (match(TOKEN_LEFT_PAREN))
     {
         uint8_t argCount = argumentList(TOKEN_RIGHT_PAREN);
-        emitBytes(OP_INVOKE, argCount);
-        emitByte(name);
+        emitBytes(OP_INVOKE, name);
+        emitByte(argCount);
     }
     else
     {
@@ -743,18 +743,18 @@ static void literal_list(bool canAssign)
     emitBytes(OP_CALL, argCount);
 }
 
-static void access(bool UNUSED(canAssign))
+static void subscript(bool UNUSED(canAssign))
 {
-    uint8_t UNUSED(argCount) = argumentList(TOKEN_RIGHT_SQ_BRACKET);
+    uint8_t argCount = argumentList(TOKEN_RIGHT_SQ_BRACKET);
     emitBytes(OP_INDEX, argCount);
 }
 
-ParseRule rules[] = {
+ParseRule rules[NUM_TOKENS] = {
     {grouping, call, PREC_CALL},     // TOKEN_LEFT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_BRACE
-    {literal_list, access, PREC_CALL},// TOKEN_LEFT_SQ_BRACKET
+    {literal_list, subscript, PREC_CALL},// TOKEN_LEFT_SQ_BRACKET
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_SQ_BRACKET
     {NULL, NULL, PREC_NONE},         // TOKEN_COMMA
     {NULL, dot, PREC_CALL},          // TOKEN_DOT
@@ -915,6 +915,23 @@ static void method()
     }
 }
 
+static void operator()
+{
+    OPERATOR op = getOperatorFromToken(parser.current.type);
+    if (op == OPERATOR_UNKNOWN)
+    {
+        error("Unsupported operator for overloading");
+    }
+    advance();
+    if (op == OPERATOR_INDEX)
+    {
+        consume(TOKEN_RIGHT_SQ_BRACKET, "expected '[]'");
+    }
+    // For all intents and purposes, this is a method.
+    function(TYPE_METHOD);
+    emitBytes(OP_DEFINE_OPERATOR, op);
+}
+
 static void classDeclaration()
 {
     consume(TOKEN_IDENTIFIER, "Expect class name.");
@@ -953,13 +970,23 @@ static void classDeclaration()
         emitByte(OP_INHERIT);
     }
 
+
+    namedVariable(className, false);
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
-        namedVariable(className, false);
-        method();
+        if (match(TOKEN_OPERATOR))
+        {
+            operator();
+        }
+        else
+        {
+            method();
+        }
     }
+
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+    emitByte(OP_POP);
 
     if (classCompiler.hasSuperclass)
     {

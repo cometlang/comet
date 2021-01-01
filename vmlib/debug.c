@@ -167,7 +167,9 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_ENUM:
         return constantInstruction("OP_ENUM", chunk, offset);
     case OP_INDEX:
-        return constantInstruction("OP_INDEX", chunk, offset);
+        return byteInstruction("OP_INDEX", chunk, offset);
+    case OP_DEFINE_OPERATOR:
+        return constantInstruction("OP_DEFINE_OPERATOR", chunk, offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

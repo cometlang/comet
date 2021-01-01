@@ -4,6 +4,7 @@
 
 #include "memory.h"
 #include "object.h"
+#include "scanner.h"
 #include "table.h"
 #include "value.h"
 #include "vm.h"
@@ -301,6 +302,34 @@ const char *getOperatorString(OPERATOR operator)
             return "[]";
         case NUM_OPERATORS:
             return "unknown";
+        case OPERATOR_UNKNOWN:
+            return "unknown";
     }
     return "unknown";
+}
+
+OPERATOR getOperatorFromToken(TokenType token)
+{
+    if (token == TOKEN_STAR)
+        return OPERATOR_MULTIPLICATION;
+    else if (token == TOKEN_PLUS)
+        return OPERATOR_PLUS;
+    else if (token == TOKEN_MINUS)
+        return OPERATOR_MINUS;
+    else if (token == TOKEN_SLASH)
+        return OPERATOR_DIVISION;
+    else if (token == TOKEN_GREATER)
+        return OPERATOR_GREATER_THAN;
+    else if (token == TOKEN_GREATER_EQUAL)
+        return OPERATOR_GREATER_EQUAL;
+    else if (token == TOKEN_LESS)
+        return OPERATOR_LESS_THAN;
+    else if (token == TOKEN_LESS_EQUAL)
+        return OPERATOR_LESS_EQUAL;
+    else if (token == TOKEN_EQUAL_EQUAL)
+        return OPERATOR_EQUALS;
+    else if (token == TOKEN_LEFT_SQ_BRACKET)
+        return OPERATOR_INDEX;
+
+    return OPERATOR_UNKNOWN;
 }

@@ -270,7 +270,6 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 
 static bool callOperator(Value receiver, int argCount, OPERATOR operator)
 {
-    Obj UNUSED(*obj) = AS_OBJ(receiver);
     if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
     {
         ObjInstance *instance = AS_INSTANCE(receiver);
@@ -286,8 +285,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         }
         else
         {
-            runtimeError("Not implemented, yet.");
-            return false;
+            return call(AS_CLOSURE(instance->klass->operators[operator]), argCount);
         }
     }
     runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(receiver));
@@ -423,7 +421,6 @@ void defineMethod(ObjString *name, bool isStatic)
         tableSet(&klass->methods, name, method);
     }
     pop();
-    pop();
 }
 
 void defineOperator(OPERATOR operator)
@@ -431,7 +428,6 @@ void defineOperator(OPERATOR operator)
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
     klass->operators[operator] = method;
-    pop();
     pop();
 }
 
@@ -708,8 +704,8 @@ static InterpretResult run(void)
         }
         case OP_INVOKE:
         {
-            int argCount = READ_BYTE();
             ObjString *method = READ_STRING();
+            int argCount = READ_BYTE();
             if (!invoke(method, argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
@@ -811,6 +807,11 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
+            break;
+        }
+        case OP_DEFINE_OPERATOR:
+        {
+            defineOperator((OPERATOR)READ_BYTE());
             break;
         }
         }

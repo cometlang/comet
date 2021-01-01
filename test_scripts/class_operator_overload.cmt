@@ -1,0 +1,24 @@
+class TestClass
+{
+    init()
+    {
+        this.items = [];
+        this.item = "initializer";
+        print this.item;
+    }
+
+    operator[] (index)
+    {
+        return this.items[index];
+    }
+
+    append(item)
+    {
+        this.items.push(item);
+    }
+}
+
+var test = TestClass();
+test.append("hello");
+
+print test[0];

@@ -1,0 +1,15 @@
+class TestClass
+{
+    init()
+    {
+        this.item = "initializer";
+    }
+
+    print_object()
+    {
+        print this.item;
+    }
+}
+
+var test = TestClass();
+test.print_object();

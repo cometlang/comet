@@ -700,6 +700,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
+            frame = &vm.frames[vm.frameCount - 1];
             break;
         }
         case OP_INVOKE:
@@ -807,6 +808,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
+            frame = &vm.frames[vm.frameCount - 1];
             break;
         }
         case OP_DEFINE_OPERATOR:

@@ -3,8 +3,6 @@ class TestClass
     init()
     {
         this.items = [];
-        this.item = "initializer";
-        print this.item;
     }
 
     operator[] (index)

@@ -18,12 +18,12 @@ void disassembleChunk(Chunk *chunk, const char *name)
 static int invokeInstruction(const char *name, Chunk *chunk,
                              int offset)
 {
-    uint8_t argCount = chunk->code[offset + 1];
-    uint8_t constant = chunk->code[offset + 2];
+    uint8_t constant = chunk->code[offset + 1];
+    uint8_t argCount = chunk->code[offset + 2];
     printf("%-16s (%d args) %4d '", name, argCount, constant);
     printValue(chunk->constants.values[constant]);
     printf("'\n");
-    return offset + 2;
+    return offset + 3;
 }
 
 static int simpleInstruction(const char *name, int offset)

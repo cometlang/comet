@@ -943,21 +943,20 @@ static void classDeclaration()
     defineVariable(nameConstant);
 
     ClassCompiler classCompiler;
-    classCompiler.hasSuperclass = false;
     classCompiler.name = parser.previous;
+    classCompiler.hasSuperclass = false;
     classCompiler.enclosing = currentClass;
     currentClass = &classCompiler;
 
     if (match(TOKEN_COLON))
     {
         consume(TOKEN_IDENTIFIER, "Expect superclass name.");
+        variable(false);
 
         if (identifiersEqual(&className, &parser.previous))
         {
             error("A class cannot inherit from itself.");
         }
-
-        classCompiler.hasSuperclass = true;
 
         beginScope();
 
@@ -968,6 +967,7 @@ static void classDeclaration()
 
         namedVariable(className, false);
         emitByte(OP_INHERIT);
+        classCompiler.hasSuperclass = true;
     }
 
 

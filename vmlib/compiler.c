@@ -767,10 +767,11 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, dot, PREC_CALL},          // TOKEN_DOT
     {unary, binary, PREC_TERM},      // TOKEN_MINUS
     {NULL, binary, PREC_TERM},       // TOKEN_PLUS
-    {NULL, NULL, PREC_NONE},         // TOKEN_SEMICOLON
+    {NULL, NULL, PREC_NONE},         // TOKEN_SEMI_COLON
     {NULL, binary, PREC_FACTOR},     // TOKEN_SLASH
     {NULL, binary, PREC_FACTOR},     // TOKEN_STAR
     {NULL, NULL, PREC_NONE},         // TOKEN_COLON
+    {NULL, NULL, PREC_NONE},         // TOKEN_EOL
     {unary, NULL, PREC_NONE},        // TOKEN_BANG
     {NULL, binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_EQUAL
@@ -1040,7 +1041,7 @@ static void varDeclaration()
     {
         emitByte(OP_NIL);
     }
-    consume(TOKEN_SEMICOLON, "Expect ';' after variable declaration.");
+    consume(TOKEN_EOL, "Only one statement per line allowed");
 
     defineVariable(global);
 }
@@ -1048,7 +1049,7 @@ static void varDeclaration()
 static void expressionStatement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expect ';' after expression.");
+    consume(TOKEN_EOL, "Only one statement per line allowed");
     emitByte(OP_POP);
 }
 
@@ -1056,7 +1057,7 @@ static void forStatement()
 {
     beginScope();
     consume(TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
-    if (match(TOKEN_SEMICOLON))
+    if (match(TOKEN_SEMI_COLON))
     {
         // No initializer.
     }
@@ -1072,10 +1073,10 @@ static void forStatement()
     int loopStart = currentChunk()->count;
 
     int exitJump = -1;
-    if (!match(TOKEN_SEMICOLON))
+    if (!match(TOKEN_SEMI_COLON))
     {
         expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after loop condition.");
+        consume(TOKEN_SEMI_COLON, "Expect ';' after loop condition.");
 
         // Jump out of the loop if the condition is false.
         exitJump = emitJump(OP_JUMP_IF_FALSE);
@@ -1130,7 +1131,7 @@ static void ifStatement()
 static void printStatement()
 {
     expression();
-    consume(TOKEN_SEMICOLON, "Expect ';' after value.");
+    consume(TOKEN_EOL, "Only one statement per line allowed.");
     emitByte(OP_PRINT);
 }
 
@@ -1140,7 +1141,7 @@ static void returnStatement()
     {
         error("Cannot return from top-level code.");
     }
-    if (match(TOKEN_SEMICOLON))
+    if (match(TOKEN_EOL))
     {
         emitReturn();
     }
@@ -1151,7 +1152,7 @@ static void returnStatement()
             error("Cannot return a value from an initializer.");
         }
         expression();
-        consume(TOKEN_SEMICOLON, "Expect ';' after return value.");
+        consume(TOKEN_EOL, "Only one statement per line allowed.");
         emitByte(OP_RETURN);
     }
 }
@@ -1180,7 +1181,7 @@ static void synchronize()
 
     while (parser.current.type != TOKEN_EOF)
     {
-        if (parser.previous.type == TOKEN_SEMICOLON)
+        if (parser.previous.type == TOKEN_EOL)
             return;
 
         switch (parser.current.type)
@@ -1223,6 +1224,14 @@ static void declaration()
     else if (match(TOKEN_VAR))
     {
         varDeclaration();
+    }
+    else if (match(TOKEN_EOL))
+    {
+        // Do nothing, but don't error, this is a blank line
+    }
+    else if (match(TOKEN_SEMI_COLON))
+    {
+        error("Unexpected ';'");
     }
     else
     {

@@ -2,14 +2,14 @@ class TestClass
 {
     init()
     {
-        self.item = "initializer";
+        self.item = "initializer"
     }
 
     print_object()
     {
-        print self.item;
+        print self.item
     }
 }
 
-var test = TestClass();
-test.print_object();
+var test = TestClass()
+test.print_object()

@@ -1,13 +1,19 @@
 # print "This should not be shown";
-var test = [];
-test.add("hi");
-print test[0];
+var test = []
+test.add("hi")
+print test[0]
 
-var list = List();
+var list = List()
 
-list.add("This");
-list.add("is");
-list.add("a");
-list.add("list");
+list.add("This")
+list.add("is")
+list.add("a")
+list.add("list")
 
-print list;
+list.add("strings
+are
+multi-line
+by default")
+
+print list
+print list[4]

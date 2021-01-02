@@ -103,8 +103,8 @@ static void skipWhitespace()
 
         case '\n':
             scanner.line++;
-            advance();
-            break;
+            // Don't advance(), so we can detect line-ends for tokens
+            return;
 
         case '#':
             // A comment goes until the end of the line.
@@ -307,8 +307,10 @@ Token scanToken()
         return makeToken(TOKEN_LEFT_SQ_BRACKET);
     case ']':
         return makeToken(TOKEN_RIGHT_SQ_BRACKET);
+    case '\n':
+        return makeToken(TOKEN_EOL);
     case ';':
-        return makeToken(TOKEN_SEMICOLON);
+        return makeToken(TOKEN_SEMI_COLON);
     case ',':
         return makeToken(TOKEN_COMMA);
     case '.':

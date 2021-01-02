@@ -9,7 +9,7 @@ declaration    → classDecl
 classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER )?
                  "{" method* "}" ;
 funDecl        → "fun" function ;
-varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+varDecl        → "var" IDENTIFIER ( "=" expression )? EOL ;
 
 statement      → exprStmt
                | forStmt
@@ -19,12 +19,12 @@ statement      → exprStmt
                | whileStmt
                | block ;
 
-exprStmt       → expression ";" ;
+exprStmt       → expression EOL ;
 forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
                            expression? ";"
                            expression? ")" statement ;
 ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
-printStmt      → "print" expression ";" ;
+printStmt      → "print" expression EOL ;
 returnStmt     → "return" expression? ";" ;
 whileStmt      → "while" "(" expression ")" statement ;
 block          → "{" declaration* "}" ;
@@ -59,4 +59,5 @@ STRING         → '"' <any char except '"'>* '"' ;
 IDENTIFIER     → ALPHA ( ALPHA | DIGIT )* ;
 ALPHA          → 'a' ... 'z' | 'A' ... 'Z' | '_' ;
 DIGIT          → '0' ... '9' ;
+EOL            → '\n'
 ```

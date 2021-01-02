@@ -106,17 +106,10 @@ static void skipWhitespace()
             advance();
             break;
 
-        case '/':
-            if (peekNext() == '/')
-            {
-                // A comment goes until the end of the line.
-                while (peek() != '\n' && !isAtEnd())
-                    advance();
-            }
-            else
-            {
-                return;
-            }
+        case '#':
+            // A comment goes until the end of the line.
+            while (peek() != '\n' && !isAtEnd())
+                advance();
             break;
 
         default:

@@ -1,3 +1,4 @@
+# print "This should not be shown";
 var test = [];
 test.add("hi");
 print test[0];

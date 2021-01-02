@@ -2,17 +2,17 @@ class TestClass
 {
     init()
     {
-        this.items = [];
+        self.items = [];
     }
 
     operator[] (index)
     {
-        return this.items[index];
+        return self.items[index];
     }
 
     append(item)
     {
-        this.items.push(item);
+        self.items.push(item);
     }
 }
 

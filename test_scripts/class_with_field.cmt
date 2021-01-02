@@ -2,12 +2,12 @@ class TestClass
 {
     init()
     {
-        this.item = "initializer";
+        self.item = "initializer";
     }
 
     print_object()
     {
-        print this.item;
+        print self.item;
     }
 }
 

@@ -43,7 +43,7 @@ multiplication → unary ( ( "/" | "*" ) unary )* ;
 
 unary          → ( "!" | "-" ) unary | call ;
 call           → primary ( "(" arguments? ")" | "." IDENTIFIER  | "[" arguments? "]")* ;
-primary        → "true" | "false" | "nil" | "this"
+primary        → "true" | "false" | "nil" | "self"
                | NUMBER | STRING | IDENTIFIER | "(" expression ")"
                | "super" "." IDENTIFIER ;
 

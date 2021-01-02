@@ -203,7 +203,7 @@ static int emitJump(uint8_t instruction)
 
 static void emitReturn()
 {
-    // An initializer automatically returns "this".
+    // An initializer automatically returns "self".
     if (current->type == TYPE_INITIALIZER)
     {
         emitBytes(OP_GET_LOCAL, 0);
@@ -267,8 +267,8 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     local->isCaptured = false;
     if (type != TYPE_FUNCTION)
     {
-        // In a method, it holds the receiver, "this".
-        local->name.start = "this";
+        // In a method, it holds the receiver, "self".
+        local->name.start = "self";
         local->name.length = 4;
     }
     else
@@ -686,7 +686,7 @@ static void super_(bool UNUSED(canAssign))
     uint8_t name = identifierConstant(&parser.previous);
 
     // Push the receiver.
-    namedVariable(syntheticToken("this"), false);
+    namedVariable(syntheticToken("self"), false);
 
     if (match(TOKEN_LEFT_PAREN))
     {
@@ -703,11 +703,11 @@ static void super_(bool UNUSED(canAssign))
     }
 }
 
-static void this_(bool UNUSED(canAssign))
+static void self(bool UNUSED(canAssign))
 {
     if (currentClass == NULL)
     {
-        error("Cannot use 'this' outside of a class.");
+        error("Cannot use 'self' outside of a class.");
     }
     else
     {
@@ -795,8 +795,8 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, or_, PREC_OR},            // TOKEN_OR
     {NULL, NULL, PREC_NONE},         // TOKEN_PRINT
     {NULL, NULL, PREC_NONE},         // TOKEN_RETURN
+    {self, NULL, PREC_NONE},        // TOKEN_SELF
     {super_, NULL, PREC_NONE},       // TOKEN_SUPER
-    {this_, NULL, PREC_NONE},        // TOKEN_THIS
     {literal, NULL, PREC_NONE},      // TOKEN_TRUE
     {NULL, NULL, PREC_NONE},         // TOKEN_VAR
     {NULL, NULL, PREC_NONE},         // TOKEN_WHILE

@@ -12,7 +12,7 @@ set(SOURCE
   # boolean.c
   # datetime.c
   file.c
-  # hash.c
+  hash.c
   iterable.c
   list.c
   nil.c

@@ -1,0 +1,3 @@
+var some_hash = {};
+
+print some_hash;

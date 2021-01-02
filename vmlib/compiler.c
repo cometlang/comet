@@ -736,6 +736,13 @@ static void unary(bool UNUSED(canAssign))
     }
 }
 
+static void literal_hash(bool canAssign)
+{
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' for a literal hash declaration");
+    namedVariable(syntheticToken("Hash"), canAssign);
+    emitBytes(OP_CALL, 0);
+}
+
 static void literal_list(bool canAssign)
 {
     namedVariable(syntheticToken("List"), canAssign);
@@ -752,7 +759,7 @@ static void subscript(bool UNUSED(canAssign))
 ParseRule rules[NUM_TOKENS] = {
     {grouping, call, PREC_CALL},     // TOKEN_LEFT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_PAREN
-    {NULL, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
+    {literal_hash, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_BRACE
     {literal_list, subscript, PREC_CALL},// TOKEN_LEFT_SQ_BRACKET
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_SQ_BRACKET

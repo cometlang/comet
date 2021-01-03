@@ -300,6 +300,8 @@ const char *getOperatorString(OPERATOR operator)
             return "==";
         case OPERATOR_INDEX:
             return "[]";
+        case OPERATOR_INDEX_ASSIGN:
+            return "[]=";
         case NUM_OPERATORS:
             return "unknown";
         case OPERATOR_UNKNOWN:

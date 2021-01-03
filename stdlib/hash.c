@@ -60,6 +60,11 @@ VALUE hash_get(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argument
     return NIL_VAL;
 }
 
+VALUE hash_set(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 void init_hash(void)
 {
     VALUE klass = defineNativeClass("Hash", hash_constructor, hash_destructor, NULL);
@@ -69,4 +74,5 @@ void init_hash(void)
     defineNativeMethod(klass, &hash_iterable_empty_q, "empty?", false);
     defineNativeMethod(klass, &hash_obj_to_string, "to_string", false);
     defineNativeOperator(klass, &hash_get, OPERATOR_INDEX);
+    defineNativeOperator(klass, &hash_set, OPERATOR_INDEX_ASSIGN);
 }

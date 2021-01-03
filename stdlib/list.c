@@ -74,6 +74,15 @@ VALUE list_get_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
+VALUE list_assign_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    ObjNativeInstance UNUSED(*instance) = AS_NATIVE_INSTANCE(self);
+    int UNUSED(index) = (int)AS_NUMBER(arguments[0]);
+    // If the index is larger than the current count, what do?
+    // Probably throw an exception, except I can't do that yet...
+    return NIL_VAL;
+}
+
 VALUE list_iterable_empty_q(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
@@ -141,4 +150,5 @@ void init_list(void)
     defineNativeMethod(klass, &list_get_at, "get_at", false);
     defineNativeMethod(klass, &list_obj_to_string, "to_string", false);
     defineNativeOperator(klass, &list_get_at, OPERATOR_INDEX);
+    defineNativeOperator(klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
 }

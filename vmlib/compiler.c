@@ -933,7 +933,11 @@ static void operator()
     advance();
     if (op == OPERATOR_INDEX)
     {
-        consume(TOKEN_RIGHT_SQ_BRACKET, "expected '[]'");
+        consume(TOKEN_RIGHT_SQ_BRACKET, "expected ']'");
+        if (match(TOKEN_EQUAL))
+        {
+            op = OPERATOR_INDEX_ASSIGN;
+        }
     }
     // For all intents and purposes, this is a method.
     function(TYPE_METHOD);

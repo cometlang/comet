@@ -811,6 +811,17 @@ static InterpretResult run(void)
             frame = &vm.frames[vm.frameCount - 1];
             break;
         }
+        case OP_INDEX_ASSIGN:
+        {
+            int argCount = READ_BYTE();
+            Value receiver = peek(argCount);
+            if (!callOperator(receiver, argCount, OPERATOR_INDEX_ASSIGN))
+            {
+                return INTERPRET_RUNTIME_ERROR;;
+            }
+            frame = &vm.frames[vm.frameCount - 1];
+            break;
+        }
         case OP_DEFINE_OPERATOR:
         {
             defineOperator((OPERATOR)READ_BYTE());

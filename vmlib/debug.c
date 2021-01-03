@@ -168,6 +168,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return constantInstruction("OP_ENUM", chunk, offset);
     case OP_INDEX:
         return byteInstruction("OP_INDEX", chunk, offset);
+    case OP_INDEX_ASSIGN:
+        return byteInstruction("OP_INDEX_ASSIGN", chunk, offset);
     case OP_DEFINE_OPERATOR:
         return constantInstruction("OP_DEFINE_OPERATOR", chunk, offset);
     default:

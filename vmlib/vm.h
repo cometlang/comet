@@ -10,6 +10,9 @@
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
 
+#define str(x) #x
+#define enum_str(x) str(x)
+
 typedef struct
 {
     ObjClosure *closure;

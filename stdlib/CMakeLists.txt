@@ -11,6 +11,7 @@ set(SOURCE
   _init.c
   # boolean.c
   # datetime.c
+  exception.c
   file.c
   hash.c
   iterable.c

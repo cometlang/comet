@@ -9,7 +9,13 @@ class TestClass
     {
         print self.item
     }
+
+    get_item()
+    {
+        return self.item()
+    }
 }
 
 var test = TestClass()
 test.print_object()
+print test.get_item()

@@ -5,6 +5,7 @@ void init_stdlib(void)
 {
     init_object();
     init_nil();
+    init_exception();
     init_file();
     init_iterable();
     init_list();

@@ -63,3 +63,26 @@ void defineNativeOperator(VALUE klass, NativeMethod function, OPERATOR operator)
     defineOperator(operator);
     pop();
 }
+
+void setNativeProperty(VALUE self, const char *property_name, VALUE value)
+{
+    push(self);
+    push(value);
+    ObjString *name_string = copyString(property_name, strlen(property_name));
+    push(OBJ_VAL(name_string));
+    tableSet(&AS_INSTANCE(self)->fields, name_string, value);
+    pop();
+    pop();
+    pop();
+}
+
+VALUE getNativeProperty(VALUE self, const char *property_name)
+{
+    Value value;
+    ObjString *name_string = copyString(property_name, strlen(property_name));
+    if (tableGet(&AS_INSTANCE(self)->fields, name_string, &value))
+    {
+        return value;
+    }
+    return NIL_VAL;
+}

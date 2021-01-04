@@ -1,5 +1,10 @@
 #include "comet.h"
 
+VALUE socket_init(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 VALUE socket_open(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
@@ -18,4 +23,11 @@ VALUE socket_write(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argu
 VALUE socket_read(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
+}
+
+
+void init_socket(void)
+{
+    VALUE klass = defineNativeClass("Socket", NULL, NULL, NULL);
+    defineNativeMethod(klass, &socket_init, "init", false);
 }

@@ -211,7 +211,8 @@ static bool callValue(Value callee, int argCount)
         }
 
         default:
-            printf("Obj type: %u\n", OBJ_TYPE(callee));
+            printObject(callee);
+            printf("\nObj type: %s\n", objTypeName(OBJ_TYPE(callee)));
             // Non-callable object type.
             break;
         }

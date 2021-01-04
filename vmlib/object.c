@@ -242,6 +242,8 @@ void printObject(Value value)
     case OBJ_UPVALUE:
         printf("upvalue");
         break;
+    default:
+        printf("Unknown object");
     }
 }
 

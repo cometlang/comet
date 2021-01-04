@@ -50,6 +50,9 @@ static SourceFile *readFile(const char *path)
     sourcefile->source[bytesRead] = '\0';
 
     fclose(file);
+    int pathLen = strlen(path);
+    sourcefile->path = (char *) malloc(pathLen + 1);
+    strncpy(sourcefile->path, path, pathLen + 1);
     return sourcefile;
 }
 

@@ -103,7 +103,7 @@ static void errorAt(Token *token, const char *message)
     if (parser.panicMode)
         return;
     parser.panicMode = true;
-    fprintf(stderr, "[line %d] Error", token->line);
+    fprintf(stderr, "[%s:%d] Error", token->filename, token->line);
 
     if (token->type == TOKEN_EOF)
     {
@@ -764,7 +764,7 @@ static void subscript(bool UNUSED(canAssign))
 ParseRule rules[NUM_TOKENS] = {
     {grouping, call, PREC_CALL},     // TOKEN_LEFT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_PAREN
-    {literal_hash, NULL, PREC_NONE},         // TOKEN_LEFT_BRACE
+    {literal_hash, NULL, PREC_NONE}, // TOKEN_LEFT_BRACE
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_BRACE
     {literal_list, subscript, PREC_CALL},// TOKEN_LEFT_SQ_BRACKET
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_SQ_BRACKET
@@ -801,7 +801,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, or_, PREC_OR},            // TOKEN_OR
     {NULL, NULL, PREC_NONE},         // TOKEN_PRINT
     {NULL, NULL, PREC_NONE},         // TOKEN_RETURN
-    {self, NULL, PREC_NONE},        // TOKEN_SELF
+    {self, NULL, PREC_NONE},         // TOKEN_SELF
     {super_, NULL, PREC_NONE},       // TOKEN_SUPER
     {literal, NULL, PREC_NONE},      // TOKEN_TRUE
     {NULL, NULL, PREC_NONE},         // TOKEN_VAR
@@ -857,6 +857,7 @@ static void block()
         declaration();
     }
 
+    match(TOKEN_EOL); // optional end of line.
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after block.");
 }
 
@@ -885,6 +886,7 @@ static void function(FunctionType type)
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
     // The body.
+    match(TOKEN_EOL); // optional end of line.
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block();
 
@@ -989,10 +991,15 @@ static void classDeclaration()
 
 
     namedVariable(className, false);
+    match(TOKEN_EOL); // optional end of line.
     consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
-        if (match(TOKEN_OPERATOR))
+        if (match(TOKEN_EOL))
+        {
+            // do nothing.
+        }
+        else if (match(TOKEN_OPERATOR))
         {
             operator();
         }
@@ -1030,6 +1037,7 @@ static void enumDeclaration()
     emitBytes(OP_ENUM, enumName);
     defineVariable(enumName);
 
+    match(TOKEN_EOL); // optional end of line.
     consume(TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
@@ -1050,7 +1058,8 @@ static void varDeclaration()
     {
         emitByte(OP_NIL);
     }
-    consume(TOKEN_EOL, "Only one statement per line allowed");
+    if (!check(TOKEN_EOF))
+        consume(TOKEN_EOL, "Only one statement per line allowed");
 
     defineVariable(global);
 }
@@ -1058,7 +1067,8 @@ static void varDeclaration()
 static void expressionStatement()
 {
     expression();
-    consume(TOKEN_EOL, "Only one statement per line allowed");
+    if (!check(TOKEN_EOF))
+        consume(TOKEN_EOL, "Only one statement per line allowed");
     emitByte(OP_POP);
 }
 
@@ -1140,7 +1150,8 @@ static void ifStatement()
 static void printStatement()
 {
     expression();
-    consume(TOKEN_EOL, "Only one statement per line allowed.");
+    if (!check(TOKEN_EOF))
+        consume(TOKEN_EOL, "Only one statement per line allowed.");
     emitByte(OP_PRINT);
 }
 

@@ -50,7 +50,8 @@ VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
         }
         data->length++;
     }
-    return NIL_VAL;
+    // It is important to return self, so that literal lists function correctly.
+    return self;
 }
 
 VALUE list_remove(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -135,7 +136,17 @@ VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argume
 
 VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
 {
-    return list_add(self, arg_count, arguments);
+    if (arg_count == 1)
+    {
+        uint64_t initial_length = AS_NUMBER(arguments[0]);
+        VALUE args[initial_length];
+        for (uint64_t i = 0; i < initial_length; i++)
+        {
+            args[i] = NIL_VAL;
+        }
+        list_add(self, initial_length, args);
+    }
+    return NIL_VAL;
 }
 
 void init_list(void)

@@ -746,8 +746,12 @@ static void literal_hash(bool canAssign)
 static void literal_list(bool canAssign)
 {
     namedVariable(syntheticToken("List"), canAssign);
+    emitBytes(OP_CALL, 0); // Create a list using the default constructor
     uint8_t argCount = argumentList(TOKEN_RIGHT_SQ_BRACKET);
-    emitBytes(OP_CALL, argCount);
+    Token addToken = syntheticToken("add");
+    uint8_t name = identifierConstant(&addToken);
+    emitBytes(OP_INVOKE, name);
+    emitByte(argCount);
 }
 
 static void subscript(bool UNUSED(canAssign))

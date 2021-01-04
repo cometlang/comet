@@ -16,4 +16,9 @@
 #define UNUSED(x) x __attribute__ ((unused))
 #endif
 
+typedef struct {
+    char *path;
+    char *source;
+} SourceFile;
+
 #endif 

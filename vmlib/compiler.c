@@ -254,6 +254,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function = newFunction();
+    compiler->function->chunk.filename = parser.previous.filename;
     current = compiler;
 
     if (type != TYPE_SCRIPT)
@@ -1284,7 +1285,7 @@ static void statement()
     }
 }
 
-ObjFunction *compile(const char *source)
+ObjFunction *compile(const SourceFile *source)
 {
     initScanner(source);
     Compiler compiler;

@@ -11,6 +11,7 @@ void initChunk(Chunk *chunk)
     chunk->capacity = 0;
     chunk->code = NULL;
     chunk->lines = NULL;
+    chunk->filename = NULL;
     initValueArray(&chunk->constants);
 }
 

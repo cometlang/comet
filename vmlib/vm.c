@@ -74,7 +74,8 @@ void runtimeError(const char *format, ...)
         // -1 because the IP is sitting on the next instruction to be
         // executed.
         size_t instruction = frame->ip - function->chunk.code - 1;
-        fprintf(stderr, "[line %d] in ",
+        fprintf(stderr, "[%s:%d] ",
+                function->chunk.filename,
                 function->chunk.lines[instruction]);
         if (function->name == NULL)
         {
@@ -844,7 +845,7 @@ static InterpretResult run(void)
 #undef READ_BYTE
 }
 
-InterpretResult interpret(const char *source)
+InterpretResult interpret(const SourceFile *source)
 {
     ObjFunction *function = compile(source);
     if (function == NULL)

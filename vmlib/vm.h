@@ -5,6 +5,7 @@
 #include "object.h"
 #include "table.h"
 #include "value.h"
+#include "common.h"
 
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * UINT8_COUNT)
@@ -54,7 +55,7 @@ void removeWhiteStrings(void);
 bool addGlobal(ObjString *name, Value value);
 bool findGlobal(ObjString *name, Value *value);
 
-InterpretResult interpret(const char *source);
+InterpretResult interpret(const SourceFile *source);
 void runtimeError(const char *format, ...);
 void defineMethod(ObjString *name, bool isStatic);
 void defineOperator(OPERATOR operator);

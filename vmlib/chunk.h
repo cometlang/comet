@@ -57,6 +57,7 @@ typedef struct
     ValueArray constants;
     int *lines;
     uint8_t *code;
+    const char *filename;
 } Chunk;
 
 void initChunk(Chunk *chunk);

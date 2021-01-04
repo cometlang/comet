@@ -8,7 +8,9 @@
 
 static void repl()
 {
+    SourceFile source;
     char line[1024];
+    source.source = line;
     for (;;)
     {
         printf("> ");
@@ -19,12 +21,13 @@ static void repl()
             break;
         }
 
-        interpret(line);
+        interpret(&source);
     }
 }
 
-static char *readFile(const char *path)
+static SourceFile *readFile(const char *path)
 {
+    SourceFile *sourcefile = (SourceFile *) malloc(sizeof(SourceFile));
     FILE *file = fopen(path, "rb");
     if (file == NULL)
     {
@@ -36,24 +39,25 @@ static char *readFile(const char *path)
     size_t fileSize = ftell(file);
     rewind(file);
 
-    char *buffer = (char *)malloc(fileSize + 1);
-    if (buffer == NULL)
+    sourcefile->source = (char *)malloc(fileSize + 1);
+    if (sourcefile->source == NULL)
     {
         fprintf(stderr, "Could not allocate memory to read \"%s\"\n", path);
         exit(74);
     }
 
-    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
-    buffer[bytesRead] = '\0';
+    size_t bytesRead = fread(sourcefile->source, sizeof(char), fileSize, file);
+    sourcefile->source[bytesRead] = '\0';
 
     fclose(file);
-    return buffer;
+    return sourcefile;
 }
 
 static void runFile(const char *path)
 {
-    char *source = readFile(path);
+    SourceFile *source = readFile(path);
     InterpretResult result = interpret(source);
+    free(source->source);
     free(source);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);

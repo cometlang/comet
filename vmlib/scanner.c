@@ -6,6 +6,7 @@
 
 typedef struct
 {
+    const char *filename;
     const char *start;
     const char *current;
     int line;
@@ -13,10 +14,11 @@ typedef struct
 
 static Scanner scanner;
 
-void initScanner(const char *source)
+void initScanner(const SourceFile *source)
 {
-    scanner.start = source;
-    scanner.current = source;
+    scanner.filename = source->path;
+    scanner.start = source->source;
+    scanner.current = source->source;
     scanner.line = 1;
 }
 
@@ -73,6 +75,7 @@ static Token makeToken(TokenType type)
     token.start = scanner.start;
     token.length = (int)(scanner.current - scanner.start);
     token.line = scanner.line;
+    token.filename = scanner.filename;
 
     return token;
 }
@@ -84,6 +87,7 @@ static Token errorToken(const char *message)
     token.start = message;
     token.length = (int)strlen(message);
     token.line = scanner.line;
+    token.filename = scanner.filename;
 
     return token;
 }

@@ -307,7 +307,14 @@ static bool invoke(ObjString *name, int argCount)
 
     if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
-        runtimeError("'%s' can't be invoked from a '%s'.", name->chars, objTypeName(OBJ_TYPE(receiver)));
+        if (IS_NIL(receiver))
+        {
+            runtimeError("'%s' can't be invoked from nil.", name->chars);
+        }
+        else
+        {
+            runtimeError("'%s' can't be invoked from a '%s'.", name->chars, objTypeName(OBJ_TYPE(receiver)));
+        }
         return false;
     }
 

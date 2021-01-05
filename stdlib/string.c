@@ -1,12 +1,13 @@
 #include <stdlib.h>
-#include <wchar.h>
+#include <string.h>
+
 #include "comet.h"
 #include "cometlib.h"
 
 typedef struct StringData
 {
     size_t length;
-    wchar_t *chars;
+    char *chars;
 } StringData;
 
 void *string_constructor(void)
@@ -29,7 +30,7 @@ void string_destructor(void *data)
     free(string_data);
 }
 
-const wchar_t *get_cstr(VALUE self)
+const char *get_cstr(VALUE self)
 {
     StringData *string_data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
     return string_data->chars;
@@ -42,7 +43,7 @@ VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
     if (lhs->length != rhs->length)
         return FALSE_VAL;
 
-    if (wcsncmp(lhs->chars, rhs->chars, lhs->length) == 0)
+    if (strncmp(lhs->chars, rhs->chars, lhs->length) == 0)
         return TRUE_VAL;
 
     return FALSE_VAL;

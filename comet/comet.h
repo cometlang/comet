@@ -8,6 +8,6 @@
 #include "memory.h"
 
 void init_stdlib();
-const wchar_t *get_cstr(VALUE self);
+const char *get_cstr(VALUE self);
 
 #endif

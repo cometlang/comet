@@ -6,14 +6,14 @@ VALUE exception_init(VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
-        setNativeProperty(self, "message", arguments[0]);
+        setNativeProperty(self, "_message", arguments[0]);
     }
     return NIL_VAL;
 }
 
 VALUE exception_get_message(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return getNativeProperty(self, "message");
+    return getNativeProperty(self, "_message");
 }
 
 void init_exception(void)

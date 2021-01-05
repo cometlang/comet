@@ -12,7 +12,7 @@ class TestClass
 
     get_item()
     {
-        return self.item()
+        return self.item
     }
 }
 

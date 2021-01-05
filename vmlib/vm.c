@@ -128,6 +128,12 @@ Value pop(void)
     return *vm.stackTop;
 }
 
+Value popMany(int count)
+{
+    vm.stackTop -= count;
+    return *vm.stackTop;
+}
+
 Value peek(int distance)
 {
     return vm.stackTop[-1 - distance];
@@ -184,6 +190,7 @@ static bool callValue(Value callee, int argCount)
                 if (IS_NATIVE_METHOD(initializer))
                 {
                     AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm.stackTop - argCount);
+                    popMany(argCount);
                     return true;
                 }
                 else
@@ -457,8 +464,7 @@ static void concatenate()
     chars[length] = '\0';
 
     ObjString *result = takeString(chars, length);
-    pop();
-    pop();
+    popMany(2);
     push(OBJ_VAL(result));
 }
 

@@ -1,15 +1,17 @@
 #include <stdlib.h>
+#include <wchar.h>
 #include "comet.h"
+#include "cometlib.h"
 
-typedef struct stringData
+typedef struct StringData
 {
     size_t length;
     wchar_t *chars;
-} stringData;
+} StringData;
 
 void *string_constructor(void)
 {
-    stringData *data = (stringData *) malloc(sizeof(stringData));
+    StringData *data = (StringData *) malloc(sizeof(StringData));
     data->length = 0;
     data->chars = NULL;
     return (void *) data;
@@ -17,7 +19,7 @@ void *string_constructor(void)
 
 void string_destructor(void *data)
 {
-    stringData *string_data = (stringData *) data;
+    StringData *string_data = (StringData *) data;
     if (string_data->chars != NULL)
     {
         free(string_data->chars);
@@ -27,8 +29,22 @@ void string_destructor(void *data)
     free(string_data);
 }
 
+const wchar_t *get_cstr(VALUE self)
+{
+    StringData *string_data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
+    return string_data->chars;
+}
+
 VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    StringData *lhs = (StringData *) AS_NATIVE_INSTANCE(self)->data;
+    StringData *rhs = (StringData *) AS_NATIVE_INSTANCE(arguments[0])->data;
+    if (lhs->length != rhs->length)
+        return FALSE_VAL;
+
+    if (wcsncmp(lhs->chars, rhs->chars, lhs->length) == 0)
+        return TRUE_VAL;
+
     return FALSE_VAL;
 }
 
@@ -92,6 +108,26 @@ VALUE string_to_upper(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*a
     return NIL_VAL;
 }
 
+VALUE string_concatenate(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 void init_string(void)
 {
+    VALUE klass = defineNativeClass("String", string_constructor, string_destructor, NULL);
+    defineNativeMethod(klass, &string_hash, "hash", false);
+    defineNativeMethod(klass, &string_to_string, "to_string", false);
+    defineNativeMethod(klass, &string_trim, "trim", false);
+    defineNativeMethod(klass, &string_trim_left, "left_trim", false);
+    defineNativeMethod(klass, &string_trim_right, "right_trim", false);
+    defineNativeMethod(klass, &string_find, "find", false);
+    defineNativeMethod(klass, &string_split, "split", false);
+    defineNativeMethod(klass, &string_replace, "replace", false);
+    defineNativeMethod(klass, &string_starts_with_q, "starts_with?", false);
+    defineNativeMethod(klass, &string_ends_with_q, "ends_with?", false);
+    defineNativeMethod(klass, &string_to_lower, "to_lower", false);
+    defineNativeMethod(klass, &string_to_upper, "to_upper", false);
+    defineNativeOperator(klass, &string_concatenate, OPERATOR_PLUS);
+    defineNativeOperator(klass, &string_equals, OPERATOR_EQUALS);
 }

@@ -14,5 +14,6 @@ void init_enum(void);
 void init_exception(void);
 void init_socket(void);
 void init_functions(void);
+void init_string(void);
 
 #endif

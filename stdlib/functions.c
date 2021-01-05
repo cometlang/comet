@@ -1,6 +1,5 @@
 #include "cometlib.h"
 #include "comet.h"
-#include "value.h"
 
 #include <time.h>
 

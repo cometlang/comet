@@ -11,4 +11,5 @@ void init_stdlib(void)
     init_iterable();
     init_list();
     init_hash();
+    //init_string();
 }

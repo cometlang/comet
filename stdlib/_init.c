@@ -3,6 +3,7 @@
 
 void init_stdlib(void)
 {
+    init_functions();
     init_object();
     init_nil();
     init_exception();

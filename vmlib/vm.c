@@ -1,7 +1,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
 #include <stdlib.h>
 
 #include "vm.h"
@@ -15,11 +14,6 @@
 __thread VM vm;
 static Table globals;
 static Table strings;
-
-static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
-{
-    return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
-}
 
 void markGlobals(void)
 {
@@ -112,7 +106,6 @@ void initVM(void)
 
     vm.initString = copyString("init", 4);
 
-    defineNative("clock", clockNative);
     init_stdlib();
 }
 

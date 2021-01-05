@@ -13,6 +13,7 @@ set(SOURCE
   # datetime.c
   exception.c
   file.c
+  functions.c
   hash.c
   iterable.c
   list.c
@@ -27,5 +28,6 @@ set(SOURCE
 )
 
 add_library(stdlib STATIC ${SOURCE})
+target_link_libraries(stdlib vmlib)
 
 add_subdirectory(test)

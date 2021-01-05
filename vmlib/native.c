@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdio.h>
 
-void defineNative(const char *name, NativeFn function)
+void defineNativeFunction(const char *name, NativeFn function)
 {
     push(OBJ_VAL(newNative(function)));
     push(OBJ_VAL(copyString(name, (int)strlen(name))));

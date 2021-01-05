@@ -17,16 +17,18 @@ statement      → exprStmt
                | printStmt
                | returnStmt
                | whileStmt
+               | throwStmt
                | block ;
 
 exprStmt       → expression EOL ;
 forStmt        → "for" "(" ( varDecl | exprStmt | ";" )
                            expression? ";"
-                           expression? ")" statement ;
+                           expression? ")" EOL? statement ;
 ifStmt         → "if" "(" expression ")" statement ( "else" statement )? ;
 printStmt      → "print" expression EOL ;
-returnStmt     → "return" expression? ";" ;
-whileStmt      → "while" "(" expression ")" statement ;
+returnStmt     → "return" expression? EOL ;
+whileStmt      → "while" "(" expression ")" statement EOL? ;
+throwStmt      → "throw" expression EOL ;
 block          → "{" declaration* "}" ;
 
 expression     → assignment ;

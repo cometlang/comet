@@ -172,6 +172,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return byteInstruction("OP_INDEX_ASSIGN", chunk, offset);
     case OP_DEFINE_OPERATOR:
         return constantInstruction("OP_DEFINE_OPERATOR", chunk, offset);
+    case OP_THROW:
+        return simpleInstruction("OP_THROW", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

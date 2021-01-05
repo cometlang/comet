@@ -41,7 +41,6 @@ typedef struct {
     const char *start;
     int length;
     int line;
-    const char *filename;
 } Token;
 
 void initScanner(const SourceFile *source);

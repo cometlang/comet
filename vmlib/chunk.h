@@ -48,6 +48,7 @@ typedef enum
     OP_INDEX,
     OP_INDEX_ASSIGN,
     OP_DEFINE_OPERATOR,
+    OP_THROW,
 } OpCode;
 
 typedef struct

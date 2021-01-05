@@ -21,6 +21,7 @@ typedef struct
     Token previous;
     bool hadError;
     bool panicMode;
+    const char *filename;
 } Parser;
 
 typedef enum
@@ -103,7 +104,7 @@ static void errorAt(Token *token, const char *message)
     if (parser.panicMode)
         return;
     parser.panicMode = true;
-    fprintf(stderr, "[%s:%d] Error", token->filename, token->line);
+    fprintf(stderr, "[%s:%d] Error", parser.filename, token->line);
 
     if (token->type == TOKEN_EOF)
     {
@@ -254,7 +255,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
     compiler->function = newFunction();
-    compiler->function->chunk.filename = parser.previous.filename;
+    compiler->function->chunk.filename = parser.filename;
     current = compiler;
 
     if (type != TYPE_SCRIPT)
@@ -1198,6 +1199,14 @@ static void whileStatement()
     emitByte(OP_POP);
 }
 
+static void throwStatement()
+{
+    expression();
+    if (!check(TOKEN_EOF))
+        consume(TOKEN_EOL, "Only one statement per line allowed.");
+    emitByte(OP_THROW);
+}
+
 static void synchronize()
 {
     parser.panicMode = false;
@@ -1216,6 +1225,7 @@ static void synchronize()
         case TOKEN_FOR:
         case TOKEN_IF:
         case TOKEN_WHILE:
+        case TOKEN_THROW:
         case TOKEN_PRINT:
         case TOKEN_RETURN:
         case TOKEN_STATIC:
@@ -1287,6 +1297,10 @@ static void statement()
     {
         whileStatement();
     }
+    else if (match(TOKEN_THROW))
+    {
+        throwStatement();
+    }
     else if (match(TOKEN_LEFT_BRACE))
     {
         beginScope();
@@ -1302,14 +1316,15 @@ static void statement()
 ObjFunction *compile(const SourceFile *source)
 {
     initScanner(source);
-    Compiler compiler;
-    initCompiler(&compiler, TYPE_SCRIPT);
 
+    parser.filename = source->path;
     parser.hadError = false;
     parser.panicMode = false;
 
-    // chicken-egg situation.
+    Compiler compiler;
+    initCompiler(&compiler, TYPE_SCRIPT);
 
+    // chicken-egg situation.
     advance();
     while (!match(TOKEN_EOF))
     {

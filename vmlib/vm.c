@@ -843,6 +843,12 @@ static InterpretResult run(void)
             defineOperator((OPERATOR)READ_BYTE());
             break;
         }
+        case OP_THROW:
+        {
+            ObjInstance *exception = AS_INSTANCE(peek(0));
+            runtimeError("Uncaught %s", exception->klass->name->chars);
+            return INTERPRET_RUNTIME_ERROR;;
+        }
         }
     }
 

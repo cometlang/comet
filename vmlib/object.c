@@ -90,6 +90,12 @@ ObjFunction *newFunction()
 Obj *newInstance(ObjClass *klass)
 {
     Obj *obj = (Obj *)klass;
+    if (strncmp(klass->name->chars, "nil", klass->name->length) == 0)
+    {
+        fprintf(stderr, "Can't instantiate nil\n");
+        abort();
+        return NULL;
+    }
     switch (obj->type)
     {
     case OBJ_CLASS:

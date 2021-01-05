@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdlib.h>
 
 #include "vm.h"
 #include "compiler.h"
@@ -59,14 +60,11 @@ static void resetStack(void)
     vm.openUpvalues = NULL;
 }
 
-void runtimeError(const char *format, ...)
+ObjString *getStackTrace(void)
 {
-    va_list args;
-    va_start(args, format);
-    vfprintf(stderr, format, args);
-    va_end(args);
-    fputs("\n", stderr);
-
+#define MAX_LINE_LENGTH 1024
+    char *stacktrace = (char *)malloc(vm.frameCount * sizeof(char) * MAX_LINE_LENGTH);
+    uint16_t index = 0;
     for (int i = vm.frameCount - 1; i >= 0; i--)
     {
         CallFrame *frame = &vm.frames[i];
@@ -74,19 +72,29 @@ void runtimeError(const char *format, ...)
         // -1 because the IP is sitting on the next instruction to be
         // executed.
         size_t instruction = frame->ip - function->chunk.code - 1;
-        fprintf(stderr, "[%s:%d] ",
-                function->chunk.filename,
-                function->chunk.lines[instruction]);
-        if (function->name == NULL)
-        {
-            fprintf(stderr, "script\n");
-        }
-        else
-        {
-            fprintf(stderr, "%s()\n", function->name->chars);
-        }
+        uint32_t lineno = function->chunk.lines[instruction];
+        index += snprintf(
+            &stacktrace[index],
+            MAX_LINE_LENGTH,
+            "%s:%d - %s()\n",
+            function->chunk.filename,
+            lineno,
+            function->name == NULL ? "script" : function->name->chars);
     }
+    ObjString *result = copyString(stacktrace, index);
+    free(stacktrace);
+    return result;
+#undef MAX_LINE_LENGTH
+}
 
+void runtimeError(const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vfprintf(stderr, format, args);
+    va_end(args);
+    fputs("\n", stderr);
+    fprintf(stderr, "%s", getStackTrace()->chars);
     resetStack();
 }
 

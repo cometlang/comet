@@ -68,5 +68,6 @@ Value pop(void);
 Value peek(int distance);
 
 Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...);
+ObjString *getStackTrace(void);
 
 #endif

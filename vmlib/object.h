@@ -168,7 +168,7 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(ObjClass *klass);
-ObjNative *newNative(NativeFn function);
+ObjNative *newNativeFunction(NativeFn function);
 ObjString *takeString(char *chars, int length);
 ObjString *copyString(const char *chars, int length);
 ObjUpvalue *newUpvalue(Value *slot);

@@ -126,7 +126,7 @@ Obj *newInstance(ObjClass *klass)
     }
 }
 
-ObjNative *newNative(NativeFn function)
+ObjNative *newNativeFunction(NativeFn function)
 {
     ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
     native->function = function;

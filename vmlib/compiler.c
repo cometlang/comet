@@ -74,9 +74,9 @@ struct Compiler
     struct Compiler *enclosing;
     ObjFunction *function;
     FunctionType type;
-    Local locals[UINT8_COUNT];
+    Local locals[MAX_VAR_COUNT];
     int localCount;
-    Upvalue upvalues[UINT8_COUNT];
+    Upvalue upvalues[MAX_VAR_COUNT];
     int scopeDepth;
 };
 
@@ -370,7 +370,7 @@ static int addUpvalue(Compiler *compiler, uint8_t index, bool isLocal)
         }
     }
 
-    if (upvalueCount == UINT8_COUNT)
+    if (upvalueCount == MAX_VAR_COUNT)
     {
         error("Too many closure variables in function.");
         return 0;
@@ -404,7 +404,7 @@ static int resolveUpvalue(Compiler *compiler, Token *name)
 
 static void addLocal(Token name)
 {
-    if (current->localCount == UINT8_COUNT)
+    if (current->localCount == MAX_VAR_COUNT)
     {
         error("Too many local variables in function.");
         return;

@@ -8,6 +8,9 @@
 #include "table.h"
 #include "value.h"
 #include "vm.h"
+#include "comet.h"
+
+Value _string_class;
 
 #define ALLOCATE_OBJ(type, objectType) \
     (type *)allocateObject(sizeof(type), objectType)
@@ -204,6 +207,11 @@ ObjUpvalue *newUpvalue(Value *slot)
     return upvalue;
 }
 
+void registerStringClass(Value klass)
+{
+    _string_class = klass;
+}
+
 static void printFunction(ObjFunction *function)
 {
     if (function->name == NULL)
@@ -243,7 +251,7 @@ void printObject(Value value)
         printf("<native fn>");
         break;
     case OBJ_STRING:
-        printf("%s", AS_CSTRING(value));
+        printf("%s", get_cstr(value));
         break;
     case OBJ_UPVALUE:
         printf("upvalue");

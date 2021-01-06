@@ -135,4 +135,6 @@ void init_string(void)
     defineNativeMethod(klass, &string_to_upper, "to_upper", false);
     defineNativeOperator(klass, &string_concatenate, OPERATOR_PLUS);
     defineNativeOperator(klass, &string_equals, OPERATOR_EQUALS);
+
+    registerStringClass(klass);
 }

@@ -30,7 +30,6 @@
 #define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
 #define AS_STRING(value) ((ObjString *)AS_OBJ(value))
-#define AS_CSTRING(value) (((ObjString *)AS_OBJ(value))->chars)
 
 typedef enum
 {
@@ -176,6 +175,8 @@ void printObject(Value value);
 const char *objTypeName(ObjType type);
 const char *getOperatorString(OPERATOR operator);
 OPERATOR getOperatorFromToken(TokenType token);
+
+void registerStringClass(Value klass);
 
 static inline bool isObjType(Value value, ObjType type)
 {

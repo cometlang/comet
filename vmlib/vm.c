@@ -298,7 +298,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
             return call(AS_CLOSURE(instance->klass->operators[operator]), argCount);
         }
     }
-    runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(receiver));
+    runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
     return false;
 }
 

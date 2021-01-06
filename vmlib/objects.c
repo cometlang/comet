@@ -148,12 +148,11 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
 static ObjString *allocateString(char *chars, int length,
                                  uint32_t hash)
 {
-    ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
-    string->length = length;
-    string->chars = chars;
-    string->hash = hash;
+    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
+    AS_NATIVE_CLASS(_string_class)->destructor(string->data);
+    string->data = string_constructor_cstr(chars, length);
 
-    push(OBJ_VAL(string));
+    push(string);
     internString(string);
     pop();
 

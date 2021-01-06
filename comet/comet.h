@@ -9,5 +9,6 @@
 
 void init_stdlib();
 const char *get_cstr(VALUE self);
+void *string_constructor_cstr(const char *string, int length);
 
 #endif

@@ -8,13 +8,38 @@ typedef struct StringData
 {
     size_t length;
     char *chars;
+    uint32_t hash;
 } StringData;
+
+static uint32_t hashString(const char *key, int length)
+{
+    uint32_t hash = 2166136261u;
+
+    for (int i = 0; i < length; i++)
+    {
+        hash ^= key[i];
+        hash *= 16777619;
+    }
+
+    return hash;
+}
 
 void *string_constructor(void)
 {
     StringData *data = ALLOCATE(StringData, 1);
     data->length = 0;
     data->chars = NULL;
+    data->hash = 0;
+    return (void *) data;
+}
+
+void *string_constructor_cstr(const char *string, int length)
+{
+    StringData *data = (StringData *) malloc(sizeof(StringData));
+    data->chars = (char *) malloc(length + 1);
+    strncpy(data->chars, string, length + 1);
+    data->length = length;
+    data->hash = hashString(data->chars, data->length);
     return (void *) data;
 }
 
@@ -26,6 +51,7 @@ void string_destructor(void *data)
         FREE_ARRAY(char, string_data->chars, string_data->length + 1);
         string_data->chars = NULL;
         string_data->length = 0;
+        string_data->hash = 0;
     }
     FREE(StringData, string_data);
 }

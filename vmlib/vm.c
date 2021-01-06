@@ -788,20 +788,22 @@ static InterpretResult run(void)
             break;
         case OP_INHERIT:
         {
-            Value superclass = peek(1);
-            if (!(IS_CLASS(superclass) || IS_NATIVE_CLASS(superclass)))
+            Value super_ = peek(1);
+            if (!(IS_CLASS(super_) || IS_NATIVE_CLASS(super_)))
             {
                 runtimeError("Superclass must be a class.");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
             ObjClass *subclass = AS_CLASS(peek(0));
-            tableAddAll(&AS_CLASS(superclass)->methods, &subclass->methods);
-            tableAddAll(&AS_CLASS(superclass)->staticMethods, &subclass->staticMethods);
+            ObjClass *superclass = AS_CLASS(super_);
+            tableAddAll(&superclass->methods, &subclass->methods);
+            tableAddAll(&superclass->staticMethods, &subclass->staticMethods);
             for (int i = 0; i < NUM_OPERATORS; i++)
             {
-                subclass->operators[i] = AS_CLASS(superclass)->operators[i];
+                subclass->operators[i] = superclass->operators[i];
             }
+            subclass->super_ = superclass;
             pop(); // Subclass.
             break;
         }

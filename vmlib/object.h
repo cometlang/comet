@@ -119,6 +119,7 @@ typedef struct sObjClass
     Table methods;
     Table staticMethods;
     Value operators[NUM_OPERATORS];
+    struct sObjClass *super_;
 } ObjClass;
 
 typedef void *(*NativeConstructor)(void);

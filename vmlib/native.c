@@ -14,26 +14,28 @@ void defineNativeFunction(const char *name, NativeFn function)
     pop();
 }
 
-VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char UNUSED(*super))
+VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
 {
     ObjString *name_string = copyString(name, strlen(name));
     push(OBJ_VAL(name_string));
     push(OBJ_VAL(newNativeClass(name_string, constructor, destructor)));
+    ObjClass *klass = AS_CLASS(peek(0));
     if (strncmp(name_string->chars, "Object", name_string->length) != 0)
     {
         Value parent;
-        if (super == NULL)
+        if (super_name == NULL)
         {
-            super = "Object";
+            super_name = "Object";
         }
-        if (!findGlobal(copyString(super, strlen(super)), &parent))
+        if (!findGlobal(copyString(super_name, strlen(super_name)), &parent))
         {
-            runtimeError("Could not inherit from unknown class '%s'", super);
+            runtimeError("Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
         }
 
-        tableAddAll(&(AS_CLASS(parent)->methods), &AS_CLASS(peek(0))->methods);
-        tableAddAll(&(AS_CLASS(parent)->staticMethods), &AS_CLASS(peek(0))->staticMethods);
+        tableAddAll(&(AS_CLASS(parent)->methods), &klass->methods);
+        tableAddAll(&(AS_CLASS(parent)->staticMethods), &klass->staticMethods);
+        klass->super_ = AS_CLASS(parent);
     }
     if (addGlobal(name_string, peek(0)))
     {

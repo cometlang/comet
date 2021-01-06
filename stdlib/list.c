@@ -151,13 +151,14 @@ VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
 
 void init_list(void)
 {
-    VALUE klass = defineNativeClass("List", list_constructor, list_destructor, NULL);
+    VALUE klass = defineNativeClass("List", list_constructor, list_destructor, "Iterable");
     defineNativeMethod(klass, &list_init, "init", false);
     defineNativeMethod(klass, &list_add, "add", false);
     defineNativeMethod(klass, &list_add, "push", false);
     defineNativeMethod(klass, &list_remove, "remove", false);
     defineNativeMethod(klass, &list_iterable_contains_q, "contains?", false);
     defineNativeMethod(klass, &list_iterable_empty_q, "empty?", false);
+    defineNativeMethod(klass, &list_iterable_iterator, "iterator", false);
     defineNativeMethod(klass, &list_get_at, "get_at", false);
     defineNativeMethod(klass, &list_obj_to_string, "to_string", false);
     defineNativeOperator(klass, &list_get_at, OPERATOR_INDEX);

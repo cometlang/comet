@@ -3,10 +3,13 @@
 
 #include <stdlib.h>
 
-typedef struct
+#define MAX_LOAD_PERCENTAGE 0.75
+
+typedef struct hash_entry
 {
     VALUE key;
     VALUE value;
+    struct hash_entry *next;
 } HashEntry;
 
 typedef struct
@@ -50,6 +53,11 @@ VALUE hash_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNU
     return NIL_VAL;
 }
 
+VALUE hash_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
@@ -72,6 +80,7 @@ void init_hash(void)
     defineNativeMethod(klass, &hash_remove, "remove", false);
     defineNativeMethod(klass, &hash_iterable_contains_q, "contains?", false);
     defineNativeMethod(klass, &hash_iterable_empty_q, "empty?", false);
+    defineNativeMethod(klass, &hash_iterable_iterator, "iterator", false);
     defineNativeMethod(klass, &hash_obj_to_string, "to_string", false);
     defineNativeOperator(klass, &hash_get, OPERATOR_INDEX);
     defineNativeOperator(klass, &hash_set, OPERATOR_INDEX_ASSIGN);

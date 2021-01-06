@@ -43,10 +43,7 @@ VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
     if (lhs->length != rhs->length)
         return FALSE_VAL;
 
-    if (strncmp(lhs->chars, rhs->chars, lhs->length) == 0)
-        return TRUE_VAL;
-
-    return FALSE_VAL;
+    return BOOL_VAL(strncmp(lhs->chars, rhs->chars, lhs->length) == 0);
 }
 
 VALUE string_hash(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -109,6 +106,12 @@ VALUE string_to_upper(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*a
     return NIL_VAL;
 }
 
+VALUE string_empty_q(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    StringData *data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
+    return BOOL_VAL(data->length == 0);
+}
+
 VALUE string_concatenate(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
@@ -127,6 +130,7 @@ void init_string(void)
     defineNativeMethod(klass, &string_replace, "replace", false);
     defineNativeMethod(klass, &string_starts_with_q, "starts_with?", false);
     defineNativeMethod(klass, &string_ends_with_q, "ends_with?", false);
+    defineNativeMethod(klass, &string_empty_q, "empty?", false);
     defineNativeMethod(klass, &string_to_lower, "to_lower", false);
     defineNativeMethod(klass, &string_to_upper, "to_upper", false);
     defineNativeOperator(klass, &string_concatenate, OPERATOR_PLUS);

@@ -5,7 +5,7 @@
 #include "compiler.h"
 #include "object.h"
 #include "native.h"
-#include "memory.h"
+#include "mem.h"
 
 void init_stdlib();
 const char *get_cstr(VALUE self);

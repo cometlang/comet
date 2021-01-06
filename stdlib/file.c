@@ -15,7 +15,7 @@ typedef struct fileData
 
 void *file_constructor(void)
 {
-    FileData *data = (FileData *)malloc(sizeof(FileData));
+    FileData *data = ALLOCATE(FileData, 1);
     data->fp = NULL;
     return (void *)data;
 }
@@ -28,7 +28,7 @@ void file_destructor(void *data)
         fflush(file_data->fp);
         fclose(file_data->fp);
     }
-    free(file_data);
+    FREE(FileData, file_data);
 }
 
 VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)

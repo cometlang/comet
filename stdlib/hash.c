@@ -18,7 +18,7 @@ typedef struct
 
 void *hash_constructor(void)
 {
-    HashTable *data = (HashTable *)malloc(sizeof(HashTable));
+    HashTable *data = ALLOCATE(HashTable, 1);
     data->count = 0;
     data->capacity = -1;
     data->entries = NULL;
@@ -27,7 +27,7 @@ void *hash_constructor(void)
 
 void hash_destructor(void *data)
 {
-    free(data);
+    FREE(HashTable, data);
 }
 
 VALUE hash_add(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -1,7 +1,7 @@
 #include <stdlib.h>
 
 #include "chunk.h"
-#include "memory.h"
+#include "mem.h"
 #include "value.h"
 #include "vm.h"
 

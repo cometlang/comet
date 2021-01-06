@@ -12,7 +12,7 @@ typedef struct StringData
 
 void *string_constructor(void)
 {
-    StringData *data = (StringData *) malloc(sizeof(StringData));
+    StringData *data = ALLOCATE(StringData, 1);
     data->length = 0;
     data->chars = NULL;
     return (void *) data;
@@ -23,11 +23,11 @@ void string_destructor(void *data)
     StringData *string_data = (StringData *) data;
     if (string_data->chars != NULL)
     {
-        free(string_data->chars);
+        FREE_ARRAY(char, string_data->chars, string_data->length + 1);
         string_data->chars = NULL;
         string_data->length = 0;
     }
-    free(string_data);
+    FREE(StringData, string_data);
 }
 
 const char *get_cstr(VALUE self)

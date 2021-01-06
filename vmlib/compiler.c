@@ -4,7 +4,7 @@
 
 #include "common.h"
 #include "compiler.h"
-#include "memory.h"
+#include "mem.h"
 #include "scanner.h"
 
 #if DEBUG_PRINT_CODE

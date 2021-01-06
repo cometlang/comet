@@ -7,7 +7,7 @@
 #include "compiler.h"
 #include "debug.h"
 #include "object.h"
-#include "memory.h"
+#include "mem.h"
 
 #include "comet.h"
 
@@ -57,7 +57,7 @@ static void resetStack(void)
 ObjString *getStackTrace(void)
 {
 #define MAX_LINE_LENGTH 1024
-    char *stacktrace = (char *)malloc(vm.frameCount * sizeof(char) * MAX_LINE_LENGTH);
+    char *stacktrace = ALLOCATE(char, vm.frameCount * MAX_LINE_LENGTH);
     uint16_t index = 0;
     for (int i = vm.frameCount - 1; i >= 0; i--)
     {
@@ -76,7 +76,7 @@ ObjString *getStackTrace(void)
             function->name == NULL ? "script" : function->name->chars);
     }
     ObjString *result = copyString(stacktrace, index);
-    free(stacktrace);
+    FREE_ARRAY(char, stacktrace, vm.frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
 }

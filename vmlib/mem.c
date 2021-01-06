@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include "common.h"
-#include "memory.h"
+#include "mem.h"
 #include "compiler.h"
 #include "vm.h"
 

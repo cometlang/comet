@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "memory.h"
+#include "mem.h"
 #include "object.h"
 #include "scanner.h"
 #include "table.h"

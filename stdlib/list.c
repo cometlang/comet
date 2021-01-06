@@ -27,7 +27,7 @@ void *list_constructor(void)
 
 void list_destructor(void *data)
 {
-    free(data);
+    FREE(ListData, data);
 }
 
 VALUE list_add(VALUE self, int arg_count, VALUE *arguments)

@@ -43,6 +43,7 @@ bool findGlobal(ObjString *name, Value *value)
 
 bool addGlobal(ObjString *name, Value value)
 {
+    DEBUG_ASSERT(strcmp(get_cstr(AS_INSTANCE(name)->klass->name), "String") == 0);
     return tableSet(&globals, name, value);
 }
 

@@ -10,7 +10,7 @@
 #include "vm.h"
 #include "comet.h"
 
-Value _string_class;
+static ObjClass *_string_class;
 
 #define ALLOCATE_OBJ(type, objectType) \
     (type *)allocateObject(sizeof(type), objectType)
@@ -145,18 +145,17 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
     return method;
 }
 
-static ObjString *allocateString(char *chars, int length,
-                                 uint32_t hash)
+static ObjInstance *allocateString(char *chars, int length)
 {
     ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
-    AS_NATIVE_CLASS(_string_class)->destructor(string->data);
+    AS_NATIVE_CLASS(OBJ_VAL(_string_class))->destructor(string->data);
     string->data = string_constructor_cstr(chars, length);
 
-    push(string);
+    push(OBJ_VAL(string));
     internString(string);
     pop();
 
-    return string;
+    return (ObjInstance *) string;
 }
 
 static uint32_t hashString(const char *key, int length)
@@ -181,7 +180,7 @@ ObjString *takeString(char *chars, int length)
         FREE_ARRAY(char, chars, length + 1);
         return interned;
     }
-    return allocateString(chars, length, hash);
+    return allocateString(chars, length);
 }
 
 ObjString *copyString(const char *chars, int length)
@@ -194,7 +193,7 @@ ObjString *copyString(const char *chars, int length)
     memcpy(heapChars, chars, length);
     heapChars[length] = '\0';
 
-    return allocateString(heapChars, length, hash);
+    return allocateString(heapChars, length);
 }
 
 ObjUpvalue *newUpvalue(Value *slot)
@@ -208,7 +207,7 @@ ObjUpvalue *newUpvalue(Value *slot)
 
 void registerStringClass(Value klass)
 {
-    _string_class = klass;
+    _string_class = AS_CLASS(klass);
 }
 
 static void printFunction(ObjFunction *function)

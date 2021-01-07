@@ -59,7 +59,7 @@ bool addGlobal(Value name, Value value);
 bool findGlobal(Value name, Value *value);
 
 InterpretResult interpret(VM *vm, const SourceFile *source);
-void runtimeError(const char *format, ...);
+void runtimeError(VM *vm, const char *format, ...);
 void defineMethod(Value name, bool isStatic);
 void defineOperator(OPERATOR operator);
 

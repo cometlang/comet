@@ -83,15 +83,15 @@ ObjString *getStackTrace(VM *vm)
 #undef MAX_LINE_LENGTH
 }
 
-void runtimeError(const char *format, ...)
+void runtimeError(VM *vm, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
-    fprintf(stderr, "%s", string_get_cstr(getStackTrace(&vm)));
-    resetStack(&vm);
+    fprintf(stderr, "%s", string_get_cstr(getStackTrace(vm)));
+    resetStack(vm);
 }
 
 void initVM(VM *vm)
@@ -145,14 +145,14 @@ static bool call(VM *vm, ObjClosure *closure, int argCount)
 {
     if (argCount != closure->function->arity)
     {
-        runtimeError("Expected %d arguments but got %d.",
+        runtimeError(vm, "Expected %d arguments but got %d.",
                      closure->function->arity, argCount);
         return false;
     }
 
     if (vm->frameCount == FRAMES_MAX)
     {
-        runtimeError("Stack overflow.");
+        runtimeError(vm, "Stack overflow.");
         return false;
     }
 
@@ -202,7 +202,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
             }
             else if (argCount != 0)
             {
-                runtimeError("Expected 0 arguments but got %d.", argCount);
+                runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
                 return false;
             }
             return true;
@@ -227,7 +227,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
         }
     }
 
-    runtimeError("Can only call functions and classes.");
+    runtimeError(vm, "Can only call functions and classes.");
     return false;
 }
 
@@ -281,11 +281,11 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
     if (IS_NIL(method))
     {
-        runtimeError("'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
+        runtimeError(vm, "'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 
-    runtimeError("Can't call method '%s' from '%s'", string_get_cstr(name), klass->name);
+    runtimeError(vm, "Can't call method '%s' from '%s'", string_get_cstr(name), klass->name);
     return false;
 }
 
@@ -296,7 +296,7 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
         ObjInstance *instance = AS_INSTANCE(receiver);
         if (IS_NIL(instance->klass->operators[operator]))
         {
-            runtimeError("Operator '%s' is not defined for class '%s'.",
+            runtimeError(vm, "Operator '%s' is not defined for class '%s'.",
                 getOperatorString(operator), instance->klass->name);
             return false;
         }
@@ -309,7 +309,7 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
             return call(vm, AS_CLOSURE(instance->klass->operators[operator]), argCount);
         }
     }
-    runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
+    runtimeError(vm, "Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
     return false;
 }
 
@@ -323,7 +323,7 @@ static bool invokeFromNativeInstance(VM *vm, ObjNativeInstance *instance, Value 
     Value method = findMethod(instance->instance.klass, name);
     if (IS_NIL(method))
     {
-        runtimeError("'%s' has no method or property '%s'.",
+        runtimeError(vm, "'%s' has no method or property '%s'.",
             instance->instance.klass->name,
             string_get_cstr(name));
         return false;
@@ -340,11 +340,11 @@ static bool invoke(VM *vm, Value name, int argCount)
     {
         if (IS_NIL(receiver))
         {
-            runtimeError("'%s' can't be invoked from nil.", string_get_cstr(name));
+            runtimeError(vm, "'%s' can't be invoked from nil.", string_get_cstr(name));
         }
         else
         {
-            runtimeError("'%s' can't be invoked from a '%s'.", string_get_cstr(name), objTypeName(OBJ_TYPE(receiver)));
+            runtimeError(vm, "'%s' can't be invoked from a '%s'.", string_get_cstr(name), objTypeName(OBJ_TYPE(receiver)));
         }
         return false;
     }
@@ -398,7 +398,7 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
     Value method;
     if (!tableGet(&klass->methods, name, &method))
     {
-        runtimeError("Undefined method '%s'.", string_get_cstr(name));
+        runtimeError(vm, "Undefined method '%s'.", string_get_cstr(name));
         return false;
     }
 
@@ -494,7 +494,7 @@ static InterpretResult run(VM *vm)
     {                                                           \
         if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) \
         {                                                       \
-            runtimeError("Operands must be numbers.");          \
+            runtimeError(vm, "Operands must be numbers.");          \
             return INTERPRET_RUNTIME_ERROR;                     \
         }                                                       \
                                                                 \
@@ -544,7 +544,7 @@ static InterpretResult run(VM *vm)
             Value value;
             if (!tableGet(&globals, name, &value))
             {
-                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
+                runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(vm, value);
@@ -575,7 +575,7 @@ static InterpretResult run(VM *vm)
             if (tableSet(&globals, name, peek(vm, 0)))
             {
                 tableDelete(&globals, name);
-                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
+                runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             break;
@@ -596,7 +596,7 @@ static InterpretResult run(VM *vm)
         {
             if (!IS_INSTANCE(peek(vm, 0)))
             {
-                runtimeError("Only instances have properties.");
+                runtimeError(vm, "Only instances have properties.");
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
@@ -620,7 +620,7 @@ static InterpretResult run(VM *vm)
         {
             if (!IS_INSTANCE(peek(vm, 1)))
             {
-                runtimeError("Only instances have fields.");
+                runtimeError(vm, "Only instances have fields.");
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
@@ -688,7 +688,7 @@ static InterpretResult run(VM *vm)
         case OP_NEGATE:
             if (!IS_NUMBER(peek(vm, 0)))
             {
-                runtimeError("Operand must be a number.");
+                runtimeError(vm, "Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
@@ -801,7 +801,7 @@ static InterpretResult run(VM *vm)
             Value super_ = peek(vm, 1);
             if (!(IS_CLASS(super_) || IS_NATIVE_CLASS(super_)))
             {
-                runtimeError("Superclass must be a class.");
+                runtimeError(vm, "Superclass must be a class.");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
@@ -858,7 +858,7 @@ static InterpretResult run(VM *vm)
         case OP_THROW:
         {
             ObjInstance *exception = AS_INSTANCE(peek(vm, 0));
-            runtimeError("Uncaught %s", exception->klass->name);
+            runtimeError(vm, "Uncaught %s", exception->klass->name);
             return INTERPRET_RUNTIME_ERROR;;
         }
         case OP_DUP_TOP:

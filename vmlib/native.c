@@ -33,7 +33,7 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
         }
         if (!findGlobal(copyString(super_name, strlen(super_name)), &parent))
         {
-            runtimeError("Could not inherit from unknown class '%s'", super_name);
+            runtimeError(&vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
         }
 
@@ -51,7 +51,7 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
     }
     else
     {
-        runtimeError("Redefining class %s", klass->name);
+        runtimeError(&vm, "Redefining class %s", klass->name);
         return NIL_VAL;
     }
 }

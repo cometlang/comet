@@ -54,14 +54,14 @@ static void resetStack(VM *vm)
     vm->openUpvalues = NULL;
 }
 
-static Value getStackTrace(void)
+ObjString *getStackTrace(VM *vm)
 {
 #define MAX_LINE_LENGTH 1024
-    char *stacktrace = ALLOCATE(char, vm.frameCount * MAX_LINE_LENGTH);
+    char *stacktrace = ALLOCATE(char, vm->frameCount * MAX_LINE_LENGTH);
     uint16_t index = 0;
-    for (int i = vm.frameCount - 1; i >= 0; i--)
+    for (int i = vm->frameCount - 1; i >= 0; i--)
     {
-        CallFrame *frame = &vm.frames[i];
+        CallFrame *frame = &vm->frames[i];
         ObjFunction *function = frame->closure->function;
         // -1 because the IP is sitting on the next instruction to be
         // executed.
@@ -76,7 +76,7 @@ static Value getStackTrace(void)
             function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
     Value result = copyString(stacktrace, index);
-    FREE_ARRAY(char, stacktrace, vm.frameCount * MAX_LINE_LENGTH);
+    FREE_ARRAY(char, stacktrace, vm->frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
 }
@@ -88,7 +88,7 @@ void runtimeError(const char *format, ...)
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
-    fprintf(stderr, "%s", string_get_cstr(getStackTrace()));
+    fprintf(stderr, "%s", string_get_cstr(getStackTrace(&vm)));
     resetStack(&vm);
 }
 
@@ -287,7 +287,7 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
     return false;
 }
 
-static bool callOperator(Value receiver, int argCount, OPERATOR operator)
+static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator)
 {
     if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
     {
@@ -300,11 +300,11 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         }
         if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
         {
-            return callNativeMethod(&vm, receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
+            return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
         }
         else
         {
-            return call(&vm, AS_CLOSURE(instance->klass->operators[operator]), argCount);
+            return call(vm, AS_CLOSURE(instance->klass->operators[operator]), argCount);
         }
     }
     runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
@@ -316,7 +316,7 @@ static bool callBinaryOperator(OPERATOR operator)
     return callOperator(peek(1), 1, operator);
 }
 
-static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, int argCount)
+static bool invokeFromNativeInstance(VM *vm, ObjNativeInstance *instance, Value name, int argCount)
 {
     Value method = findMethod(instance->instance.klass, name);
     if (IS_NIL(method))
@@ -327,12 +327,12 @@ static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, in
         return false;
     }
 
-    return callNativeMethod(&vm, OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
+    return callNativeMethod(vm, OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
 }
 
-static bool invoke(Value name, int argCount)
+static bool invoke(VM *vm, Value name, int argCount)
 {
-    Value receiver = peek(&vm, argCount);
+    Value receiver = peek(vm, argCount);
 
     if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
@@ -356,19 +356,19 @@ static bool invoke(Value name, int argCount)
         if (tableGet(&instance->fields, name, &value))
         {
             // Load the field onto the stack in place of the receiver.
-            vm.stackTop[-argCount - 1] = value;
+            vm->stackTop[-argCount - 1] = value;
             // Try to invoke it like a function.
-            return callValue(&vm, value, argCount);
+            return callValue(vm, value, argCount);
         }
 
         if (IS_NATIVE_INSTANCE(receiver))
         {
-            return invokeFromNativeInstance(AS_NATIVE_INSTANCE(receiver), name, argCount);
+            return invokeFromNativeInstance(vm, AS_NATIVE_INSTANCE(receiver), name, argCount);
         }
 
-        return invokeFromClass(&vm, instance->klass, name, argCount);
+        return invokeFromClass(vm, instance->klass, name, argCount);
     }
-    return invokeFromClass(&vm, AS_CLASS(receiver), name, argCount);
+    return invokeFromClass(vm, AS_CLASS(receiver), name, argCount);
 }
 
 Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
@@ -382,7 +382,7 @@ Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
     }
     va_end(args);
 
-    if (invoke(method_name, arg_count))
+    if (invoke(&vm, method_name, arg_count))
     {
         return pop(&vm);
     }
@@ -404,10 +404,10 @@ static bool bindMethod(ObjClass *klass, Value name)
     return true;
 }
 
-static ObjUpvalue *captureUpvalue(Value *local)
+static ObjUpvalue *captureUpvalue(VM *vm, Value *local)
 {
     ObjUpvalue *prevUpvalue = NULL;
-    ObjUpvalue *upvalue = vm.openUpvalues;
+    ObjUpvalue *upvalue = vm->openUpvalues;
 
     while (upvalue != NULL && upvalue->location > local)
     {
@@ -422,7 +422,7 @@ static ObjUpvalue *captureUpvalue(Value *local)
     createdUpvalue->next = upvalue;
     if (prevUpvalue == NULL)
     {
-        vm.openUpvalues = createdUpvalue;
+        vm->openUpvalues = createdUpvalue;
     }
     else
     {
@@ -431,15 +431,15 @@ static ObjUpvalue *captureUpvalue(Value *local)
     return createdUpvalue;
 }
 
-static void closeUpvalues(Value *last)
+static void closeUpvalues(VM *vm, Value *last)
 {
-    while (vm.openUpvalues != NULL &&
-           vm.openUpvalues->location >= last)
+    while (vm->openUpvalues != NULL &&
+           vm->openUpvalues->location >= last)
     {
-        ObjUpvalue *upvalue = vm.openUpvalues;
+        ObjUpvalue *upvalue = vm->openUpvalues;
         upvalue->closed = *upvalue->location;
         upvalue->location = &upvalue->closed;
-        vm.openUpvalues = upvalue->next;
+        vm->openUpvalues = upvalue->next;
     }
 }
 
@@ -654,8 +654,7 @@ static InterpretResult run(VM *vm)
         {
             if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
             {
-                popMany(vm, 2);
-                push(vm, result);
+
                 double b = AS_NUMBER(pop(vm));
                 double a = AS_NUMBER(pop(vm));
                 push(vm, NUMBER_VAL(a + b));
@@ -730,7 +729,7 @@ static InterpretResult run(VM *vm)
         {
             Value method = READ_CONSTANT();
             int argCount = READ_BYTE();
-            if (!invoke(method, argCount))
+            if (!invoke(vm, method, argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -760,7 +759,7 @@ static InterpretResult run(VM *vm)
                 uint8_t index = READ_BYTE();
                 if (isLocal)
                 {
-                    closure->upvalues[i] = captureUpvalue(frame->slots + index);
+                    closure->upvalues[i] = captureUpvalue(vm, frame->slots + index);
                 }
                 else
                 {
@@ -770,13 +769,13 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_CLOSE_UPVALUE:
-            closeUpvalues(vm->stackTop - 1);
+            closeUpvalues(vm, vm->stackTop - 1);
             pop(vm);
             break;
         case OP_RETURN:
         {
             Value result = pop(vm);
-            closeUpvalues(frame->slots);
+            closeUpvalues(vm, frame->slots);
             vm->frameCount--;
             if (vm->frameCount == 0)
             {
@@ -829,7 +828,7 @@ static InterpretResult run(VM *vm)
         {
             int argCount = READ_BYTE();
             Value receiver = peek(vm, argCount);
-            if (!callOperator(receiver, argCount, OPERATOR_INDEX))
+            if (!callOperator(vm, receiver, argCount, OPERATOR_INDEX))
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
@@ -840,7 +839,7 @@ static InterpretResult run(VM *vm)
         {
             int argCount = READ_BYTE();
             Value receiver = peek(vm, argCount);
-            if (!callOperator(receiver, argCount, OPERATOR_INDEX_ASSIGN))
+            if (!callOperator(vm, receiver, argCount, OPERATOR_INDEX_ASSIGN))
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }

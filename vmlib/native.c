@@ -10,8 +10,8 @@ void defineNativeFunction(const char *name, NativeFn function)
     push(OBJ_VAL(newNativeFunction(function)));
     push(copyString(name, (int)strlen(name)));
     addGlobal(peek(0), peek(1));
-    pop();
-    pop();
+    pop(&vm);
+    pop(&vm);
 }
 
 VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
@@ -45,8 +45,8 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
     }
     if (addGlobal(name_string, OBJ_VAL(klass)))
     {
-        pop(); // name_string
-        pop(); // klass
+        pop(&vm); // name_string
+        pop(&vm); // klass
         return OBJ_VAL(klass);
     }
     else
@@ -69,8 +69,8 @@ void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bo
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
-    pop();
-    pop();
+    pop(&vm);
+    pop(&vm);
 }
 
 void defineNativeOperator(VALUE klass, NativeMethod function, OPERATOR operator)
@@ -78,7 +78,7 @@ void defineNativeOperator(VALUE klass, NativeMethod function, OPERATOR operator)
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, false)));
     defineOperator(operator);
-    pop();
+    pop(&vm);
 }
 
 void setNativeProperty(VALUE self, const char *property_name, VALUE value)
@@ -88,9 +88,9 @@ void setNativeProperty(VALUE self, const char *property_name, VALUE value)
     Value name_string = copyString(property_name, strlen(property_name));
     push(name_string);
     tableSet(&AS_INSTANCE(self)->fields, name_string, value);
-    pop();
-    pop();
-    pop();
+    pop(&vm);
+    pop(&vm);
+    pop(&vm);
 }
 
 VALUE getNativeProperty(VALUE self, const char *property_name)

@@ -122,10 +122,10 @@ void push(Value value)
     vm.stackTop++;
 }
 
-Value pop(void)
+Value pop(VM *vm)
 {
-    vm.stackTop--;
-    return *vm.stackTop;
+    vm->stackTop--;
+    return *vm->stackTop;
 }
 
 Value popMany(int count)
@@ -384,7 +384,7 @@ Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
 
     if (invoke(method_name, arg_count))
     {
-        return pop();
+        return pop(&vm);
     }
     return NIL_VAL;
 }
@@ -399,7 +399,7 @@ static bool bindMethod(ObjClass *klass, Value name)
     }
 
     ObjBoundMethod *bound = newBoundMethod(peek(0), AS_CLOSURE(method));
-    pop(); // Instance.
+    pop(&vm); // Instance.
     push(OBJ_VAL(bound));
     return true;
 }
@@ -455,7 +455,7 @@ void defineMethod(Value name, bool isStatic)
     {
         tableSet(&klass->methods, name, method);
     }
-    pop();
+    pop(&vm);
 }
 
 void defineOperator(OPERATOR operator)
@@ -463,7 +463,7 @@ void defineOperator(OPERATOR operator)
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
     klass->operators[operator] = method;
-    pop();
+    pop(&vm);
 }
 
 static bool isFalsey(Value value)
@@ -494,8 +494,8 @@ static InterpretResult run(VM *vm)
             return INTERPRET_RUNTIME_ERROR;             \
         }                                               \
                                                         \
-        double b = AS_NUMBER(pop());                    \
-        double a = AS_NUMBER(pop());                    \
+        double b = AS_NUMBER(pop(vm));                    \
+        double a = AS_NUMBER(pop(vm));                    \
         push(valueType(a op b));                        \
     } while (false)
 
@@ -532,7 +532,7 @@ static InterpretResult run(VM *vm)
             push(FALSE_VAL);
             break;
         case OP_POP:
-            pop();
+            pop(vm);
             break;
         case OP_GET_GLOBAL:
         {
@@ -550,7 +550,7 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             tableSet(&globals, name, peek(0));
-            pop();
+            pop(vm);
             break;
         }
         case OP_GET_LOCAL:
@@ -601,7 +601,7 @@ static InterpretResult run(VM *vm)
             Value value;
             if (tableGet(&instance->fields, name, &value))
             {
-                pop(); // Instance.
+                pop(vm); // Instance.
                 push(value);
                 break;
             }
@@ -622,15 +622,15 @@ static InterpretResult run(VM *vm)
             ObjInstance *instance = AS_INSTANCE(peek(1));
             tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(0));
 
-            Value value = pop();
-            pop();
+            Value value = pop(vm);
+            pop(vm);
             push(value);
             break;
         }
         case OP_GET_SUPER:
         {
             Value name = READ_CONSTANT();
-            ObjClass *superclass = AS_CLASS(pop());
+            ObjClass *superclass = AS_CLASS(pop(vm));
             if (!bindMethod(superclass, name))
             {
                 return INTERPRET_RUNTIME_ERROR;
@@ -639,8 +639,8 @@ static InterpretResult run(VM *vm)
         }
         case OP_EQUAL:
         {
-            Value b = pop();
-            Value a = pop();
+            Value b = pop(vm);
+            Value a = pop(vm);
             push(BOOL_VAL(valuesEqual(a, b)));
             break;
         }
@@ -654,8 +654,8 @@ static InterpretResult run(VM *vm)
         {
             if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
             {
-                double b = AS_NUMBER(pop());
-                double a = AS_NUMBER(pop());
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(pop(vm));
                 push(NUMBER_VAL(a + b));
             }
             else
@@ -678,7 +678,7 @@ static InterpretResult run(VM *vm)
             BINARY_OP(NUMBER_VAL, /);
             break;
         case OP_NOT:
-            push(BOOL_VAL(isFalsey(pop())));
+            push(BOOL_VAL(isFalsey(pop(vm))));
             break;
         case OP_NEGATE:
             if (!IS_NUMBER(peek(0)))
@@ -686,11 +686,11 @@ static InterpretResult run(VM *vm)
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            push(NUMBER_VAL(-AS_NUMBER(pop())));
+            push(NUMBER_VAL(-AS_NUMBER(pop(vm))));
             break;
         case OP_PRINT:
         {
-            printValue(pop());
+            printValue(pop(vm));
             printf("\n");
             frame = updateFrame(vm);
             break;
@@ -739,7 +739,7 @@ static InterpretResult run(VM *vm)
         {
             int argCount = READ_BYTE();
             Value method = READ_CONSTANT();
-            ObjClass *superclass = AS_CLASS(pop());
+            ObjClass *superclass = AS_CLASS(pop(vm));
             if (!invokeFromClass(superclass, method, argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
@@ -769,16 +769,16 @@ static InterpretResult run(VM *vm)
         }
         case OP_CLOSE_UPVALUE:
             closeUpvalues(vm->stackTop - 1);
-            pop();
+            pop(vm);
             break;
         case OP_RETURN:
         {
-            Value result = pop();
+            Value result = pop(vm);
             closeUpvalues(frame->slots);
             vm->frameCount--;
             if (vm->frameCount == 0)
             {
-                pop();
+                pop(vm);
                 return INTERPRET_OK;
             }
 
@@ -809,7 +809,7 @@ static InterpretResult run(VM *vm)
                 subclass->operators[i] = superclass->operators[i];
             }
             subclass->super_ = superclass;
-            pop(); // Subclass.
+            pop(vm); // Subclass.
             break;
         }
         case OP_METHOD:
@@ -879,7 +879,7 @@ InterpretResult interpret(const SourceFile *source)
 
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
-    pop();
+    pop(&vm);
     push(OBJ_VAL(closure));
     callValue(OBJ_VAL(closure), 0);
 

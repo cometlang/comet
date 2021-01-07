@@ -64,7 +64,7 @@ void defineMethod(Value name, bool isStatic);
 void defineOperator(OPERATOR operator);
 
 void push(Value value);
-Value pop(void);
+Value pop(VM *vm);
 Value peek(int distance);
 
 Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...);

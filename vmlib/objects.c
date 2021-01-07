@@ -160,7 +160,7 @@ static Value allocateString(const char *chars, int length)
     push(string_obj);
     string->data = string_set_cstr(string, chars, length);
     internString(string_obj);
-    pop();
+    pop(&vm);
 
     return string_obj;
 }

@@ -11,16 +11,19 @@
 #define GC_HEAP_GROW_FACTOR 2
 #define MINIMUM_GC_MARK 8192
 
+size_t _bytes_allocated = 0;
+size_t _next_GC = 1024 * 1024;
+
 static void collectGarbage(VM *vm);
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
-    vm.bytesAllocated += newSize - oldSize;
+    _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
         collectGarbage(&vm);
 #if DEBUG_STRESS_GC
-        if (vm.bytesAllocated > vm.nextGC)
+        if (_bytes_allocated > _next_GC)
         {
             collectGarbage(&vm);
         }
@@ -292,7 +295,7 @@ static void collectGarbage(VM *vm)
 {
 #if DEBUG_LOG_GC
     printf("-- gc begin\n");
-    size_t before = vm->bytesAllocated;
+    size_t before = _bytes_allocated;
 #endif
 
     markRoots(vm);
@@ -300,12 +303,12 @@ static void collectGarbage(VM *vm)
     removeWhiteStrings();
     sweep(vm);
 
-    vm->nextGC = vm->bytesAllocated * GC_HEAP_GROW_FACTOR;
+    _next_GC = _bytes_allocated * GC_HEAP_GROW_FACTOR;
 #if DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
-           before - vm->bytesAllocated, before, vm->bytesAllocated,
-           vm->nextGC);
+           before - _bytes_allocated, before, _bytes_allocated,
+           _next_GC);
 #endif
 }
 

@@ -134,9 +134,9 @@ Value popMany(VM *vm, int count)
     return *vm->stackTop;
 }
 
-Value peek(int distance)
+Value peek(VM *vm, int distance)
 {
-    return vm.stackTop[-1 - distance];
+    return vm->stackTop[-1 - distance];
 }
 
 static bool call(ObjClosure *closure, int argCount)
@@ -332,7 +332,7 @@ static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, in
 
 static bool invoke(Value name, int argCount)
 {
-    Value receiver = peek(argCount);
+    Value receiver = peek(&vm, argCount);
 
     if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
     {
@@ -398,7 +398,7 @@ static bool bindMethod(ObjClass *klass, Value name)
         return false;
     }
 
-    ObjBoundMethod *bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+    ObjBoundMethod *bound = newBoundMethod(peek(&vm, 0), AS_CLOSURE(method));
     pop(&vm); // Instance.
     push(&vm, OBJ_VAL(bound));
     return true;
@@ -445,8 +445,8 @@ static void closeUpvalues(Value *last)
 
 void defineMethod(Value name, bool isStatic)
 {
-    Value method = peek(0);
-    ObjClass *klass = AS_CLASS(peek(1));
+    Value method = peek(&vm, 0);
+    ObjClass *klass = AS_CLASS(peek(&vm, 1));
     if (isStatic)
     {
         tableSet(&klass->staticMethods, name, method);
@@ -460,8 +460,8 @@ void defineMethod(Value name, bool isStatic)
 
 void defineOperator(OPERATOR operator)
 {
-    Value method = peek(0);
-    ObjClass *klass = AS_CLASS(peek(1));
+    Value method = peek(&vm, 0);
+    ObjClass *klass = AS_CLASS(peek(&vm, 1));
     klass->operators[operator] = method;
     pop(&vm);
 }
@@ -485,18 +485,18 @@ static InterpretResult run(VM *vm)
     (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define BINARY_OP(valueType, op)                        \
-    do                                                  \
-    {                                                   \
-        if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) \
-        {                                               \
-            runtimeError("Operands must be numbers.");  \
-            return INTERPRET_RUNTIME_ERROR;             \
-        }                                               \
-                                                        \
-        double b = AS_NUMBER(pop(vm));                    \
-        double a = AS_NUMBER(pop(vm));                    \
-        push(vm, valueType(a op b));                        \
+#define BINARY_OP(valueType, op)                                \
+    do                                                          \
+    {                                                           \
+        if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) \
+        {                                                       \
+            runtimeError("Operands must be numbers.");          \
+            return INTERPRET_RUNTIME_ERROR;                     \
+        }                                                       \
+                                                                \
+        double b = AS_NUMBER(pop(vm));                          \
+        double a = AS_NUMBER(pop(vm));                          \
+        push(vm, valueType(a op b));                            \
     } while (false)
 
     for (;;)
@@ -549,7 +549,7 @@ static InterpretResult run(VM *vm)
         case OP_DEFINE_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            tableSet(&globals, name, peek(0));
+            tableSet(&globals, name, peek(vm, 0));
             pop(vm);
             break;
         }
@@ -562,13 +562,13 @@ static InterpretResult run(VM *vm)
         case OP_SET_LOCAL:
         {
             uint8_t slot = READ_BYTE();
-            frame->slots[slot] = peek(0);
+            frame->slots[slot] = peek(vm, 0);
             break;
         }
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            if (tableSet(&globals, name, peek(0)))
+            if (tableSet(&globals, name, peek(vm, 0)))
             {
                 tableDelete(&globals, name);
                 runtimeError("Undefined variable '%s'.", string_get_cstr(name));
@@ -585,17 +585,17 @@ static InterpretResult run(VM *vm)
         case OP_SET_UPVALUE:
         {
             uint8_t slot = READ_BYTE();
-            *frame->closure->upvalues[slot]->location = peek(0);
+            *frame->closure->upvalues[slot]->location = peek(vm, 0);
             break;
         }
         case OP_GET_PROPERTY:
         {
-            if (!IS_INSTANCE(peek(0)))
+            if (!IS_INSTANCE(peek(vm, 0)))
             {
                 runtimeError("Only instances have properties.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            ObjInstance *instance = AS_INSTANCE(peek(0));
+            ObjInstance *instance = AS_INSTANCE(peek(vm, 0));
             Value name = READ_CONSTANT();
 
             Value value;
@@ -614,13 +614,13 @@ static InterpretResult run(VM *vm)
         }
         case OP_SET_PROPERTY:
         {
-            if (!IS_INSTANCE(peek(1)))
+            if (!IS_INSTANCE(peek(vm, 1)))
             {
                 runtimeError("Only instances have fields.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            ObjInstance *instance = AS_INSTANCE(peek(1));
-            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(0));
+            ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
+            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
 
             Value value = pop(vm);
             pop(vm);
@@ -652,8 +652,10 @@ static InterpretResult run(VM *vm)
             break;
         case OP_ADD:
         {
-            if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
             {
+                popMany(vm, 2);
+                push(vm, result);
                 double b = AS_NUMBER(pop(vm));
                 double a = AS_NUMBER(pop(vm));
                 push(vm, NUMBER_VAL(a + b));
@@ -681,7 +683,7 @@ static InterpretResult run(VM *vm)
             push(vm, BOOL_VAL(isFalsey(pop(vm))));
             break;
         case OP_NEGATE:
-            if (!IS_NUMBER(peek(0)))
+            if (!IS_NUMBER(peek(vm, 0)))
             {
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -704,7 +706,7 @@ static InterpretResult run(VM *vm)
         case OP_JUMP_IF_FALSE:
         {
             uint16_t offset = READ_SHORT();
-            if (isFalsey(peek(0)))
+            if (isFalsey(peek(vm, 0)))
                 frame->ip += offset;
             break;
         }
@@ -717,7 +719,7 @@ static InterpretResult run(VM *vm)
         case OP_CALL:
         {
             int argCount = READ_BYTE();
-            if (!callValue(peek(argCount), argCount))
+            if (!callValue(peek(vm, argCount), argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -793,14 +795,14 @@ static InterpretResult run(VM *vm)
             break;
         case OP_INHERIT:
         {
-            Value super_ = peek(1);
+            Value super_ = peek(vm, 1);
             if (!(IS_CLASS(super_) || IS_NATIVE_CLASS(super_)))
             {
                 runtimeError("Superclass must be a class.");
                 return INTERPRET_RUNTIME_ERROR;
             }
 
-            ObjClass *subclass = AS_CLASS(peek(0));
+            ObjClass *subclass = AS_CLASS(peek(vm, 0));
             ObjClass *superclass = AS_CLASS(super_);
             tableAddAll(&superclass->methods, &subclass->methods);
             tableAddAll(&superclass->staticMethods, &subclass->staticMethods);
@@ -826,7 +828,7 @@ static InterpretResult run(VM *vm)
         case OP_INDEX:
         {
             int argCount = READ_BYTE();
-            Value receiver = peek(argCount);
+            Value receiver = peek(vm, argCount);
             if (!callOperator(receiver, argCount, OPERATOR_INDEX))
             {
                 return INTERPRET_RUNTIME_ERROR;;
@@ -837,7 +839,7 @@ static InterpretResult run(VM *vm)
         case OP_INDEX_ASSIGN:
         {
             int argCount = READ_BYTE();
-            Value receiver = peek(argCount);
+            Value receiver = peek(vm, argCount);
             if (!callOperator(receiver, argCount, OPERATOR_INDEX_ASSIGN))
             {
                 return INTERPRET_RUNTIME_ERROR;;
@@ -852,7 +854,7 @@ static InterpretResult run(VM *vm)
         }
         case OP_THROW:
         {
-            ObjInstance *exception = AS_INSTANCE(peek(0));
+            ObjInstance *exception = AS_INSTANCE(peek(vm, 0));
             runtimeError("Uncaught %s", exception->klass->name);
             return INTERPRET_RUNTIME_ERROR;;
         }

@@ -65,7 +65,7 @@ void defineOperator(OPERATOR operator);
 
 void push(VM *vm, Value value);
 Value pop(VM *vm);
-Value peek(int distance);
+Value peek(VM *vm, int distance);
 
 Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...);
 

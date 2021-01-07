@@ -63,6 +63,7 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
             current = current->next;
         }
     }
+    data->count++;
     return NIL_VAL;
 }
 

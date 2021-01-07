@@ -11,6 +11,7 @@ static void repl()
     SourceFile source;
     char line[1024];
     source.source = line;
+    source.path = "";
     for (;;)
     {
         printf("> ");

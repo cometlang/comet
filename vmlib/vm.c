@@ -213,7 +213,7 @@ static bool callValue(Value callee, int argCount)
         {
             NativeFn native = AS_NATIVE(callee);
             Value result = native(argCount, vm.stackTop - argCount);
-            vm.stackTop -= argCount + 1;
+            popMany(argCount + 1);
             push(result);
             return true;
         }
@@ -233,7 +233,7 @@ static bool callValue(Value callee, int argCount)
 static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCount)
 {
     Value result = method->function(receiver, argCount, vm.stackTop - argCount);
-    vm.stackTop -= argCount + 1;
+    popMany(argCount + 1);
     push(result);
     return true;
 }
@@ -306,7 +306,12 @@ static bool invokeFromNativeInstance(ObjNativeInstance *instance, ObjString *nam
 {
     Value method = findMethod(instance->instance.klass, name);
     if (IS_NIL(method))
+    {
+        runtimeError("'%s' has no method or property '%s'.",
+            instance->instance.klass->name->chars,
+            name->chars);
         return false;
+    }
 
     return callNativeMethod(OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
 }
@@ -365,8 +370,7 @@ Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, 
 
     if (invoke(method_name, arg_count))
     {
-        // Should this be a peek or a pop?
-        return peek(0);
+        return pop();
     }
     return NIL_VAL;
 }

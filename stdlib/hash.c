@@ -235,7 +235,7 @@ VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
-void init_hash(void)
+void init_hash(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("Hash", hash_constructor, hash_destructor, NULL);
     defineNativeMethod(klass, &hash_add, "add", false);

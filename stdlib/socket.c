@@ -26,7 +26,7 @@ VALUE socket_read(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argum
 }
 
 
-void init_socket(void)
+void init_socket(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("Socket", NULL, NULL, NULL);
     defineNativeMethod(klass, &socket_init, "init", false);

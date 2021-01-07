@@ -26,7 +26,7 @@ VALUE iterator_get_next(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(
     return FALSE_VAL;
 }
 
-void init_iterable(void)
+void init_iterable(VM UNUSED(*vm))
 {
     VALUE iterable_klass = defineNativeClass("Iterable", NULL, NULL, NULL);
     defineNativeMethod(iterable_klass, &iterable_contains_q, "contains?", false);

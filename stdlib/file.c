@@ -134,7 +134,7 @@ VALUE file_static_read_all_lines(VALUE UNUSED(klass), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-void init_file(void)
+void init_file(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("File", &file_constructor, &file_destructor, "Object");
     defineNativeMethod(klass, &file_static_open, "open", true);

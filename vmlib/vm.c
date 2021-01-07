@@ -106,7 +106,7 @@ void initVM(VM *vm)
     initTable(&globals);
     initTable(&strings);
 
-    init_stdlib();
+    init_stdlib(vm);
     vm.initString = copyString("init", 4);
 }
 

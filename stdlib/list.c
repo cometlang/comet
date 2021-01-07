@@ -148,7 +148,7 @@ VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-void init_list(void)
+void init_list(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("List", list_constructor, list_destructor, "Iterable");
     defineNativeMethod(klass, &list_init, "init", false);

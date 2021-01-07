@@ -16,7 +16,7 @@ VALUE exception_get_message(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
     return getNativeProperty(self, "_message");
 }
 
-void init_exception(void)
+void init_exception(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("Exception", NULL, NULL, NULL);
     defineNativeMethod(klass, &exception_init, "init", false);

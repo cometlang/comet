@@ -26,7 +26,7 @@ VALUE nil_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE U
     return FALSE_VAL;
 }
 
-void init_nil(void)
+void init_nil(VM UNUSED(*vm))
 {
     VALUE klass = defineNativeClass("nil", NULL, NULL, "Object");
     defineNativeMethod(klass, nil_nil_q, "nil?", true);

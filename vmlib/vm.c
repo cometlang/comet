@@ -471,9 +471,14 @@ static bool isFalsey(Value value)
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
+static CallFrame *updateFrame(VM *vm)
+{
+    return &vm->frames[vm->frameCount - 1];
+}
+
 static InterpretResult run(VM *vm)
 {
-    CallFrame *frame = &vm->frames[vm->frameCount - 1];
+    CallFrame *frame = updateFrame(vm);
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() \
@@ -687,7 +692,7 @@ static InterpretResult run(VM *vm)
         {
             printValue(pop());
             printf("\n");
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_JUMP:
@@ -716,7 +721,7 @@ static InterpretResult run(VM *vm)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_INVOKE:
@@ -727,7 +732,7 @@ static InterpretResult run(VM *vm)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_SUPER:
@@ -739,7 +744,7 @@ static InterpretResult run(VM *vm)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_CLOSURE:
@@ -780,7 +785,7 @@ static InterpretResult run(VM *vm)
             vm->stackTop = frame->slots;
             push(result);
 
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_CLASS:
@@ -826,7 +831,7 @@ static InterpretResult run(VM *vm)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_INDEX_ASSIGN:
@@ -837,7 +842,7 @@ static InterpretResult run(VM *vm)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
-            frame = &vm->frames[vm->frameCount - 1];
+            frame = updateFrame(vm);
             break;
         }
         case OP_DEFINE_OPERATOR:

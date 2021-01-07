@@ -23,6 +23,5 @@
 void *reallocate(void *previous, size_t oldSize, size_t newSize);
 void markObject(Obj* object);
 void markValue(Value value);
-void collectGarbage();
 void freeObjects(VM *vm);
 #endif

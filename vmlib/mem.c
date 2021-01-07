@@ -11,16 +11,18 @@
 #define GC_HEAP_GROW_FACTOR 2
 #define MINIMUM_GC_MARK 8192
 
+static void collectGarbage(VM *vm);
+
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
     vm.bytesAllocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        collectGarbage();
+        collectGarbage(&vm);
 #if DEBUG_STRESS_GC
         if (vm.bytesAllocated > vm.nextGC)
         {
-            collectGarbage();
+            collectGarbage(&vm);
         }
 #endif
     }
@@ -223,19 +225,19 @@ static void freeObject(Obj *object)
     }
 }
 
-static void markRoots()
+static void markRoots(VM *vm)
 {
-    for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+    for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
         markValue(*slot);
     }
 
-    for (int i = 0; i < vm.frameCount; i++)
+    for (int i = 0; i < vm->frameCount; i++)
     {
-        markObject((Obj *)vm.frames[i].closure);
+        markObject((Obj *)vm->frames[i].closure);
     }
 
-    for (ObjUpvalue *upvalue = vm.openUpvalues;
+    for (ObjUpvalue *upvalue = vm->openUpvalues;
          upvalue != NULL;
          upvalue = upvalue->next)
     {
@@ -246,19 +248,19 @@ static void markRoots()
     markCompilerRoots();
 }
 
-static void traceReferences()
+static void traceReferences(VM *vm)
 {
-    while (vm.grayCount > 0)
+    while (vm->grayCount > 0)
     {
-        Obj *object = vm.grayStack[--vm.grayCount];
+        Obj *object = vm->grayStack[--vm->grayCount];
         blackenObject(object);
     }
 }
 
-static void sweep()
+static void sweep(VM *vm)
 {
     Obj *previous = NULL;
-    Obj *object = vm.objects;
+    Obj *object = vm->objects;
     while (object != NULL)
     {
         if (object->isMarked)
@@ -278,7 +280,7 @@ static void sweep()
             }
             else
             {
-                vm.objects = object;
+                vm->objects = object;
             }
 
             freeObject(unreached);
@@ -286,24 +288,24 @@ static void sweep()
     }
 }
 
-void collectGarbage()
+static void collectGarbage(VM *vm)
 {
 #if DEBUG_LOG_GC
     printf("-- gc begin\n");
-    size_t before = vm.bytesAllocated;
+    size_t before = vm->bytesAllocated;
 #endif
 
-    markRoots();
-    traceReferences();
+    markRoots(vm);
+    traceReferences(vm);
     removeWhiteStrings();
-    sweep();
+    sweep(vm);
 
-    vm.nextGC = vm.bytesAllocated * GC_HEAP_GROW_FACTOR;
+    vm->nextGC = vm->bytesAllocated * GC_HEAP_GROW_FACTOR;
 #if DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
-           before - vm.bytesAllocated, before, vm.bytesAllocated,
-           vm.nextGC);
+           before - vm->bytesAllocated, before, vm->bytesAllocated,
+           vm->nextGC);
 #endif
 }
 

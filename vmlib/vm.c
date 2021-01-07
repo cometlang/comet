@@ -47,11 +47,11 @@ bool addGlobal(Value name, Value value)
     return tableSet(&globals, name, value);
 }
 
-static void resetStack(void)
+static void resetStack(VM *vm)
 {
-    vm.stackTop = vm.stack;
-    vm.frameCount = 0;
-    vm.openUpvalues = NULL;
+    vm->stackTop = vm->stack;
+    vm->frameCount = 0;
+    vm->openUpvalues = NULL;
 }
 
 static Value getStackTrace(void)
@@ -89,18 +89,18 @@ void runtimeError(const char *format, ...)
     va_end(args);
     fputs("\n", stderr);
     fprintf(stderr, "%s", string_get_cstr(getStackTrace()));
-    resetStack();
+    resetStack(&vm);
 }
 
-void initVM(void)
+void initVM(VM *vm)
 {
-    resetStack();
-    vm.objects = NULL;
-    vm.bytesAllocated = 0;
-    vm.nextGC = 1024 * 1024;
-    vm.grayCount = 0;
-    vm.grayCapacity = 0;
-    vm.grayStack = NULL;
+    resetStack(vm);
+    vm->objects = NULL;
+    vm->bytesAllocated = 0;
+    vm->nextGC = 1024 * 1024;
+    vm->grayCount = 0;
+    vm->grayCapacity = 0;
+    vm->grayStack = NULL;
     initTable(&globals);
     initTable(&strings);
 
@@ -108,12 +108,12 @@ void initVM(void)
     vm.initString = copyString("init", 4);
 }
 
-void freeVM(void)
+void freeVM(VM *vm)
 {
     freeTable(&globals);
     freeTable(&strings);
     vm.initString = NIL_VAL;
-    freeObjects();
+    freeObjects(vm);
 }
 
 void push(Value value)
@@ -871,7 +871,7 @@ static InterpretResult run(VM *vm)
 #undef READ_BYTE
 }
 
-InterpretResult interpret(const SourceFile *source)
+InterpretResult interpret(VM *vm, const SourceFile *source)
 {
     ObjFunction *function = compile(source);
     if (function == NULL)
@@ -879,9 +879,9 @@ InterpretResult interpret(const SourceFile *source)
 
     push(OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
-    pop(&vm);
+    pop(vm);
     push(OBJ_VAL(closure));
     callValue(OBJ_VAL(closure), 0);
 
-    return run(&vm);
+    return run(vm);
 }

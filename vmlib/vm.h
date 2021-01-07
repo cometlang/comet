@@ -45,9 +45,9 @@ typedef enum
 
 extern __thread VM vm;
 
-void initVM(void);
+void initVM(VM *vm);
 
-void freeVM(void);
+void freeVM(VM *vm);
 
 Value findInternedString(const char *chars, uint32_t hash);
 
@@ -58,7 +58,7 @@ void removeWhiteStrings(void);
 bool addGlobal(Value name, Value value);
 bool findGlobal(Value name, Value *value);
 
-InterpretResult interpret(const SourceFile *source);
+InterpretResult interpret(VM *vm, const SourceFile *source);
 void runtimeError(const char *format, ...);
 void defineMethod(Value name, bool isStatic);
 void defineOperator(OPERATOR operator);

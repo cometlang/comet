@@ -2,7 +2,6 @@
 #include "common.h"
 #include "mem.h"
 #include "compiler.h"
-#include "vm.h"
 
 #if DEBUG_LOG_GC
 #include <stdio.h>
@@ -308,9 +307,9 @@ void collectGarbage()
 #endif
 }
 
-void freeObjects()
+void freeObjects(VM *vm)
 {
-    Obj *object = vm.objects;
+    Obj *object = vm->objects;
     while (object != NULL)
     {
         Obj *next = object->next;
@@ -318,5 +317,5 @@ void freeObjects()
         object = next;
     }
 
-    free(vm.grayStack);
+    free(vm->grayStack);
 }

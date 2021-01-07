@@ -6,6 +6,8 @@
 #include "debug.h"
 #include "vm.h"
 
+static VM virtualMachine;
+
 static void repl()
 {
     SourceFile source;
@@ -22,7 +24,7 @@ static void repl()
             break;
         }
 
-        interpret(&source);
+        interpret(&virtualMachine, &source);
     }
 }
 
@@ -60,7 +62,7 @@ static SourceFile *readFile(const char *path)
 static void runFile(const char *path)
 {
     SourceFile *source = readFile(path);
-    InterpretResult result = interpret(source);
+    InterpretResult result = interpret(&virtualMachine, source);
     free(source->source);
     free(source);
 
@@ -70,7 +72,7 @@ static void runFile(const char *path)
 
 int main(int argc, const char **argv)
 {
-    initVM();
+    initVM(&virtualMachine);
 
     if (argc == 1)
     {
@@ -86,6 +88,6 @@ int main(int argc, const char **argv)
         exit(64);
     }
 
-    freeVM();
+    freeVM(&vm);
     return 0;
 }

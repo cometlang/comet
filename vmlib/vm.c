@@ -229,11 +229,11 @@ static bool callValue(VM *vm, Value callee, int argCount)
     return false;
 }
 
-static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCount)
+static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, int argCount)
 {
-    Value result = method->function(receiver, argCount, vm.stackTop - argCount);
-    popMany(&vm, argCount + 1);
-    push(&vm, result);
+    Value result = method->function(receiver, argCount, vm->stackTop - argCount);
+    popMany(vm, argCount + 1);
+    push(vm, result);
     return true;
 }
 
@@ -269,7 +269,7 @@ static bool invokeFromClass(ObjClass *klass, Value name,
     method = findStaticMethod(klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
-        return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
+        return callNativeMethod(&vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
     }
 
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
@@ -300,7 +300,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         }
         if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
         {
-            return callNativeMethod(receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
+            return callNativeMethod(&vm, receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
         }
         else
         {
@@ -327,7 +327,7 @@ static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, in
         return false;
     }
 
-    return callNativeMethod(OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
+    return callNativeMethod(&vm, OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
 }
 
 static bool invoke(Value name, int argCount)

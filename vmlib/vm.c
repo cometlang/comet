@@ -116,10 +116,10 @@ void freeVM(VM *vm)
     freeObjects(vm);
 }
 
-void push(Value value)
+void push(VM *vm, Value value)
 {
-    *vm.stackTop = value;
-    vm.stackTop++;
+    *vm->stackTop = value;
+    vm->stackTop++;
 }
 
 Value pop(VM *vm)
@@ -128,10 +128,10 @@ Value pop(VM *vm)
     return *vm->stackTop;
 }
 
-Value popMany(int count)
+Value popMany(VM *vm, int count)
 {
-    vm.stackTop -= count;
-    return *vm.stackTop;
+    vm->stackTop -= count;
+    return *vm->stackTop;
 }
 
 Value peek(int distance)
@@ -190,7 +190,7 @@ static bool callValue(Value callee, int argCount)
                 if (IS_NATIVE_METHOD(initializer))
                 {
                     AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm.stackTop - argCount);
-                    popMany(argCount);
+                    popMany(&vm, argCount);
                     return true;
                 }
                 else
@@ -212,8 +212,8 @@ static bool callValue(Value callee, int argCount)
         {
             NativeFn native = AS_NATIVE(callee);
             Value result = native(argCount, vm.stackTop - argCount);
-            popMany(argCount + 1);
-            push(result);
+            popMany(&vm, argCount + 1);
+            push(&vm, result);
             return true;
         }
 
@@ -232,8 +232,8 @@ static bool callValue(Value callee, int argCount)
 static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCount)
 {
     Value result = method->function(receiver, argCount, vm.stackTop - argCount);
-    popMany(argCount + 1);
-    push(result);
+    popMany(&vm, argCount + 1);
+    push(&vm, result);
     return true;
 }
 
@@ -373,12 +373,12 @@ static bool invoke(Value name, int argCount)
 
 Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
 {
-    push(receiver);
+    push(&vm, receiver);
     va_list args;
     va_start(args, arg_count);
     for (int i = 0; i < arg_count; i++)
     {
-        push(va_arg(args, Value));
+        push(&vm, va_arg(args, Value));
     }
     va_end(args);
 
@@ -400,7 +400,7 @@ static bool bindMethod(ObjClass *klass, Value name)
 
     ObjBoundMethod *bound = newBoundMethod(peek(0), AS_CLOSURE(method));
     pop(&vm); // Instance.
-    push(OBJ_VAL(bound));
+    push(&vm, OBJ_VAL(bound));
     return true;
 }
 
@@ -496,7 +496,7 @@ static InterpretResult run(VM *vm)
                                                         \
         double b = AS_NUMBER(pop(vm));                    \
         double a = AS_NUMBER(pop(vm));                    \
-        push(valueType(a op b));                        \
+        push(vm, valueType(a op b));                        \
     } while (false)
 
     for (;;)
@@ -519,17 +519,17 @@ static InterpretResult run(VM *vm)
         case OP_CONSTANT:
         {
             Value constant = READ_CONSTANT();
-            push(constant);
+            push(vm, constant);
             break;
         }
         case OP_NIL:
-            push(NIL_VAL);
+            push(vm, NIL_VAL);
             break;
         case OP_TRUE:
-            push(TRUE_VAL);
+            push(vm, BOOL_VAL(true));
             break;
         case OP_FALSE:
-            push(FALSE_VAL);
+            push(vm, BOOL_VAL(false));
             break;
         case OP_POP:
             pop(vm);
@@ -543,7 +543,7 @@ static InterpretResult run(VM *vm)
                 runtimeError("Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
-            push(value);
+            push(vm, value);
             break;
         }
         case OP_DEFINE_GLOBAL:
@@ -556,7 +556,7 @@ static InterpretResult run(VM *vm)
         case OP_GET_LOCAL:
         {
             uint8_t slot = READ_BYTE();
-            push(frame->slots[slot]);
+            push(vm, frame->slots[slot]);
             break;
         }
         case OP_SET_LOCAL:
@@ -579,7 +579,7 @@ static InterpretResult run(VM *vm)
         case OP_GET_UPVALUE:
         {
             uint8_t slot = READ_BYTE();
-            push(*frame->closure->upvalues[slot]->location);
+            push(vm, *frame->closure->upvalues[slot]->location);
             break;
         }
         case OP_SET_UPVALUE:
@@ -602,7 +602,7 @@ static InterpretResult run(VM *vm)
             if (tableGet(&instance->fields, name, &value))
             {
                 pop(vm); // Instance.
-                push(value);
+                push(vm, value);
                 break;
             }
 
@@ -624,7 +624,7 @@ static InterpretResult run(VM *vm)
 
             Value value = pop(vm);
             pop(vm);
-            push(value);
+            push(vm, value);
             break;
         }
         case OP_GET_SUPER:
@@ -641,7 +641,7 @@ static InterpretResult run(VM *vm)
         {
             Value b = pop(vm);
             Value a = pop(vm);
-            push(BOOL_VAL(valuesEqual(a, b)));
+            push(vm, BOOL_VAL(valuesEqual(a, b)));
             break;
         }
         case OP_GREATER:
@@ -656,7 +656,7 @@ static InterpretResult run(VM *vm)
             {
                 double b = AS_NUMBER(pop(vm));
                 double a = AS_NUMBER(pop(vm));
-                push(NUMBER_VAL(a + b));
+                push(vm, NUMBER_VAL(a + b));
             }
             else
             {
@@ -678,7 +678,7 @@ static InterpretResult run(VM *vm)
             BINARY_OP(NUMBER_VAL, /);
             break;
         case OP_NOT:
-            push(BOOL_VAL(isFalsey(pop(vm))));
+            push(vm, BOOL_VAL(isFalsey(pop(vm))));
             break;
         case OP_NEGATE:
             if (!IS_NUMBER(peek(0)))
@@ -686,7 +686,7 @@ static InterpretResult run(VM *vm)
                 runtimeError("Operand must be a number.");
                 return INTERPRET_RUNTIME_ERROR;
             }
-            push(NUMBER_VAL(-AS_NUMBER(pop(vm))));
+            push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
             break;
         case OP_PRINT:
         {
@@ -751,7 +751,7 @@ static InterpretResult run(VM *vm)
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
             ObjClosure *closure = newClosure(function);
-            push(OBJ_VAL(closure));
+            push(vm, OBJ_VAL(closure));
             for (int i = 0; i < closure->upvalueCount; i++)
             {
                 uint8_t isLocal = READ_BYTE();
@@ -783,13 +783,13 @@ static InterpretResult run(VM *vm)
             }
 
             vm->stackTop = frame->slots;
-            push(result);
+            push(vm, result);
 
             frame = updateFrame(vm);
             break;
         }
         case OP_CLASS:
-            push(OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()))));
+            push(vm, OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()))));
             break;
         case OP_INHERIT:
         {
@@ -877,10 +877,10 @@ InterpretResult interpret(VM *vm, const SourceFile *source)
     if (function == NULL)
         return INTERPRET_COMPILE_ERROR;
 
-    push(OBJ_VAL(function));
+    push(vm, OBJ_VAL(function));
     ObjClosure *closure = newClosure(function);
     pop(vm);
-    push(OBJ_VAL(closure));
+    push(vm, OBJ_VAL(closure));
     callValue(OBJ_VAL(closure), 0);
 
     return run(vm);

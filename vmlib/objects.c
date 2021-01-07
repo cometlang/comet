@@ -157,7 +157,7 @@ static Value allocateString(const char *chars, int length)
 {
     ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
     Value string_obj = OBJ_VAL(string);
-    push(string_obj);
+    push(&vm, string_obj);
     string->data = string_set_cstr(string, chars, length);
     internString(string_obj);
     pop(&vm);

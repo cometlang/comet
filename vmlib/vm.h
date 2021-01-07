@@ -63,7 +63,7 @@ void runtimeError(const char *format, ...);
 void defineMethod(Value name, bool isStatic);
 void defineOperator(OPERATOR operator);
 
-void push(Value value);
+void push(VM *vm, Value value);
 Value pop(VM *vm);
 Value peek(int distance);
 

@@ -139,7 +139,7 @@ Value peek(VM *vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
-static bool call(ObjClosure *closure, int argCount)
+static bool call(VM *vm, ObjClosure *closure, int argCount)
 {
     if (argCount != closure->function->arity)
     {
@@ -148,21 +148,21 @@ static bool call(ObjClosure *closure, int argCount)
         return false;
     }
 
-    if (vm.frameCount == FRAMES_MAX)
+    if (vm->frameCount == FRAMES_MAX)
     {
         runtimeError("Stack overflow.");
         return false;
     }
 
-    CallFrame *frame = &vm.frames[vm.frameCount++];
+    CallFrame *frame = &vm->frames[vm->frameCount++];
     frame->closure = closure;
     frame->ip = closure->function->chunk.code;
 
-    frame->slots = vm.stackTop - argCount - 1;
+    frame->slots = vm->stackTop - argCount - 1;
     return true;
 }
 
-static bool callValue(Value callee, int argCount)
+static bool callValue(VM *vm, Value callee, int argCount)
 {
     if (IS_OBJ(callee))
     {
@@ -174,28 +174,28 @@ static bool callValue(Value callee, int argCount)
 
             // Replace the bound method with the receiver so it's in the
             // right slot when the method is called.
-            vm.stackTop[-argCount - 1] = bound->receiver;
-            return call(bound->method, argCount);
+            vm->stackTop[-argCount - 1] = bound->receiver;
+            return call(vm, bound->method, argCount);
         }
         case OBJ_NATIVE_CLASS:
         case OBJ_CLASS:
         {
             ObjClass *klass = AS_CLASS(callee);
             Value instance = OBJ_VAL(newInstance(klass));
-            vm.stackTop[-argCount - 1] = instance;
+            vm->stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
             if (tableGet(&klass->methods, initString, &initializer))
             {
                 if (IS_NATIVE_METHOD(initializer))
                 {
-                    AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm.stackTop - argCount);
-                    popMany(&vm, argCount);
+                    AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm->stackTop - argCount);
+                    popMany(vm, argCount);
                     return true;
                 }
                 else
                 {
-                    return call(AS_CLOSURE(initializer), argCount);
+                    return call(vm, AS_CLOSURE(initializer), argCount);
                 }
             }
             else if (argCount != 0)
@@ -206,14 +206,14 @@ static bool callValue(Value callee, int argCount)
             return true;
         }
         case OBJ_CLOSURE:
-            return call(AS_CLOSURE(callee), argCount);
+            return call(vm, AS_CLOSURE(callee), argCount);
 
         case OBJ_NATIVE:
         {
             NativeFn native = AS_NATIVE(callee);
-            Value result = native(argCount, vm.stackTop - argCount);
-            popMany(&vm, argCount + 1);
-            push(&vm, result);
+            Value result = native(argCount, vm->stackTop - argCount);
+            popMany(vm, argCount + 1);
+            push(vm, result);
             return true;
         }
 
@@ -263,7 +263,7 @@ static bool invokeFromClass(ObjClass *klass, Value name,
     Value method = findMethod(klass, name);
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
-        return call(AS_CLOSURE(method), argCount);
+        return call(&vm, AS_CLOSURE(method), argCount);
     }
 
     method = findStaticMethod(klass, name);
@@ -274,7 +274,7 @@ static bool invokeFromClass(ObjClass *klass, Value name,
 
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
-        return call(AS_CLOSURE(method), argCount);
+        return call(&vm, AS_CLOSURE(method), argCount);
     }
 
     if (IS_NIL(method))
@@ -304,7 +304,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         }
         else
         {
-            return call(AS_CLOSURE(instance->klass->operators[operator]), argCount);
+            return call(&vm, AS_CLOSURE(instance->klass->operators[operator]), argCount);
         }
     }
     runtimeError("Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
@@ -358,7 +358,7 @@ static bool invoke(Value name, int argCount)
             // Load the field onto the stack in place of the receiver.
             vm.stackTop[-argCount - 1] = value;
             // Try to invoke it like a function.
-            return callValue(value, argCount);
+            return callValue(&vm, value, argCount);
         }
 
         if (IS_NATIVE_INSTANCE(receiver))
@@ -719,7 +719,7 @@ static InterpretResult run(VM *vm)
         case OP_CALL:
         {
             int argCount = READ_BYTE();
-            if (!callValue(peek(vm, argCount), argCount))
+            if (!callValue(vm, peek(vm, argCount), argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -883,7 +883,7 @@ InterpretResult interpret(VM *vm, const SourceFile *source)
     ObjClosure *closure = newClosure(function);
     pop(vm);
     push(vm, OBJ_VAL(closure));
-    callValue(OBJ_VAL(closure), 0);
+    callValue(vm, OBJ_VAL(closure), 0);
 
     return run(vm);
 }

@@ -257,24 +257,24 @@ static Value findStaticMethod(ObjClass *klass, Value name)
     return NIL_VAL;
 }
 
-static bool invokeFromClass(ObjClass *klass, Value name,
+static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
                             int argCount)
 {
     Value method = findMethod(klass, name);
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
-        return call(&vm, AS_CLOSURE(method), argCount);
+        return call(vm, AS_CLOSURE(method), argCount);
     }
 
     method = findStaticMethod(klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
-        return callNativeMethod(&vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
+        return callNativeMethod(vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
     }
 
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
-        return call(&vm, AS_CLOSURE(method), argCount);
+        return call(vm, AS_CLOSURE(method), argCount);
     }
 
     if (IS_NIL(method))
@@ -366,9 +366,9 @@ static bool invoke(Value name, int argCount)
             return invokeFromNativeInstance(AS_NATIVE_INSTANCE(receiver), name, argCount);
         }
 
-        return invokeFromClass(instance->klass, name, argCount);
+        return invokeFromClass(&vm, instance->klass, name, argCount);
     }
-    return invokeFromClass(AS_CLASS(receiver), name, argCount);
+    return invokeFromClass(&vm, AS_CLASS(receiver), name, argCount);
 }
 
 Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
@@ -742,7 +742,7 @@ static InterpretResult run(VM *vm)
             int argCount = READ_BYTE();
             Value method = READ_CONSTANT();
             ObjClass *superclass = AS_CLASS(pop(vm));
-            if (!invokeFromClass(superclass, method, argCount))
+            if (!invokeFromClass(vm, superclass, method, argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }

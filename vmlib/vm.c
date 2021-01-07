@@ -447,10 +447,10 @@ static void closeUpvalues(VM *vm, Value *last)
     }
 }
 
-void defineMethod(Value name, bool isStatic)
+void defineMethod(VM *vm, Value name, bool isStatic)
 {
-    Value method = peek(&vm, 0);
-    ObjClass *klass = AS_CLASS(peek(&vm, 1));
+    Value method = peek(vm, 0);
+    ObjClass *klass = AS_CLASS(peek(vm, 1));
     if (isStatic)
     {
         tableSet(&klass->staticMethods, name, method);
@@ -459,15 +459,15 @@ void defineMethod(Value name, bool isStatic)
     {
         tableSet(&klass->methods, name, method);
     }
-    pop(&vm);
+    pop(vm);
 }
 
-void defineOperator(OPERATOR operator)
+void defineOperator(VM *vm, OPERATOR operator)
 {
-    Value method = peek(&vm, 0);
-    ObjClass *klass = AS_CLASS(peek(&vm, 1));
+    Value method = peek(vm, 0);
+    ObjClass *klass = AS_CLASS(peek(vm, 1));
     klass->operators[operator] = method;
-    pop(&vm);
+    pop(vm);
 }
 
 static bool isFalsey(Value value)
@@ -818,10 +818,10 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_METHOD:
-            defineMethod(READ_CONSTANT(), false);
+            defineMethod(vm, READ_CONSTANT(), false);
             break;
         case OP_STATIC_METHOD:
-            defineMethod(READ_CONSTANT(), true);
+            defineMethod(vm, READ_CONSTANT(), true);
             break;
         case OP_ENUM:
             // An enum is a class that inherits from Enum and has a bunch of static properties
@@ -852,7 +852,7 @@ static InterpretResult run(VM *vm)
         }
         case OP_DEFINE_OPERATOR:
         {
-            defineOperator((OPERATOR)READ_BYTE());
+            defineOperator(vm, (OPERATOR)READ_BYTE());
             break;
         }
         case OP_THROW:

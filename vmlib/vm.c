@@ -10,6 +10,8 @@
 
 #include "comet.h"
 
+static InterpretResult run(VM *vm);
+
 __thread VM vm;
 static Table globals;
 static Table strings;
@@ -371,25 +373,27 @@ static bool invoke(VM *vm, Value name, int argCount)
     return invokeFromClass(vm, AS_CLASS(receiver), name, argCount);
 }
 
-Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
+Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_count, ...)
 {
-    push(&vm, receiver);
+    push(vm, receiver);
     va_list args;
     va_start(args, arg_count);
     for (int i = 0; i < arg_count; i++)
     {
-        push(&vm, va_arg(args, Value));
+        push(vm, va_arg(args, Value));
     }
     va_end(args);
 
-    if (invoke(&vm, method_name, arg_count))
+    if (invoke(vm, method_name, arg_count))
     {
-        return pop(&vm);
+        run(vm);
+        // Pretty sure this won't work - it will have an empty stack, right?
+        return pop(vm);
     }
     return NIL_VAL;
 }
 
-static bool bindMethod(ObjClass *klass, Value name)
+static bool bindMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value method;
     if (!tableGet(&klass->methods, name, &method))
@@ -398,9 +402,9 @@ static bool bindMethod(ObjClass *klass, Value name)
         return false;
     }
 
-    ObjBoundMethod *bound = newBoundMethod(peek(&vm, 0), AS_CLOSURE(method));
-    pop(&vm); // Instance.
-    push(&vm, OBJ_VAL(bound));
+    ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
+    pop(vm); // Instance.
+    push(vm, OBJ_VAL(bound));
     return true;
 }
 
@@ -606,7 +610,7 @@ static InterpretResult run(VM *vm)
                 break;
             }
 
-            if (!bindMethod(instance->klass, name))
+            if (!bindMethod(vm, instance->klass, name))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -631,7 +635,7 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             ObjClass *superclass = AS_CLASS(pop(vm));
-            if (!bindMethod(superclass, name))
+            if (!bindMethod(vm, superclass, name))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }

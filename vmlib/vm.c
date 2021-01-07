@@ -13,12 +13,13 @@
 __thread VM vm;
 static Table globals;
 static Table strings;
+static ObjString *initString;
 
 void markGlobals(void)
 {
     markTable(&globals);
     markTable(&strings);
-    markObject((Obj *)vm.initString);
+    markObject((Obj *)initString);
 }
 
 void removeWhiteStrings(void)
@@ -184,7 +185,7 @@ static bool callValue(Value callee, int argCount)
             vm.stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
-            if (tableGet(&klass->methods, vm.initString, &initializer))
+            if (tableGet(&klass->methods, initString, &initializer))
             {
                 if (IS_NATIVE_METHOD(initializer))
                 {

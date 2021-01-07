@@ -471,9 +471,9 @@ static bool isFalsey(Value value)
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
-static InterpretResult run(void)
+static InterpretResult run(VM *vm)
 {
-    CallFrame *frame = &vm.frames[vm.frameCount - 1];
+    CallFrame *frame = &vm->frames[vm->frameCount - 1];
 
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() \
@@ -687,7 +687,7 @@ static InterpretResult run(void)
         {
             printValue(pop());
             printf("\n");
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_JUMP:
@@ -716,7 +716,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_INVOKE:
@@ -727,7 +727,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_SUPER:
@@ -739,7 +739,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_CLOSURE:
@@ -763,24 +763,24 @@ static InterpretResult run(void)
             break;
         }
         case OP_CLOSE_UPVALUE:
-            closeUpvalues(vm.stackTop - 1);
+            closeUpvalues(vm->stackTop - 1);
             pop();
             break;
         case OP_RETURN:
         {
             Value result = pop();
             closeUpvalues(frame->slots);
-            vm.frameCount--;
-            if (vm.frameCount == 0)
+            vm->frameCount--;
+            if (vm->frameCount == 0)
             {
                 pop();
                 return INTERPRET_OK;
             }
 
-            vm.stackTop = frame->slots;
+            vm->stackTop = frame->slots;
             push(result);
 
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_CLASS:
@@ -826,7 +826,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_INDEX_ASSIGN:
@@ -837,7 +837,7 @@ static InterpretResult run(void)
             {
                 return INTERPRET_RUNTIME_ERROR;;
             }
-            frame = &vm.frames[vm.frameCount - 1];
+            frame = &vm->frames[vm->frameCount - 1];
             break;
         }
         case OP_DEFINE_OPERATOR:
@@ -878,5 +878,5 @@ InterpretResult interpret(const SourceFile *source)
     push(OBJ_VAL(closure));
     callValue(OBJ_VAL(closure), 0);
 
-    return run();
+    return run(&vm);
 }

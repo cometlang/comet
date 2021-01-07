@@ -26,10 +26,10 @@ VALUE nil_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE U
     return FALSE_VAL;
 }
 
-void init_nil(VM UNUSED(*vm))
+void init_nil(VM *vm)
 {
-    VALUE klass = defineNativeClass("nil", NULL, NULL, "Object");
-    defineNativeMethod(klass, nil_nil_q, "nil?", true);
-    defineNativeMethod(klass, nil_to_string, "to_string", true);
-    defineNativeMethod(klass, nil_iterable_contains_q, "contains?", true);
+    VALUE klass = defineNativeClass(vm, "nil", NULL, NULL, "Object");
+    defineNativeMethod(vm, klass, nil_nil_q, "nil?", true);
+    defineNativeMethod(vm, klass, nil_to_string, "to_string", true);
+    defineNativeMethod(vm, klass, nil_iterable_contains_q, "contains?", true);
 }

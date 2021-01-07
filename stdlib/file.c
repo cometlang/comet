@@ -134,17 +134,17 @@ VALUE file_static_read_all_lines(VALUE UNUSED(klass), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-void init_file(VM UNUSED(*vm))
+void init_file(VM *vm)
 {
-    VALUE klass = defineNativeClass("File", &file_constructor, &file_destructor, "Object");
-    defineNativeMethod(klass, &file_static_open, "open", true);
-    defineNativeMethod(klass, &file_close, "close", false);
-    defineNativeMethod(klass, &file_write, "write", false);
-    defineNativeMethod(klass, &file_read, "read", false);
-    defineNativeMethod(klass, &file_sync, "sync", false);
-    defineNativeMethod(klass, &file_flush, "flush", false);
-    defineNativeMethod(klass, &file_static_exists_q, "exists?", true);
-    defineNativeMethod(klass, &file_static_directory_q, "directory?", true);
-    defineNativeMethod(klass, &file_static_file_q, "file?", true);
-    defineNativeMethod(klass, &file_static_read_all_lines, "read_all_lines", true);
+    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object");
+    defineNativeMethod(vm, klass, &file_static_open, "open", true);
+    defineNativeMethod(vm, klass, &file_close, "close", false);
+    defineNativeMethod(vm, klass, &file_write, "write", false);
+    defineNativeMethod(vm, klass, &file_read, "read", false);
+    defineNativeMethod(vm, klass, &file_sync, "sync", false);
+    defineNativeMethod(vm, klass, &file_flush, "flush", false);
+    defineNativeMethod(vm, klass, &file_static_exists_q, "exists?", true);
+    defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", true);
+    defineNativeMethod(vm, klass, &file_static_file_q, "file?", true);
+    defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", true);
 }

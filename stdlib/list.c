@@ -148,18 +148,18 @@ VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-void init_list(VM UNUSED(*vm))
+void init_list(VM *vm)
 {
-    VALUE klass = defineNativeClass("List", list_constructor, list_destructor, "Iterable");
-    defineNativeMethod(klass, &list_init, "init", false);
-    defineNativeMethod(klass, &list_add, "add", false);
-    defineNativeMethod(klass, &list_add, "push", false);
-    defineNativeMethod(klass, &list_remove, "remove", false);
-    defineNativeMethod(klass, &list_iterable_contains_q, "contains?", false);
-    defineNativeMethod(klass, &list_iterable_empty_q, "empty?", false);
-    defineNativeMethod(klass, &list_iterable_iterator, "iterator", false);
-    defineNativeMethod(klass, &list_get_at, "get_at", false);
-    defineNativeMethod(klass, &list_obj_to_string, "to_string", false);
-    defineNativeOperator(klass, &list_get_at, OPERATOR_INDEX);
-    defineNativeOperator(klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
+    VALUE klass = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable");
+    defineNativeMethod(vm, klass, &list_init, "init", false);
+    defineNativeMethod(vm, klass, &list_add, "add", false);
+    defineNativeMethod(vm, klass, &list_add, "push", false);
+    defineNativeMethod(vm, klass, &list_remove, "remove", false);
+    defineNativeMethod(vm, klass, &list_iterable_contains_q, "contains?", false);
+    defineNativeMethod(vm, klass, &list_iterable_empty_q, "empty?", false);
+    defineNativeMethod(vm, klass, &list_iterable_iterator, "iterator", false);
+    defineNativeMethod(vm, klass, &list_get_at, "get_at", false);
+    defineNativeMethod(vm, klass, &list_obj_to_string, "to_string", false);
+    defineNativeOperator(vm, klass, &list_get_at, OPERATOR_INDEX);
+    defineNativeOperator(vm, klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
 }

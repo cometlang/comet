@@ -5,13 +5,13 @@
 #include <string.h>
 #include <stdio.h>
 
-void defineNativeFunction(const char *name, NativeFn function)
+void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 {
-    push(&vm, OBJ_VAL(newNativeFunction(function)));
-    push(&vm, copyString(name, (int)strlen(name)));
-    addGlobal(peek(&vm, 0), peek(&vm, 1));
-    pop(&vm);
-    pop(&vm);
+    push(vm, OBJ_VAL(newNativeFunction(function)));
+    push(vm, copyString(name, (int)strlen(name)));
+    addGlobal(peek(vm, 0), peek(vm, 1));
+    pop(vm);
+    pop(vm);
 }
 
 VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
@@ -33,7 +33,7 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
         }
         if (!findGlobal(copyString(super_name, strlen(super_name)), &parent))
         {
-            runtimeError(&vm, "Could not inherit from unknown class '%s'", super_name);
+            runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
         }
 
@@ -45,8 +45,8 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
     }
     if (addGlobal(name_string, OBJ_VAL(klass)))
     {
-        pop(&vm); // name_string
-        pop(&vm); // klass
+        pop(vm);
+        pop(vm);
         return OBJ_VAL(klass);
     }
     else
@@ -62,35 +62,35 @@ VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeD
     return completeNativeClassDefinition(klass, super_name);
 }
 
-void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
+void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, bool isStatic)
 {
     Value name_string = copyString(name, strlen(name));
-    push(&vm, name_string);
-    push(&vm, klass);
-    push(&vm, OBJ_VAL(newNativeMethod(klass, function, isStatic)));
+    push(vm, name_string);
+    push(vm, klass);
+    push(vm, OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
-    pop(&vm);
-    pop(&vm);
+    pop(vm);
+    pop(vm);
 }
 
-void defineNativeOperator(VALUE klass, NativeMethod function, OPERATOR operator)
+void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, OPERATOR operator)
 {
-    push(&vm, klass);
-    push(&vm, OBJ_VAL(newNativeMethod(klass, function, false)));
+    push(vm, klass);
+    push(vm, OBJ_VAL(newNativeMethod(klass, function, false)));
     defineOperator(operator);
-    pop(&vm);
+    pop(vm);
 }
 
-void setNativeProperty(VALUE self, const char *property_name, VALUE value)
+void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE value)
 {
-    push(&vm, self);
-    push(&vm, value);
+    push(vm, self);
+    push(vm, value);
     Value name_string = copyString(property_name, strlen(property_name));
-    push(&vm, name_string);
+    push(vm, name_string);
     tableSet(&AS_INSTANCE(self)->fields, name_string, value);
-    pop(&vm);
-    pop(&vm);
-    pop(&vm);
+    pop(vm);
+    pop(vm);
+    pop(vm);
 }
 
 VALUE getNativeProperty(VALUE self, const char *property_name)

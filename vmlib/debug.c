@@ -2,7 +2,7 @@
 #include <string.h>
 
 #include "debug.h"
-#include "object.h"
+#include "objects.h"
 #include "value.h"
 
 void disassembleChunk(Chunk *chunk, const char *name)

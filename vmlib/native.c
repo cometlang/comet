@@ -1,5 +1,4 @@
 #include "native.h"
-#include "object.h"
 #include "vm.h"
 
 #include <string.h>

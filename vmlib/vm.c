@@ -6,7 +6,6 @@
 #include "vm.h"
 #include "compiler.h"
 #include "debug.h"
-#include "object.h"
 #include "mem.h"
 
 #include "comet.h"

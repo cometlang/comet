@@ -3,7 +3,7 @@
 
 #include "value.h"
 #include "compiler.h"
-#include "object.h"
+#include "objects.h"
 #include "native.h"
 #include "mem.h"
 

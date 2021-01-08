@@ -1,7 +1,7 @@
 #ifndef _NATIVE_API_H_
 #define _NATIVE_API_H_
 
-#include "object.h"
+#include "objects.h"
 
 void defineNativeFunction(const char *name, NativeFn function);
 VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super);

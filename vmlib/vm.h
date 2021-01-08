@@ -2,7 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
-#include "object.h"
+#include "objects.h"
 #include "table.h"
 #include "value.h"
 #include "common.h"

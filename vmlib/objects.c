@@ -3,7 +3,7 @@
 #include <stdlib.h>
 
 #include "mem.h"
-#include "object.h"
+#include "objects.h"
 #include "scanner.h"
 #include "table.h"
 #include "value.h"

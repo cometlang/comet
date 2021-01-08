@@ -1,5 +1,6 @@
 #include "comet.h"
 #include "cometlib.h"
+#include "object.h"
 
 #include <stdlib.h>
 
@@ -48,12 +49,17 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
             data->entries[i].next = NULL;
         }
     }
-    uint32_t hash = 0;
-    // Get the hash value of the key...
+    VALUE key = arguments[0];
+    VALUE value = arguments[1];
+    // TODO use the interpreter to call obj_hash,
+    // as the function might have been overridden in comet
+    uint32_t hash = obj_hash(key, 0, NULL);
     int index = hash % data->capacity;
+    // TODO check for equality of the keys in this journey.
     if (data->entries[index].key == NIL_VAL)
     {
-        // data->entries[index].key = key
+        data->entries[index].key = key;
+        data->entries[index].value = value;
     }
     else
     {
@@ -62,6 +68,9 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
         {
             current = current->next;
         }
+        current->next = ALLOCATE(HashEntry, 1);
+        current->next->key = key;
+        current->next->value = value;
     }
     data->count++;
     return NIL_VAL;

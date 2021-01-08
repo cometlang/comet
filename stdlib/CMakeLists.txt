@@ -7,6 +7,7 @@ include_directories(
   ../comet
   ../vmlib
   ../eral)
+
 set(SOURCE 
   _init.c
   # boolean.c
@@ -27,7 +28,8 @@ set(SOURCE
   thread.c
 )
 
-add_library(stdlib STATIC ${SOURCE})
+add_library(stdlib STATIC "${SOURCE}")
 target_link_libraries(stdlib vmlib)
+target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private")
 
 add_subdirectory(test)

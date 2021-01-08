@@ -25,8 +25,8 @@ mem.c
 mem.h
 native.c
 native.h
-object.c
-object.h
+objects.c
+objects.h
 scanner.c
 scanner.h
 table.c

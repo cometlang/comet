@@ -16,19 +16,57 @@ size_t _next_GC = 1024 * 1024;
 
 static void collectGarbage(VM *vm);
 
+static VM **threads;
+static size_t num_threads = 0;
+static size_t thread_capacity = 0;
+
+void register_thread(VM *vm)
+{
+    if (thread_capacity <= num_threads)
+    {
+        size_t new_capacity = GROW_CAPACITY(thread_capacity);
+        threads = GROW_ARRAY(threads, VM*, thread_capacity, new_capacity);
+        thread_capacity = new_capacity;
+    }
+    threads[num_threads++] = vm;
+}
+
+void deregister_thread(VM *vm)
+{
+    size_t index = 0;
+    for (; index < num_threads; index++)
+    {
+        if (threads[index] == vm)
+        {
+            threads[index] = NULL;
+        }
+    }
+    for (; index < (num_threads - 1); index++)
+    {
+        threads[index] = threads[index + 1];
+    }
+    num_threads--;
+}
+
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
     _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        collectGarbage(&vm);
-#if DEBUG_STRESS_GC
-        if (_bytes_allocated > _next_GC)
+        for (size_t i = 0; i < num_threads; i++)
         {
-            collectGarbage(&vm);
+            collectGarbage(threads[i]);
         }
-#endif
     }
+#if DEBUG_STRESS_GC
+    if (_bytes_allocated > _next_GC)
+    {
+        for (int i = 0; i < num_threads; i++)
+        {
+            collectGarbage(threads[i]);
+        }
+    }
+#endif
     if (newSize == 0)
     {
         free(previous);

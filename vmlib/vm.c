@@ -104,8 +104,8 @@ void initVM(VM *vm)
     initTable(&globals);
     initTable(&strings);
 
-    init_stdlib(vm);
-    vm.initString = copyString("init", 4);
+    register_thread(vm);
+    initString = copyString("init", 4);
 }
 
 void freeVM(VM *vm)
@@ -114,6 +114,7 @@ void freeVM(VM *vm)
     freeTable(&strings);
     vm.initString = NIL_VAL;
     freeObjects(vm);
+    deregister_thread(vm);
 }
 
 void push(VM *vm, Value value)

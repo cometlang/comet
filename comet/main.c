@@ -5,6 +5,7 @@
 #include "chunk.h"
 #include "debug.h"
 #include "vm.h"
+#include "cometlib.h"
 
 static VM virtualMachine;
 
@@ -73,6 +74,7 @@ static void runFile(const char *path)
 int main(int argc, const char **argv)
 {
     initVM(&virtualMachine);
+    init_stdlib(&virtualMachine);
 
     if (argc == 1)
     {

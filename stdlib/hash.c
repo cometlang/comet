@@ -1,6 +1,7 @@
 #include "comet.h"
 #include "cometlib.h"
 #include "object.h"
+#include "comet_stdlib.h"
 
 #include <stdlib.h>
 
@@ -16,9 +17,14 @@ typedef struct hash_entry
 typedef struct
 {
     int count;
-    int capacity;
+    size_t capacity;
     HashEntry *entries;
 } HashTable;
+
+typedef struct {
+    HashEntry **entries;
+    int count;
+} HashTableIterator;
 
 void *hash_constructor(void)
 {
@@ -34,15 +40,16 @@ void hash_destructor(void *data)
     FREE(HashTable, data);
 }
 
-VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+//////////// This whole approach is broken - can't mod the capacity and change the capacity.
+VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    HashTable *data = (HashTable *) AS_NATIVE_INSTANCE(self)->data;
+    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (data->count >= data->capacity * MAX_LOAD_PERCENTAGE)
     {
-        int old_capacity = data->capacity;
+        size_t old_capacity = data->capacity;
         data->capacity = GROW_CAPACITY(data->capacity);
         data->entries = GROW_ARRAY(data->entries, HashEntry, old_capacity, data->capacity);
-        for (int i = old_capacity; i < data->capacity; i++)
+        for (size_t i = old_capacity; i < data->capacity; i++)
         {
             data->entries[i].key = NIL_VAL;
             data->entries[i].value = NIL_VAL;
@@ -54,7 +61,7 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     // TODO use the interpreter to call obj_hash,
     // as the function might have been overridden in comet
     uint32_t hash = obj_hash(key, 0, NULL);
-    int index = hash % data->capacity;
+    size_t index = hash % data->capacity;
     // TODO check for equality of the keys in this journey.
     if (data->entries[index].key == NIL_VAL)
     {
@@ -76,8 +83,18 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE hash_remove(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    VALUE key = arguments[0];
+    uint32_t hash = obj_hash(key, 0, NULL);
+    size_t index = hash % data->capacity;
+    HashEntry *current = &data->entries[index];
+    do
+    {
+        // Compare the keys and make the necessary adjustments.
+        current = current->next;
+    } while (current != NULL);
     return NIL_VAL;
 }
 
@@ -91,9 +108,29 @@ VALUE hash_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNU
     return NIL_VAL;
 }
 
-VALUE hash_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_iterator(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    // This needs to be a HashIterator class and return an instance of that.
+    // Ideally this would be done as a generator method, instead of always
+    // gathering all the values, but I don't have generator methods and don't
+    // know how to implement them.
+    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    HashTableIterator *iterator = ALLOCATE(HashTableIterator, 1);
+    size_t index = 0;
+    iterator->entries = ALLOCATE(HashEntry*, data->count);
+    for (size_t i = 0; i < data->capacity; i++)
+    {
+        if (data->entries[i].key != NIL_VAL)
+        {
+            HashEntry *current = &data->entries[i];
+            do
+            {
+                iterator->entries[index++] = current;
+                current = current->next;
+            } while (current != NULL);
+        }
+    }
+    return OBJ_VAL(iterator);
 }
 
 VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

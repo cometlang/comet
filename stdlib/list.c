@@ -50,8 +50,7 @@ VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
         }
         data->length++;
     }
-    // It is important to return self, so that literal lists function correctly.
-    return self;
+    return NIL_VAL;
 }
 
 VALUE list_remove(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

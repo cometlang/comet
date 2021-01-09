@@ -854,6 +854,11 @@ static InterpretResult run(void)
             runtimeError("Uncaught %s", exception->klass->name->chars);
             return INTERPRET_RUNTIME_ERROR;;
         }
+        case OP_DUP_TOP:
+        {
+            push(peek(0));
+            break;
+        }
         }
     }
 

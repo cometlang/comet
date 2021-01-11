@@ -76,7 +76,7 @@ typedef struct
     int arity;
     int upvalueCount;
     Chunk chunk;
-    ObjString *name;
+    Value name;
 } ObjFunction;
 
 typedef Value (*NativeFn)(int argCount, Value *args);

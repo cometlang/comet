@@ -85,7 +85,7 @@ ObjFunction *newFunction()
 
     function->arity = 0;
     function->upvalueCount = 0;
-    function->name = NULL;
+    function->name = NIL_VAL;
     initChunk(&function->chunk);
     return function;
 }
@@ -212,12 +212,12 @@ void registerStringClass(Value klass)
 
 static void printFunction(ObjFunction *function)
 {
-    if (function->name == NULL)
+    if (function->name == NIL_VAL)
     {
         printf("<script>");
         return;
     }
-    printf("<fn %s>", function->name->chars);
+    printf("<fn %s>", string_get_cstr(function->name));
 }
 
 void printObject(Value value)

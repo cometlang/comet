@@ -610,7 +610,7 @@ static InterpretResult run(void)
             ObjString *name = READ_STRING();
 
             Value value;
-            if (tableGet(&instance->fields, name, &value))
+            if (tableGet(&instance->fields, OBJ_VAL(name), &value))
             {
                 pop(); // Instance.
                 push(value);

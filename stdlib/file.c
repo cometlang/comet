@@ -81,7 +81,7 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
-    return OBJ_VAL(takeString(buffer, fileSize));
+    return takeString(buffer, fileSize);
 }
 
 VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

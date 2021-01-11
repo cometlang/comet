@@ -71,8 +71,8 @@ void hash_destructor(void *data)
     FREE(HashTable, table);
 }
 
-static HashEntry *findEntry(HashEntry *entries, int capacity,
-                            ObjString *key)
+static HashEntry *find_entry(HashEntry *entries, int capacity,
+                             ObjString *key)
 {
     uint32_t index = key->hash & capacity;
     HashEntry *tombstone = NULL;
@@ -112,7 +112,7 @@ VALUE hash_get(VALUE self, int arg_count, VALUE *arguments)
         return false;
 
     VALUE key = arguments[0];
-    HashEntry *entry = findEntry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
     if (entry->key == NULL)
         return NIL_VAL;  // throw an exception
 
@@ -135,7 +135,7 @@ static void adjustCapacity(HashTable *table, int capacity)
         if (entry->key == NULL)
             continue;
 
-        HashEntry *dest = findEntry(entries, capacity, entry->key);
+        HashEntry *dest = find_entry(entries, capacity, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
         table->count++;
@@ -158,7 +158,7 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
     VALUE key = arguments[0];
     VALUE value = arguments[1];
-    Entry *entry = findEntry(table->entries, table->capacity, key);
+    Entry *entry = find_entry(table->entries, table->capacity, key);
 
     bool isNewKey = entry->key == NULL;
     if (isNewKey && IS_NIL(entry->value))
@@ -177,13 +177,13 @@ VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
     // Find the entry.
     VALUE key = arguments[0];
-    HashEntry *entry = findEntry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
     if (entry->key == NULL)
         return false;
 
     // Place a tombstone in the entry.
     entry->key = NULL;
-    entry->value = BOOL_VAL(true);
+    entry->value = TRUE_VAL;
 
     return true;
 }

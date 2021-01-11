@@ -9,6 +9,8 @@
 
 void init_stdlib();
 const char *get_cstr(VALUE self);
-void *string_constructor_cstr(const char *string, int length);
+void *string_set_cstr(ObjNativeInstance *instance, const char *string, int length);
+int string_compare_to_cstr(VALUE self, const char *cstr);
+const char *string_get_cstr(VALUE self);
 
 #endif

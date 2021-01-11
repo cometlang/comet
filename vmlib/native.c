@@ -1,5 +1,6 @@
 #include "native.h"
 #include "vm.h"
+#include "comet.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -7,7 +8,7 @@
 void defineNativeFunction(const char *name, NativeFn function)
 {
     push(OBJ_VAL(newNativeFunction(function)));
-    push(OBJ_VAL(copyString(name, (int)strlen(name))));
+    push(copyString(name, (int)strlen(name)));
     addGlobal(AS_STRING(peek(0)), peek(1));
     pop();
     pop();
@@ -15,11 +16,11 @@ void defineNativeFunction(const char *name, NativeFn function)
 
 VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
 {
-    ObjString *name_string = copyString(name, strlen(name));
-    push(OBJ_VAL(name_string));
+    Value name_string = copyString(name, strlen(name));
+    push(name_string);
     push(OBJ_VAL(newNativeClass(name_string, constructor, destructor)));
     ObjClass *klass = AS_CLASS(peek(0));
-    if (strncmp(name_string->chars, "Object", name_string->length) != 0)
+    if (string_compare_to_cstr(name_string, "Object") !=0)
     {
         Value parent;
         if (super_name == NULL)
@@ -48,8 +49,8 @@ VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeD
 
 void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
 {
-    ObjString *name_string = copyString(name, strlen(name));
-    push(OBJ_VAL(name_string));
+    Value name_string = copyString(name, strlen(name));
+    push(name_string);
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
@@ -69,8 +70,8 @@ void setNativeProperty(VALUE self, const char *property_name, VALUE value)
 {
     push(self);
     push(value);
-    ObjString *name_string = copyString(property_name, strlen(property_name));
-    push(OBJ_VAL(name_string));
+    Value name_string = copyString(property_name, strlen(property_name));
+    push(name_string);
     tableSet(&AS_INSTANCE(self)->fields, name_string, value);
     pop();
     pop();
@@ -80,7 +81,7 @@ void setNativeProperty(VALUE self, const char *property_name, VALUE value)
 VALUE getNativeProperty(VALUE self, const char *property_name)
 {
     Value value;
-    ObjString *name_string = copyString(property_name, strlen(property_name));
+    Value name_string = copyString(property_name, strlen(property_name));
     if (tableGet(&AS_INSTANCE(self)->fields, name_string, &value))
     {
         return value;

@@ -253,7 +253,6 @@ static void markRoots()
 
     markGlobals();
     markCompilerRoots();
-    markObject((Obj *)vm.initString);
 }
 
 static void traceReferences()

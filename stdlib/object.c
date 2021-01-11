@@ -23,7 +23,7 @@ VALUE obj_hash(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 
 VALUE obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return OBJ_VAL(copyString("Object", 6));
+    return copyString("Object", 6);
 }
 
 VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

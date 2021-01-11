@@ -145,17 +145,17 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
     return method;
 }
 
-static ObjInstance *allocateString(char *chars, int length)
+static Value allocateString(char *chars, int length)
 {
     ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
-    AS_NATIVE_CLASS(OBJ_VAL(_string_class))->destructor(string->data);
-    string->data = string_constructor_cstr(chars, length);
+    Value string_obj = OBJ_VAL(string);
+    string->data = string_set_cstr(string, chars, length);
 
-    push(OBJ_VAL(string));
-    internString(string);
+    push(string_obj);
+    internString(string_obj);
     pop();
 
-    return (ObjInstance *) string;
+    return string_obj;
 }
 
 static uint32_t hashString(const char *key, int length)
@@ -171,11 +171,11 @@ static uint32_t hashString(const char *key, int length)
     return hash;
 }
 
-ObjString *takeString(char *chars, int length)
+Value takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findInternedString(chars, length, hash);
-    if (interned != NULL)
+    Value interned = findInternedString(chars, length, hash);
+    if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
         return interned;
@@ -183,11 +183,11 @@ ObjString *takeString(char *chars, int length)
     return allocateString(chars, length);
 }
 
-ObjString *copyString(const char *chars, int length)
+Value copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findInternedString(chars, length, hash);
-    if (interned != NULL)
+    Value interned = findInternedString(chars, length, hash);
+    if (interned != NIL_VAL)
         return interned;
     char *heapChars = ALLOCATE(char, length + 1);
     memcpy(heapChars, chars, length);

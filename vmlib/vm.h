@@ -26,7 +26,7 @@ typedef struct
     int frameCount;
     Value stack[STACK_MAX];
     Value *stackTop;
-    ObjString *initString;
+    Value initString;
     ObjUpvalue *openUpvalues;
     size_t bytesAllocated;
     size_t nextGC;
@@ -49,9 +49,9 @@ void initVM(void);
 
 void freeVM(void);
 
-ObjString *findInternedString(const char *chars, const size_t length, uint32_t hash);
+Value findInternedString(const char *chars, const size_t length, uint32_t hash);
 
-bool internString(ObjString *string);
+bool internString(Value string);
 void markGlobals(void);
 void removeWhiteStrings(void);
 
@@ -68,6 +68,5 @@ Value pop(void);
 Value peek(int distance);
 
 Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...);
-ObjString *getStackTrace(void);
 
 #endif

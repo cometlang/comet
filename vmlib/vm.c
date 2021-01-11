@@ -26,12 +26,15 @@ void removeWhiteStrings(void)
     tableRemoveWhite(&strings);
 }
 
-ObjString *findInternedString(const char *chars, const size_t length, uint32_t hash)
+Value findInternedString(const char *chars, const size_t length, uint32_t hash)
 {
-    return tableFindString(&strings, chars, length, hash);
+    ObjString *string = tableFindString(&strings, chars, length, hash);
+    if (string == NULL)
+        return NIL_VAL;
+    return OBJ_VAL(string);
 }
 
-bool internString(ObjString *string)
+bool internString(Value string)
 {
     return tableSet(&strings, string, NIL_VAL);
 }
@@ -54,7 +57,7 @@ static void resetStack(void)
     vm.openUpvalues = NULL;
 }
 
-ObjString *getStackTrace(void)
+static Value getStackTrace(void)
 {
 #define MAX_LINE_LENGTH 1024
     char *stacktrace = ALLOCATE(char, vm.frameCount * MAX_LINE_LENGTH);
@@ -75,7 +78,7 @@ ObjString *getStackTrace(void)
             lineno,
             function->name == NULL ? "script" : function->name->chars);
     }
-    ObjString *result = copyString(stacktrace, index);
+    Value result = copyString(stacktrace, index);
     FREE_ARRAY(char, stacktrace, vm.frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
@@ -88,7 +91,7 @@ void runtimeError(const char *format, ...)
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
-    fprintf(stderr, "%s", getStackTrace()->chars);
+    fprintf(stderr, "%s", string_get_cstr(getStackTrace()));
     resetStack();
 }
 
@@ -113,7 +116,7 @@ void freeVM(void)
 {
     freeTable(&globals);
     freeTable(&strings);
-    vm.initString = NULL;
+    vm.initString = NIL_VAL;
     freeObjects();
 }
 
@@ -468,9 +471,9 @@ static void concatenate()
     memcpy(chars + a->length, b->chars, b->length);
     chars[length] = '\0';
 
-    ObjString *result = takeString(chars, length);
+    Value result = takeString(chars, length);
     popMany(2);
-    push(OBJ_VAL(result));
+    push(result);
 }
 
 static InterpretResult run(void)

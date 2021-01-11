@@ -8,7 +8,7 @@ VALUE nil_nil_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*argume
 
 VALUE nil_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return OBJ_VAL(copyString("nil", 3));
+    return copyString("nil", 3);
 }
 
 VALUE nil_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -3,6 +3,7 @@
 
 #include "comet.h"
 #include "cometlib.h"
+#include "comet_stdlib.h"
 
 typedef struct StringData
 {
@@ -33,14 +34,26 @@ void *string_constructor(void)
     return (void *) data;
 }
 
-void *string_constructor_cstr(const char *string, int length)
+void *string_set_cstr(ObjNativeInstance *instance, const char *string, int length)
 {
-    StringData *data = (StringData *) malloc(sizeof(StringData));
-    data->chars = (char *) malloc(length + 1);
+    StringData *data = (StringData *) instance->data;
+    data->chars = ALLOCATE(char, length + 1);
     strncpy(data->chars, string, length + 1);
     data->length = length;
     data->hash = hashString(data->chars, data->length);
     return (void *) data;
+}
+
+const char *string_get_cstr(VALUE self)
+{
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    return data->chars;
+}
+
+int string_compare_to_cstr(VALUE self, const char *cstr)
+{
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    return strncmp(data->chars, cstr, data->length);
 }
 
 void string_destructor(void *data)

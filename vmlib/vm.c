@@ -243,12 +243,22 @@ static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCou
 
 static Value findMethod(ObjClass *klass, ObjString *name)
 {
-    Value method;
-    if (!(tableGet(&klass->methods, name, &method)))
+    Value result;
+    if (tableGet(&klass->methods, OBJ_VAL(name), &result))
     {
-        return NIL_VAL;
+        return result;
     }
-    return method;
+    return NIL_VAL;
+}
+
+static Value findStaticMethod(ObjClass *klass, ObjString *name)
+{
+    Value result;
+    if (tableGet(&klass->staticMethods, OBJ_VAL(name), &result))
+    {
+        return result;
+    }
+    return NIL_VAL;
 }
 
 static bool invokeFromClass(ObjClass *klass, ObjString *name,
@@ -260,7 +270,7 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         return call(AS_CLOSURE(method), argCount);
     }
 
-    tableGet(&klass->staticMethods, name, &method);
+    method = findStaticMethod(klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -342,7 +352,7 @@ static bool invoke(ObjString *name, int argCount)
 
         // First look for a field which may shadow a method.
         Value value;
-        if (tableGet(&instance->fields, name, &value))
+        if (tableGet(&instance->fields, OBJ_VAL(name), &value))
         {
             // Load the field onto the stack in place of the receiver.
             vm.stackTop[-argCount - 1] = value;

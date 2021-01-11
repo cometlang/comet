@@ -56,7 +56,7 @@ static Entry *findEntry(Entry *entries, int capacity,
     }
 }
 
-bool tableGet(Table *table, ObjString *key, Value *value)
+bool tableGet(Table *table, Value key, Value *result)
 {
     if (table->count == 0)
         return false;
@@ -65,7 +65,7 @@ bool tableGet(Table *table, ObjString *key, Value *value)
     if (entry->key == NULL)
         return false;
 
-    *value = entry->value;
+    *result = entry->value;
     return true;
 }
 

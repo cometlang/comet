@@ -9,7 +9,7 @@ void defineNativeFunction(const char *name, NativeFn function)
 {
     push(OBJ_VAL(newNativeFunction(function)));
     push(copyString(name, (int)strlen(name)));
-    addGlobal(AS_STRING(peek(0)), peek(1));
+    addGlobal(peek(0), peek(1));
     pop();
     pop();
 }

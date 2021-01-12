@@ -55,8 +55,8 @@ bool internString(Value string);
 void markGlobals(void);
 void removeWhiteStrings(void);
 
-bool addGlobal(ObjString *name, Value value);
-bool findGlobal(ObjString *name, Value *value);
+bool addGlobal(Value name, Value value);
+bool findGlobal(Value name, Value *value);
 
 InterpretResult interpret(const SourceFile *source);
 void runtimeError(const char *format, ...);

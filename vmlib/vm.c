@@ -39,12 +39,12 @@ bool internString(Value string)
     return tableSet(&strings, string, NIL_VAL);
 }
 
-bool findGlobal(ObjString *name, Value *value)
+bool findGlobal(Value name, Value *value)
 {
     return tableGet(&globals, name, value);
 }
 
-bool addGlobal(ObjString *name, Value value)
+bool addGlobal(Value name, Value value)
 {
     DEBUG_ASSERT(strcmp(get_cstr(AS_INSTANCE(name)->klass->name), "String") == 0);
     return tableSet(&globals, name, value);
@@ -76,7 +76,7 @@ static Value getStackTrace(void)
             "%s:%d - %s()\n",
             function->chunk.filename,
             lineno,
-            function->name == NULL ? "script" : function->name->chars);
+            function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
     Value result = copyString(stacktrace, index);
     FREE_ARRAY(char, stacktrace, vm.frameCount * MAX_LINE_LENGTH);
@@ -547,11 +547,11 @@ static InterpretResult run(void)
             break;
         case OP_GET_GLOBAL:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             Value value;
             if (!tableGet(&globals, name, &value))
             {
-                runtimeError("Undefined variable '%s'.", name->chars);
+                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(value);
@@ -560,7 +560,7 @@ static InterpretResult run(void)
         case OP_DEFINE_GLOBAL:
         {
             ObjString *name = READ_STRING();
-            tableSet(&globals, name, peek(0));
+            tableSet(&globals, OBJ_VAL(name), peek(0));
             pop();
             break;
         }
@@ -578,11 +578,11 @@ static InterpretResult run(void)
         }
         case OP_SET_GLOBAL:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             if (tableSet(&globals, name, peek(0)))
             {
                 tableDelete(&globals, name);
-                runtimeError("Undefined variable '%s'.", name->chars);
+                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             break;
@@ -631,7 +631,7 @@ static InterpretResult run(void)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(1));
-            tableSet(&instance->fields, READ_STRING(), peek(0));
+            tableSet(&instance->fields, OBJ_VAL(READ_STRING()), peek(0));
 
             Value value = pop();
             pop();

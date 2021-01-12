@@ -1,6 +1,5 @@
 #include "comet.h"
 #include "cometlib.h"
-#include "object.h"
 #include "comet_stdlib.h"
 
 #include <stdlib.h>

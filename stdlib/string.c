@@ -38,9 +38,10 @@ void *string_set_cstr(ObjNativeInstance *instance, const char *string, int lengt
 {
     StringData *data = (StringData *) instance->data;
     data->chars = ALLOCATE(char, length + 1);
-    strncpy(data->chars, string, length + 1);
+    memcpy(data->chars, string, length);
+    data->chars[length] = '\0';
     data->length = length;
-    data->hash = hashString(data->chars, data->length);
+    data->hash = hashString(data->chars, length);
     return (void *) data;
 }
 
@@ -91,7 +92,8 @@ VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
 
 VALUE string_hash(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    return NUMBER_VAL(data->hash);
 }
 
 VALUE string_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -160,9 +162,12 @@ VALUE string_concatenate(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
-void init_string(void)
+void init_string(VALUE obj_klass)
 {
-    VALUE klass = defineNativeClass("String", string_constructor, string_destructor, NULL);
+    VALUE klass = bootstrapNativeClass("String", string_constructor, string_destructor);
+    registerStringClass(klass);
+    completeNativeClassDefinition(obj_klass, NULL);
+    completeNativeClassDefinition(klass, NULL);
     defineNativeMethod(klass, &string_hash, "hash", false);
     defineNativeMethod(klass, &string_to_string, "to_string", false);
     defineNativeMethod(klass, &string_trim, "trim", false);
@@ -178,6 +183,4 @@ void init_string(void)
     defineNativeMethod(klass, &string_to_upper, "to_upper", false);
     defineNativeOperator(klass, &string_concatenate, OPERATOR_PLUS);
     defineNativeOperator(klass, &string_equals, OPERATOR_EQUALS);
-
-    registerStringClass(klass);
 }

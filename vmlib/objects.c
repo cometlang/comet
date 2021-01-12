@@ -41,25 +41,31 @@ ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method)
     return bound;
 }
 
-ObjClass *newClass(Value name)
+static void init_class(ObjClass *klass, const char *name)
 {
-    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-    klass->name = name;
+    size_t length = strlen(name) + 1;
+    klass->name = ALLOCATE(char, length);
+    strncpy(klass->name, name, length);
     initTable(&klass->methods);
     initTable(&klass->staticMethods);
     for (int i = 0; i < NUM_OPERATORS; i++)
     {
         klass->operators[i] = NIL_VAL;
     }
+}
+
+ObjClass *newClass(const char *name)
+{
+    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    init_class(klass, name);
     return klass;
 }
 
-ObjNativeClass *newNativeClass(Value name, NativeConstructor constructor, NativeDestructor destructor)
+ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
-    klass->klass.name = name;
-    initTable(&klass->klass.methods);
-    initTable(&klass->klass.staticMethods);
+    push(OBJ_VAL(klass));
+    init_class((ObjClass *)klass, name);
     klass->constructor = constructor;
     klass->destructor = destructor;
     return klass;
@@ -114,10 +120,12 @@ Obj *newInstance(ObjClass *klass)
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
+        push(OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {
             instance->data = native_klass->constructor();
         }
+        pop();
         return (Obj *)instance;
     }
     default:
@@ -145,13 +153,12 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
     return method;
 }
 
-static Value allocateString(char *chars, int length)
+static Value allocateString(const char *chars, int length)
 {
     ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
     Value string_obj = OBJ_VAL(string);
-    string->data = string_set_cstr(string, chars, length);
-
     push(string_obj);
+    string->data = string_set_cstr(string, chars, length);
     internString(string_obj);
     pop();
 
@@ -189,11 +196,8 @@ Value copyString(const char *chars, int length)
     Value interned = findInternedString(chars, hash);
     if (interned != NIL_VAL)
         return interned;
-    char *heapChars = ALLOCATE(char, length + 1);
-    memcpy(heapChars, chars, length);
-    heapChars[length] = '\0';
 
-    return allocateString(heapChars, length);
+    return allocateString(chars, length);
 }
 
 ObjUpvalue *newUpvalue(Value *slot)
@@ -226,7 +230,7 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
     case OBJ_NATIVE_CLASS:
-        printf("%s Class", string_get_cstr(AS_CLASS(value)->name));
+        printf("%s Class", AS_CLASS(value)->name);
         break;
     case OBJ_NATIVE_METHOD:
         printf("<native method>");
@@ -243,7 +247,7 @@ void printObject(Value value)
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
         // obj.to_string();
-        printf("%s instance", string_get_cstr(AS_INSTANCE(value)->klass->name));
+        printf("%s instance", AS_INSTANCE(value)->klass->name);
         break;
     case OBJ_NATIVE:
         printf("<native fn>");

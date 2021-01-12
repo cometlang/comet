@@ -26,7 +26,8 @@ void freeTable(Table *table)
 static Entry *findEntry(Entry *entries, int capacity,
                         Value key)
 {
-    uint32_t index = obj_hash(key, 0, NULL) & capacity;
+    uint32_t hash = (uint32_t) AS_NUMBER(string_hash(key, 0, NULL));
+    uint32_t index = hash & capacity;
     Entry *tombstone = NULL;
 
     for (;;)
@@ -47,7 +48,7 @@ static Entry *findEntry(Entry *entries, int capacity,
                     tombstone = entry;
             }
         }
-        else if (entry->key == key)
+        else if (strcmp(string_get_cstr(entry->key), string_get_cstr(key)) == 0)
         {
             // We found the key.
             return entry;
@@ -83,7 +84,7 @@ static void adjustCapacity(Table *table, int capacity)
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        if (entry->key == NIL_VAL)
+        if (entry == NULL || entry->key == NIL_VAL)
             continue;
 
         Entry *dest = findEntry(entries, capacity, entry->key);
@@ -124,7 +125,7 @@ bool tableDelete(Table *table, Value key)
 
     // Find the entry.
     Entry *entry = findEntry(table->entries, table->capacity, key);
-    if (entry->key == NIL_VAL)
+    if (entry != NULL && entry->key == NIL_VAL)
         return false;
 
     // Place a tombstone in the entry.
@@ -139,7 +140,7 @@ void tableAddAll(Table *from, Table *to)
     for (int i = 0; i <= from->capacity; i++)
     {
         Entry *entry = &from->entries[i];
-        if (entry->key != NIL_VAL)
+        if (entry != NULL && entry->key != NIL_VAL)
         {
             tableSet(to, entry->key, entry->value);
         }

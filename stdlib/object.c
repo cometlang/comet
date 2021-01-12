@@ -48,9 +48,8 @@ VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return FALSE_VAL;
 }
 
-void init_object(void)
+void init_object(VALUE klass)
 {
-    VALUE klass = defineNativeClass("Object", NULL, NULL, NULL);
     defineNativeMethod(klass, &obj_hash, "hash", false);
     defineNativeMethod(klass, &obj_to_string, "to_string", false);
     defineNativeMethod(klass, &obj_nil_q, "nil?", false);

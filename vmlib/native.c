@@ -14,12 +14,16 @@ void defineNativeFunction(const char *name, NativeFn function)
     pop();
 }
 
-VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
-    Value name_string = copyString(name, strlen(name));
+    return OBJ_VAL(newNativeClass(name, constructor, destructor));
+}
+
+VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
+{
+    ObjClass *klass = AS_CLASS(klass_);
+    Value name_string = copyString(klass->name, strlen(klass->name));
     push(name_string);
-    push(OBJ_VAL(newNativeClass(name_string, constructor, destructor)));
-    ObjClass *klass = AS_CLASS(peek(0));
     if (string_compare_to_cstr(name_string, "Object") !=0)
     {
         Value parent;
@@ -33,18 +37,29 @@ VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeD
             return NIL_VAL;
         }
 
-        tableAddAll(&(AS_CLASS(parent)->methods), &klass->methods);
-        tableAddAll(&(AS_CLASS(parent)->staticMethods), &klass->staticMethods);
+        ObjClass *parent_class = AS_CLASS(parent);
+
+        tableAddAll(&parent_class->methods, &klass->methods);
+        tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
         klass->super_ = AS_CLASS(parent);
     }
-    if (addGlobal(name_string, peek(0)))
+    if (addGlobal(name_string, OBJ_VAL(klass)))
     {
-        VALUE result = pop();
-        pop();
-        return result;
+        pop(); // name_string
+        pop(); // klass
+        return OBJ_VAL(klass);
     }
-    runtimeError("Redefining class %s", name);
-    return NIL_VAL;
+    else
+    {
+        runtimeError("Redefining class %s", klass->name);
+        return NIL_VAL;
+    }
+}
+
+VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+{
+    VALUE klass = OBJ_VAL(newNativeClass(name, constructor, destructor));
+    return completeNativeClassDefinition(klass, super_name);
 }
 
 void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)

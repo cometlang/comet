@@ -103,7 +103,7 @@ typedef struct
 typedef struct sObjClass
 {
     Obj obj;
-    Value name;
+    char *name;
     Table methods;
     Table staticMethods;
     Value operators[NUM_OPERATORS];
@@ -150,8 +150,8 @@ typedef struct
 } ObjBoundMethod;
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
-ObjClass *newClass(Value name);
-ObjNativeClass *newNativeClass(Value name, NativeConstructor constructor, NativeDestructor destructor);
+ObjClass *newClass(const char *name);
+ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor);
 ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();

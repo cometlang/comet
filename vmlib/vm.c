@@ -43,7 +43,6 @@ bool findGlobal(Value name, Value *value)
 
 bool addGlobal(Value name, Value value)
 {
-    DEBUG_ASSERT(strcmp(get_cstr(AS_INSTANCE(name)->klass->name), "String") == 0);
     return tableSet(&globals, name, value);
 }
 
@@ -279,11 +278,11 @@ static bool invokeFromClass(ObjClass *klass, Value name,
 
     if (IS_NIL(method))
     {
-        runtimeError("'%s' has no method called '%s'.", string_get_cstr(klass->name), string_get_cstr(name));
+        runtimeError("'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 
-    runtimeError("Can't call method '%s' from '%s'", string_get_cstr(name), string_get_cstr(klass->name));
+    runtimeError("Can't call method '%s' from '%s'", string_get_cstr(name), klass->name);
     return false;
 }
 
@@ -295,7 +294,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         if (IS_NIL(instance->klass->operators[operator]))
         {
             runtimeError("Operator '%s' is not defined for class '%s'.",
-                getOperatorString(operator), string_get_cstr(instance->klass->name));
+                getOperatorString(operator), instance->klass->name);
             return false;
         }
         if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
@@ -317,7 +316,7 @@ static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, in
     if (IS_NIL(method))
     {
         runtimeError("'%s' has no method or property '%s'.",
-            string_get_cstr(instance->instance.klass->name),
+            instance->instance.klass->name,
             string_get_cstr(name));
         return false;
     }
@@ -781,7 +780,7 @@ static InterpretResult run(void)
             break;
         }
         case OP_CLASS:
-            push(OBJ_VAL(newClass(READ_CONSTANT())));
+            push(OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()))));
             break;
         case OP_INHERIT:
         {
@@ -845,7 +844,7 @@ static InterpretResult run(void)
         case OP_THROW:
         {
             ObjInstance *exception = AS_INSTANCE(peek(0));
-            runtimeError("Uncaught %s", string_get_cstr(exception->klass->name));
+            runtimeError("Uncaught %s", exception->klass->name);
             return INTERPRET_RUNTIME_ERROR;;
         }
         case OP_DUP_TOP:

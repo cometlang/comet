@@ -1,5 +1,4 @@
 #include "comet.h"
-#include "object.h"
 
 VALUE obj_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
 {

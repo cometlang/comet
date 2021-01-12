@@ -310,6 +310,11 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
     return false;
 }
 
+static bool callBinaryOperator(OPERATOR operator)
+{
+    return callOperator(peek(1), 1, operator);
+}
+
 static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, int argCount)
 {
     Value method = findMethod(instance->instance.klass, name);
@@ -649,9 +654,7 @@ static InterpretResult run(void)
             }
             else
             {
-                int argCount = READ_BYTE();
-                Value receiver = peek(argCount);
-                if (!callOperator(receiver, argCount, OPERATOR_PLUS))
+                if (!callBinaryOperator(OPERATOR_PLUS))
                 {
                     return INTERPRET_RUNTIME_ERROR;;
                 }

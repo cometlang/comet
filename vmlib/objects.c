@@ -92,7 +92,7 @@ ObjFunction *newFunction()
 
 Obj *newInstance(ObjClass *klass)
 {
-    if (string_compare_to_cstr(klass->name, "nil") == 0)
+    if (OBJ_VAL(klass) == NIL_VAL)
     {
         fprintf(stderr, "Can't instantiate nil\n");
         abort();

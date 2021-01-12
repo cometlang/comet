@@ -104,9 +104,8 @@ void initVM(void)
     initTable(&globals);
     initTable(&strings);
 
-    vm.initString = copyString("init", 4);
-
     init_stdlib();
+    vm.initString = copyString("init", 4);
 }
 
 void freeVM(void)

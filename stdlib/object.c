@@ -1,5 +1,23 @@
 #include "comet.h"
 
+VALUE instanceof(VALUE self, VALUE klass)
+{
+    Obj *lhs = AS_OBJ(self);
+    if ((lhs->type == OBJ_INSTANCE || lhs->type == OBJ_NATIVE_INSTANCE) && IS_CLASS(klass))
+    {
+        ObjInstance *instance = AS_INSTANCE(self);
+        if (instance->klass == AS_CLASS(klass))
+        {
+            return TRUE_VAL;
+        }
+        else if (instance->klass->super_ != NULL)
+        {
+            return instanceof(self, OBJ_VAL(instance->klass->super_));
+        }
+    }
+    return FALSE_VAL;
+}
+
 VALUE obj_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
 {
     Obj *rhs = AS_OBJ(arguments[0]);

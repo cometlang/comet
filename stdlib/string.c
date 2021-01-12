@@ -52,8 +52,12 @@ const char *string_get_cstr(VALUE self)
 
 int string_compare_to_cstr(VALUE self, const char *cstr)
 {
-    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    return strncmp(data->chars, cstr, data->length);
+    if (IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self))
+    {
+        StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+        return strncmp(data->chars, cstr, data->length);
+    }
+    return -1;
 }
 
 void string_destructor(void *data)

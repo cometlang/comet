@@ -9,7 +9,6 @@
 
 void init_stdlib();
 VALUE obj_hash(VALUE self, int arg_count, VALUE *arguments);
-const char *get_cstr(VALUE self);
 void *string_set_cstr(ObjNativeInstance *instance, const char *string, int length);
 int string_compare_to_cstr(VALUE self, const char *cstr);
 const char *string_get_cstr(VALUE self);

@@ -74,12 +74,6 @@ void string_destructor(void *data)
     FREE(StringData, string_data);
 }
 
-const char *get_cstr(VALUE self)
-{
-    StringData *string_data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
-    return string_data->chars;
-}
-
 VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *lhs = (StringData *) AS_NATIVE_INSTANCE(self)->data;

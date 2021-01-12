@@ -1,17 +1,15 @@
 #include "comet.h"
 #include "cometlib.h"
-#include "object.h"
 #include "comet_stdlib.h"
 
 #include <stdlib.h>
 
-#define MAX_LOAD_PERCENTAGE 0.75
+#define TABLE_MAX_LOAD 0.75
 
 typedef struct hash_entry
 {
     VALUE key;
     VALUE value;
-    struct hash_entry *next;
 } HashEntry;
 
 typedef struct
@@ -25,78 +23,6 @@ typedef struct {
     HashEntry **entries;
     int count;
 } HashTableIterator;
-
-void *hash_constructor(void)
-{
-    HashTable *data = ALLOCATE(HashTable, 1);
-    data->count = 0;
-    data->capacity = 0;
-    data->entries = NULL;
-    return data;
-}
-
-void hash_destructor(void *data)
-{
-    FREE(HashTable, data);
-}
-
-//////////// This whole approach is broken - can't mod the capacity and change the capacity.
-VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
-    if (data->count >= data->capacity * MAX_LOAD_PERCENTAGE)
-    {
-        size_t old_capacity = data->capacity;
-        data->capacity = GROW_CAPACITY(data->capacity);
-        data->entries = GROW_ARRAY(data->entries, HashEntry, old_capacity, data->capacity);
-        for (size_t i = old_capacity; i < data->capacity; i++)
-        {
-            data->entries[i].key = NIL_VAL;
-            data->entries[i].value = NIL_VAL;
-            data->entries[i].next = NULL;
-        }
-    }
-    VALUE key = arguments[0];
-    VALUE value = arguments[1];
-    // TODO use the interpreter to call obj_hash,
-    // as the function might have been overridden in comet
-    uint32_t hash = obj_hash(key, 0, NULL);
-    size_t index = hash % data->capacity;
-    // TODO check for equality of the keys in this journey.
-    if (data->entries[index].key == NIL_VAL)
-    {
-        data->entries[index].key = key;
-        data->entries[index].value = value;
-    }
-    else
-    {
-        HashEntry *current = &data->entries[index];
-        while (current->next != NULL)
-        {
-            current = current->next;
-        }
-        current->next = ALLOCATE(HashEntry, 1);
-        current->next->key = key;
-        current->next->value = value;
-    }
-    data->count++;
-    return NIL_VAL;
-}
-
-VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
-    VALUE key = arguments[0];
-    uint32_t hash = obj_hash(key, 0, NULL);
-    size_t index = hash % data->capacity;
-    HashEntry *current = &data->entries[index];
-    do
-    {
-        // Compare the keys and make the necessary adjustments.
-        current = current->next;
-    } while (current != NULL);
-    return NIL_VAL;
-}
 
 VALUE hash_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
@@ -116,35 +42,196 @@ VALUE hash_iterable_iterator(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*ar
     // know how to implement them.
     HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     HashTableIterator *iterator = ALLOCATE(HashTableIterator, 1);
-    size_t index = 0;
     iterator->entries = ALLOCATE(HashEntry*, data->count);
     for (size_t i = 0; i < data->capacity; i++)
     {
         if (data->entries[i].key != NIL_VAL)
         {
-            HashEntry *current = &data->entries[i];
-            do
-            {
-                iterator->entries[index++] = current;
-                current = current->next;
-            } while (current != NULL);
+            HashEntry UNUSED(*current) = &data->entries[i];
         }
     }
     return OBJ_VAL(iterator);
 }
 
+void *hash_constructor(void)
+{
+    Table *table = ALLOCATE(Table, 1);
+    table->count = 0;
+    table->capacity = -1;
+    table->entries = NULL;
+    return table;
+}
+
+void hash_destructor(void *data)
+{
+    HashTable *table = (HashTable *)data;
+    FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
+    FREE(HashTable, table);
+}
+
+static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
+{
+    uint32_t index = obj_hash(key, 0, NULL) & capacity;
+    HashEntry *tombstone = NULL;
+
+    for (;;)
+    {
+        HashEntry *entry = &entries[index];
+
+        if (entry->key == NIL_VAL)
+        {
+            if (IS_NIL(entry->value))
+            {
+                // Empty entry.
+                return tombstone != NULL ? tombstone : entry;
+            }
+            else
+            {
+                // We found a tombstone.
+                if (tombstone == NULL)
+                    tombstone = entry;
+            }
+        }
+        else if (entry->key == key) // Need to use the function for == operator
+        {
+            // We found the key.
+            return entry;
+        }
+
+        index = (index + 1) & capacity;
+    }
+}
+
+VALUE hash_get(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (table->count == 0)
+        return false;
+
+    VALUE key = arguments[0];
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    if (entry->key == NIL_VAL)
+        return NIL_VAL;  // throw an exception
+
+    return entry->value;
+}
+
+static void adjust_capacity(HashTable *table, int capacity)
+{
+    HashEntry *entries = ALLOCATE(HashEntry, capacity + 1);
+    for (int i = 0; i <= capacity; i++)
+    {
+        entries[i].key = NIL_VAL;
+        entries[i].value = NIL_VAL;
+    }
+
+    table->count = 0;
+    for (size_t i = 0; i <= table->capacity; i++)
+    {
+        HashEntry *entry = &table->entries[i];
+        if (entry->key == NIL_VAL)
+            continue;
+
+        HashEntry *dest = find_entry(entries, capacity, entry->key);
+        dest->key = entry->key;
+        dest->value = entry->value;
+        table->count++;
+    }
+    FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
+
+    table->entries = entries;
+    table->capacity = capacity;
+}
+
+VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
+    {
+        // Figure out the new table size.
+        int capacity = GROW_CAPACITY(table->capacity + 1) - 1;
+        adjust_capacity(table, capacity);
+    }
+
+    VALUE key = arguments[0];
+    VALUE value = arguments[1];
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+
+    bool isNewKey = entry->key == NIL_VAL;
+    if (isNewKey && IS_NIL(entry->value))
+        table->count++;
+
+    entry->key = key;
+    entry->value = value;
+    return isNewKey;
+}
+
+VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (table->count == 0)
+        return false;
+
+    // Find the entry.
+    VALUE key = arguments[0];
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    if (entry->key == NIL_VAL)
+        return false;
+
+    // Place a tombstone in the entry.
+    entry->key = NIL_VAL;
+    entry->value = TRUE_VAL;
+
+    return true;
+}
+
+void hash_add_all(HashTable *from, HashTable *to)
+{
+    for (size_t i = 0; i <= from->capacity; i++)
+    {
+        HashEntry *entry = &from->entries[i];
+        VALUE args[2] = {entry->key, entry->value};
+        if (entry->key != NIL_VAL)
+        {
+            hash_add(OBJ_VAL(to), 2, args);
+        }
+    }
+}
+
+void table_remove_white(HashTable *table)
+{
+    for (size_t i = 0; i <= table->capacity; i++)
+    {
+        HashEntry *entry = &table->entries[i];
+        if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
+        {
+            hash_remove(OBJ_VAL(table), 1, &entry->key);
+        }
+    }
+}
+
+void mark_table(HashTable *table)
+{
+    for (size_t i = 0; i <= table->capacity; i++)
+    {
+        HashEntry *entry = &table->entries[i];
+        markValue(entry->key);
+        markValue(entry->value);
+    }
+}
+
 VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
-}
 
-VALUE hash_get(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    return NIL_VAL;
-}
-
-VALUE hash_set(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
+    // for (int i = 0; i <= table->capacity; i++)
+//     {
+//         Entry *entry = &table->entries[i];
+//         if (entry->key != NULL)
+//         {
+//             printValue(OBJ_VAL(entry->key));
+//             printf("\n");
+//         }
+//     }
     return NIL_VAL;
 }
 
@@ -158,5 +245,5 @@ void init_hash(void)
     defineNativeMethod(klass, &hash_iterable_iterator, "iterator", false);
     defineNativeMethod(klass, &hash_obj_to_string, "to_string", false);
     defineNativeOperator(klass, &hash_get, OPERATOR_INDEX);
-    defineNativeOperator(klass, &hash_set, OPERATOR_INDEX_ASSIGN);
+    defineNativeOperator(klass, &hash_add, OPERATOR_INDEX_ASSIGN);
 }

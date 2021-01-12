@@ -6,6 +6,7 @@
 #include "objects.h"
 #include "table.h"
 #include "value.h"
+#include "comet.h"
 
 #define TABLE_MAX_LOAD 0.75
 
@@ -23,16 +24,17 @@ void freeTable(Table *table)
 }
 
 static Entry *findEntry(Entry *entries, int capacity,
-                        ObjString *key)
+                        Value key)
 {
-    uint32_t index = key->hash & capacity;
+    uint32_t hash = (uint32_t) AS_NUMBER(string_hash(key, 0, NULL));
+    uint32_t index = hash & capacity;
     Entry *tombstone = NULL;
 
     for (;;)
     {
         Entry *entry = &entries[index];
 
-        if (entry->key == NULL)
+        if (entry->key == NIL_VAL)
         {
             if (IS_NIL(entry->value))
             {
@@ -46,7 +48,7 @@ static Entry *findEntry(Entry *entries, int capacity,
                     tombstone = entry;
             }
         }
-        else if (entry->key == key)
+        else if (strcmp(string_get_cstr(entry->key), string_get_cstr(key)) == 0)
         {
             // We found the key.
             return entry;
@@ -56,16 +58,16 @@ static Entry *findEntry(Entry *entries, int capacity,
     }
 }
 
-bool tableGet(Table *table, ObjString *key, Value *value)
+bool tableGet(Table *table, Value key, Value *result)
 {
     if (table->count == 0)
         return false;
 
     Entry *entry = findEntry(table->entries, table->capacity, key);
-    if (entry->key == NULL)
+    if (entry->key == NIL_VAL)
         return false;
 
-    *value = entry->value;
+    *result = entry->value;
     return true;
 }
 
@@ -74,7 +76,7 @@ static void adjustCapacity(Table *table, int capacity)
     Entry *entries = ALLOCATE(Entry, capacity + 1);
     for (int i = 0; i <= capacity; i++)
     {
-        entries[i].key = NULL;
+        entries[i].key = NIL_VAL;
         entries[i].value = NIL_VAL;
     }
 
@@ -82,7 +84,7 @@ static void adjustCapacity(Table *table, int capacity)
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        if (entry->key == NULL)
+        if (entry == NULL || entry->key == NIL_VAL)
             continue;
 
         Entry *dest = findEntry(entries, capacity, entry->key);
@@ -96,7 +98,7 @@ static void adjustCapacity(Table *table, int capacity)
     table->capacity = capacity;
 }
 
-bool tableSet(Table *table, ObjString *key, Value value)
+bool tableSet(Table *table, Value key, Value value)
 {
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
@@ -107,7 +109,7 @@ bool tableSet(Table *table, ObjString *key, Value value)
 
     Entry *entry = findEntry(table->entries, table->capacity, key);
 
-    bool isNewKey = entry->key == NULL;
+    bool isNewKey = entry->key == NIL_VAL;
     if (isNewKey && IS_NIL(entry->value))
         table->count++;
 
@@ -116,19 +118,19 @@ bool tableSet(Table *table, ObjString *key, Value value)
     return isNewKey;
 }
 
-bool tableDelete(Table *table, ObjString *key)
+bool tableDelete(Table *table, Value key)
 {
     if (table->count == 0)
         return false;
 
     // Find the entry.
     Entry *entry = findEntry(table->entries, table->capacity, key);
-    if (entry->key == NULL)
+    if (entry != NULL && entry->key == NIL_VAL)
         return false;
 
     // Place a tombstone in the entry.
-    entry->key = NULL;
-    entry->value = BOOL_VAL(true);
+    entry->key = NIL_VAL;
+    entry->value = TRUE_VAL;
 
     return true;
 }
@@ -138,18 +140,17 @@ void tableAddAll(Table *from, Table *to)
     for (int i = 0; i <= from->capacity; i++)
     {
         Entry *entry = &from->entries[i];
-        if (entry->key != NULL)
+        if (entry != NULL && entry->key != NIL_VAL)
         {
             tableSet(to, entry->key, entry->value);
         }
     }
 }
 
-ObjString *tableFindString(Table *table, const char *chars, int length,
-                           uint32_t hash)
+Value tableFindString(Table *table, const char *chars, uint32_t hash)
 {
     if (table->count == 0)
-        return NULL;
+        return NIL_VAL;
 
     uint32_t index = hash & table->capacity;
 
@@ -157,15 +158,15 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
     {
         Entry *entry = &table->entries[index];
 
-        if (entry->key == NULL)
+        if (entry->key == NIL_VAL)
         {
             // Stop if we find an empty non-tombstone entry.
             if (IS_NIL(entry->value))
-                return NULL;
+                return NIL_VAL;
         }
-        else if (entry->key->length == length &&
-                 entry->key->hash == hash &&
-                 memcmp(entry->key->chars, chars, length) == 0)
+        else if (
+            obj_hash(entry->key, 0, NULL) == hash &&
+            string_compare_to_cstr(entry->key, chars) == 0)
         {
             // We found it.
             return entry->key;
@@ -180,7 +181,7 @@ void tablePrintKeys(Table *table)
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        if (entry->key != NULL)
+        if (entry->key != NIL_VAL)
         {
             printValue(OBJ_VAL(entry->key));
             printf("\n");
@@ -194,7 +195,7 @@ void tableRemoveWhite(Table *table)
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        if (entry->key != NULL && !entry->key->obj.isMarked)
+        if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
         {
             tableDelete(table, entry->key);
         }

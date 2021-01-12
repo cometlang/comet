@@ -1,7 +1,25 @@
-#include "comet.h"
-#include "object.h"
+#include <string.h>
 
-VALUE obj_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
+#include "comet.h"
+
+VALUE instanceof(VALUE self, VALUE klass)
+{
+    if ((IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self)) && IS_CLASS(klass))
+    {
+        ObjInstance *instance = AS_INSTANCE(self);
+        if (instance->klass == AS_CLASS(klass))
+        {
+            return TRUE_VAL;
+        }
+        else if (instance->klass->super_ != NULL)
+        {
+            return instanceof(self, OBJ_VAL(instance->klass->super_));
+        }
+    }
+    return FALSE_VAL;
+}
+
+VALUE obj_equals(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     Obj *rhs = AS_OBJ(arguments[0]);
     return BOOL_VAL(AS_OBJ(self) == rhs);
@@ -21,9 +39,10 @@ VALUE obj_hash(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NUMBER_VAL(hash);
 }
 
-VALUE obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return OBJ_VAL(copyString("Object", 6));
+    ObjInstance *instance = AS_INSTANCE(self);
+    return copyString(instance->klass->name, strlen(instance->klass->name));
 }
 
 VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -31,11 +50,10 @@ VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return FALSE_VAL;
 }
 
-void init_object(void)
+void init_object(VALUE klass)
 {
-    VALUE klass = defineNativeClass("Object", NULL, NULL, NULL);
-    defineNativeMethod(klass, &obj_equals, "equals", false);
     defineNativeMethod(klass, &obj_hash, "hash", false);
     defineNativeMethod(klass, &obj_to_string, "to_string", false);
     defineNativeMethod(klass, &obj_nil_q, "nil?", false);
+    defineNativeOperator(klass, &obj_equals, OPERATOR_EQUALS);
 }

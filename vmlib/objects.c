@@ -8,6 +8,9 @@
 #include "table.h"
 #include "value.h"
 #include "vm.h"
+#include "comet.h"
+
+static ObjClass *_string_class;
 
 #define ALLOCATE_OBJ(type, objectType) \
     (type *)allocateObject(sizeof(type), objectType)
@@ -38,25 +41,31 @@ ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method)
     return bound;
 }
 
-ObjClass *newClass(ObjString *name)
+static void init_class(ObjClass *klass, const char *name)
 {
-    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
-    klass->name = name;
+    size_t length = strlen(name) + 1;
+    klass->name = ALLOCATE(char, length);
+    strncpy(klass->name, name, length);
     initTable(&klass->methods);
     initTable(&klass->staticMethods);
     for (int i = 0; i < NUM_OPERATORS; i++)
     {
         klass->operators[i] = NIL_VAL;
     }
+}
+
+ObjClass *newClass(const char *name)
+{
+    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    init_class(klass, name);
     return klass;
 }
 
-ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor constructor, NativeDestructor destructor)
+ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
-    klass->klass.name = name;
-    initTable(&klass->klass.methods);
-    initTable(&klass->klass.staticMethods);
+    push(OBJ_VAL(klass));
+    init_class((ObjClass *)klass, name);
     klass->constructor = constructor;
     klass->destructor = destructor;
     return klass;
@@ -82,14 +91,14 @@ ObjFunction *newFunction()
 
     function->arity = 0;
     function->upvalueCount = 0;
-    function->name = NULL;
+    function->name = NIL_VAL;
     initChunk(&function->chunk);
     return function;
 }
 
 Obj *newInstance(ObjClass *klass)
 {
-    if (strncmp(klass->name->chars, "nil", klass->name->length) == 0)
+    if (OBJ_VAL(klass) == NIL_VAL)
     {
         fprintf(stderr, "Can't instantiate nil\n");
         abort();
@@ -111,10 +120,12 @@ Obj *newInstance(ObjClass *klass)
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
+        push(OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {
             instance->data = native_klass->constructor();
         }
+        pop();
         return (Obj *)instance;
     }
     default:
@@ -142,19 +153,16 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
     return method;
 }
 
-static ObjString *allocateString(char *chars, int length,
-                                 uint32_t hash)
+static Value allocateString(const char *chars, int length)
 {
-    ObjString *string = ALLOCATE_OBJ(ObjString, OBJ_STRING);
-    string->length = length;
-    string->chars = chars;
-    string->hash = hash;
-
-    push(OBJ_VAL(string));
-    internString(string);
+    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
+    Value string_obj = OBJ_VAL(string);
+    push(string_obj);
+    string->data = string_set_cstr(string, chars, length);
+    internString(string_obj);
     pop();
 
-    return string;
+    return string_obj;
 }
 
 static uint32_t hashString(const char *key, int length)
@@ -170,29 +178,26 @@ static uint32_t hashString(const char *key, int length)
     return hash;
 }
 
-ObjString *takeString(char *chars, int length)
+Value takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findInternedString(chars, length, hash);
-    if (interned != NULL)
+    Value interned = findInternedString(chars, hash);
+    if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
         return interned;
     }
-    return allocateString(chars, length, hash);
+    return allocateString(chars, length);
 }
 
-ObjString *copyString(const char *chars, int length)
+Value copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    ObjString *interned = findInternedString(chars, length, hash);
-    if (interned != NULL)
+    Value interned = findInternedString(chars, hash);
+    if (interned != NIL_VAL)
         return interned;
-    char *heapChars = ALLOCATE(char, length + 1);
-    memcpy(heapChars, chars, length);
-    heapChars[length] = '\0';
 
-    return allocateString(heapChars, length, hash);
+    return allocateString(chars, length);
 }
 
 ObjUpvalue *newUpvalue(Value *slot)
@@ -204,14 +209,19 @@ ObjUpvalue *newUpvalue(Value *slot)
     return upvalue;
 }
 
+void registerStringClass(Value klass)
+{
+    _string_class = AS_CLASS(klass);
+}
+
 static void printFunction(ObjFunction *function)
 {
-    if (function->name == NULL)
+    if (function->name == NIL_VAL)
     {
         printf("<script>");
         return;
     }
-    printf("<fn %s>", function->name->chars);
+    printf("<fn %s>", string_get_cstr(function->name));
 }
 
 void printObject(Value value)
@@ -220,7 +230,7 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
     case OBJ_NATIVE_CLASS:
-        printf("%s Class", AS_CLASS(value)->name->chars);
+        printf("%s Class", AS_CLASS(value)->name);
         break;
     case OBJ_NATIVE_METHOD:
         printf("<native method>");
@@ -237,13 +247,10 @@ void printObject(Value value)
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
         // obj.to_string();
-        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        printf("%s instance", AS_INSTANCE(value)->klass->name);
         break;
     case OBJ_NATIVE:
         printf("<native fn>");
-        break;
-    case OBJ_STRING:
-        printf("%s", AS_CSTRING(value));
         break;
     case OBJ_UPVALUE:
         printf("upvalue");
@@ -275,8 +282,6 @@ const char *objTypeName(ObjType type)
         return "native instance";
     case OBJ_NATIVE:
         return "native function";
-    case OBJ_STRING:
-        return "string";
     case OBJ_UPVALUE:
         return "upvalue";
     }

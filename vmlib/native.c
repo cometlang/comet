@@ -1,5 +1,6 @@
 #include "native.h"
 #include "vm.h"
+#include "comet.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -7,19 +8,23 @@
 void defineNativeFunction(const char *name, NativeFn function)
 {
     push(OBJ_VAL(newNativeFunction(function)));
-    push(OBJ_VAL(copyString(name, (int)strlen(name))));
-    addGlobal(AS_STRING(peek(0)), peek(1));
+    push(copyString(name, (int)strlen(name)));
+    addGlobal(peek(0), peek(1));
     pop();
     pop();
 }
 
-VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
-    ObjString *name_string = copyString(name, strlen(name));
-    push(OBJ_VAL(name_string));
-    push(OBJ_VAL(newNativeClass(name_string, constructor, destructor)));
-    ObjClass *klass = AS_CLASS(peek(0));
-    if (strncmp(name_string->chars, "Object", name_string->length) != 0)
+    return OBJ_VAL(newNativeClass(name, constructor, destructor));
+}
+
+VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
+{
+    ObjClass *klass = AS_CLASS(klass_);
+    Value name_string = copyString(klass->name, strlen(klass->name));
+    push(name_string);
+    if (string_compare_to_cstr(name_string, "Object") !=0)
     {
         Value parent;
         if (super_name == NULL)
@@ -32,24 +37,35 @@ VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeD
             return NIL_VAL;
         }
 
-        tableAddAll(&(AS_CLASS(parent)->methods), &klass->methods);
-        tableAddAll(&(AS_CLASS(parent)->staticMethods), &klass->staticMethods);
+        ObjClass *parent_class = AS_CLASS(parent);
+
+        tableAddAll(&parent_class->methods, &klass->methods);
+        tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
         klass->super_ = AS_CLASS(parent);
     }
-    if (addGlobal(name_string, peek(0)))
+    if (addGlobal(name_string, OBJ_VAL(klass)))
     {
-        VALUE result = pop();
-        pop();
-        return result;
+        pop(); // name_string
+        pop(); // klass
+        return OBJ_VAL(klass);
     }
-    runtimeError("Redefining class %s", name);
-    return NIL_VAL;
+    else
+    {
+        runtimeError("Redefining class %s", klass->name);
+        return NIL_VAL;
+    }
+}
+
+VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+{
+    VALUE klass = OBJ_VAL(newNativeClass(name, constructor, destructor));
+    return completeNativeClassDefinition(klass, super_name);
 }
 
 void defineNativeMethod(VALUE klass, NativeMethod function, const char *name, bool isStatic)
 {
-    ObjString *name_string = copyString(name, strlen(name));
-    push(OBJ_VAL(name_string));
+    Value name_string = copyString(name, strlen(name));
+    push(name_string);
     push(klass);
     push(OBJ_VAL(newNativeMethod(klass, function, isStatic)));
     defineMethod(name_string, isStatic);
@@ -69,8 +85,8 @@ void setNativeProperty(VALUE self, const char *property_name, VALUE value)
 {
     push(self);
     push(value);
-    ObjString *name_string = copyString(property_name, strlen(property_name));
-    push(OBJ_VAL(name_string));
+    Value name_string = copyString(property_name, strlen(property_name));
+    push(name_string);
     tableSet(&AS_INSTANCE(self)->fields, name_string, value);
     pop();
     pop();
@@ -80,7 +96,7 @@ void setNativeProperty(VALUE self, const char *property_name, VALUE value)
 VALUE getNativeProperty(VALUE self, const char *property_name)
 {
     Value value;
-    ObjString *name_string = copyString(property_name, strlen(property_name));
+    Value name_string = copyString(property_name, strlen(property_name));
     if (tableGet(&AS_INSTANCE(self)->fields, name_string, &value))
     {
         return value;

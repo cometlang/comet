@@ -18,7 +18,6 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE_INSTANCE(value) isObjType(value, OBJ_NATIVE_INSTANCE)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
-#define IS_STRING(value) isObjType(value, OBJ_STRING)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod *)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
@@ -29,8 +28,6 @@
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
 #define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
-#define AS_STRING(value) ((ObjString *)AS_OBJ(value))
-#define AS_CSTRING(value) (((ObjString *)AS_OBJ(value))->chars)
 
 typedef enum
 {
@@ -43,7 +40,6 @@ typedef enum
     OBJ_INSTANCE,
     OBJ_NATIVE_INSTANCE,
     OBJ_NATIVE,
-    OBJ_STRING,
     OBJ_UPVALUE,
 } ObjType;
 
@@ -77,7 +73,7 @@ typedef struct
     int arity;
     int upvalueCount;
     Chunk chunk;
-    ObjString *name;
+    Value name;
 } ObjFunction;
 
 typedef Value (*NativeFn)(int argCount, Value *args);
@@ -87,14 +83,6 @@ typedef struct
     Obj obj;
     NativeFn function;
 } ObjNative;
-
-struct sObjString
-{
-    Obj obj;
-    int length;
-    char *chars;
-    uint32_t hash;
-};
 
 typedef struct sUpvalue
 {
@@ -115,7 +103,7 @@ typedef struct
 typedef struct sObjClass
 {
     Obj obj;
-    ObjString *name;
+    char *name;
     Table methods;
     Table staticMethods;
     Value operators[NUM_OPERATORS];
@@ -162,20 +150,22 @@ typedef struct
 } ObjBoundMethod;
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
-ObjClass *newClass(ObjString *name);
-ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor constructor, NativeDestructor destructor);
+ObjClass *newClass(const char *name);
+ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor);
 ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(ObjClass *klass);
 ObjNative *newNativeFunction(NativeFn function);
-ObjString *takeString(char *chars, int length);
-ObjString *copyString(const char *chars, int length);
+Value takeString(char *chars, int length);
+Value copyString(const char *chars, int length);
 ObjUpvalue *newUpvalue(Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);
 const char *getOperatorString(OPERATOR operator);
 OPERATOR getOperatorFromToken(TokenType token);
+
+void registerStringClass(Value klass);
 
 static inline bool isObjType(Value value, ObjType type)
 {

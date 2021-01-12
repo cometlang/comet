@@ -26,22 +26,22 @@ void removeWhiteStrings(void)
     tableRemoveWhite(&strings);
 }
 
-ObjString *findInternedString(const char *chars, const size_t length, uint32_t hash)
+Value findInternedString(const char *chars, uint32_t hash)
 {
-    return tableFindString(&strings, chars, length, hash);
+    return tableFindString(&strings, chars, hash);
 }
 
-bool internString(ObjString *string)
+bool internString(Value string)
 {
     return tableSet(&strings, string, NIL_VAL);
 }
 
-bool findGlobal(ObjString *name, Value *value)
+bool findGlobal(Value name, Value *value)
 {
     return tableGet(&globals, name, value);
 }
 
-bool addGlobal(ObjString *name, Value value)
+bool addGlobal(Value name, Value value)
 {
     return tableSet(&globals, name, value);
 }
@@ -53,7 +53,7 @@ static void resetStack(void)
     vm.openUpvalues = NULL;
 }
 
-ObjString *getStackTrace(void)
+static Value getStackTrace(void)
 {
 #define MAX_LINE_LENGTH 1024
     char *stacktrace = ALLOCATE(char, vm.frameCount * MAX_LINE_LENGTH);
@@ -72,9 +72,9 @@ ObjString *getStackTrace(void)
             "%s:%d - %s()\n",
             function->chunk.filename,
             lineno,
-            function->name == NULL ? "script" : function->name->chars);
+            function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
-    ObjString *result = copyString(stacktrace, index);
+    Value result = copyString(stacktrace, index);
     FREE_ARRAY(char, stacktrace, vm.frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
@@ -87,7 +87,7 @@ void runtimeError(const char *format, ...)
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
-    fprintf(stderr, "%s", getStackTrace()->chars);
+    fprintf(stderr, "%s", string_get_cstr(getStackTrace()));
     resetStack();
 }
 
@@ -103,16 +103,15 @@ void initVM(void)
     initTable(&globals);
     initTable(&strings);
 
-    vm.initString = copyString("init", 4);
-
     init_stdlib();
+    vm.initString = copyString("init", 4);
 }
 
 void freeVM(void)
 {
     freeTable(&globals);
     freeTable(&strings);
-    vm.initString = NULL;
+    vm.initString = NIL_VAL;
     freeObjects();
 }
 
@@ -237,17 +236,27 @@ static bool callNativeMethod(Value receiver, ObjNativeMethod *method, int argCou
     return true;
 }
 
-static Value findMethod(ObjClass *klass, ObjString *name)
+static Value findMethod(ObjClass *klass, Value name)
 {
-    Value method;
-    if (!(tableGet(&klass->methods, name, &method)))
+    Value result;
+    if (tableGet(&klass->methods, name, &result))
     {
-        return NIL_VAL;
+        return result;
     }
-    return method;
+    return NIL_VAL;
 }
 
-static bool invokeFromClass(ObjClass *klass, ObjString *name,
+static Value findStaticMethod(ObjClass *klass, Value name)
+{
+    Value result;
+    if (tableGet(&klass->staticMethods, name, &result))
+    {
+        return result;
+    }
+    return NIL_VAL;
+}
+
+static bool invokeFromClass(ObjClass *klass, Value name,
                             int argCount)
 {
     Value method = findMethod(klass, name);
@@ -256,7 +265,7 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
         return call(AS_CLOSURE(method), argCount);
     }
 
-    tableGet(&klass->staticMethods, name, &method);
+    method = findStaticMethod(klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -269,11 +278,11 @@ static bool invokeFromClass(ObjClass *klass, ObjString *name,
 
     if (IS_NIL(method))
     {
-        runtimeError("'%s' has no method called '%s'.", klass->name->chars, name->chars);
+        runtimeError("'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 
-    runtimeError("Can't call method '%s' from '%s'", name->chars, klass->name->chars);
+    runtimeError("Can't call method '%s' from '%s'", string_get_cstr(name), klass->name);
     return false;
 }
 
@@ -285,7 +294,7 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
         if (IS_NIL(instance->klass->operators[operator]))
         {
             runtimeError("Operator '%s' is not defined for class '%s'.",
-                getOperatorString(operator), instance->klass->name->chars);
+                getOperatorString(operator), instance->klass->name);
             return false;
         }
         if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
@@ -301,21 +310,26 @@ static bool callOperator(Value receiver, int argCount, OPERATOR operator)
     return false;
 }
 
-static bool invokeFromNativeInstance(ObjNativeInstance *instance, ObjString *name, int argCount)
+static bool callBinaryOperator(OPERATOR operator)
+{
+    return callOperator(peek(1), 1, operator);
+}
+
+static bool invokeFromNativeInstance(ObjNativeInstance *instance, Value name, int argCount)
 {
     Value method = findMethod(instance->instance.klass, name);
     if (IS_NIL(method))
     {
         runtimeError("'%s' has no method or property '%s'.",
-            instance->instance.klass->name->chars,
-            name->chars);
+            instance->instance.klass->name,
+            string_get_cstr(name));
         return false;
     }
 
     return callNativeMethod(OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
 }
 
-static bool invoke(ObjString *name, int argCount)
+static bool invoke(Value name, int argCount)
 {
     Value receiver = peek(argCount);
 
@@ -323,11 +337,11 @@ static bool invoke(ObjString *name, int argCount)
     {
         if (IS_NIL(receiver))
         {
-            runtimeError("'%s' can't be invoked from nil.", name->chars);
+            runtimeError("'%s' can't be invoked from nil.", string_get_cstr(name));
         }
         else
         {
-            runtimeError("'%s' can't be invoked from a '%s'.", name->chars, objTypeName(OBJ_TYPE(receiver)));
+            runtimeError("'%s' can't be invoked from a '%s'.", string_get_cstr(name), objTypeName(OBJ_TYPE(receiver)));
         }
         return false;
     }
@@ -356,7 +370,7 @@ static bool invoke(ObjString *name, int argCount)
     return invokeFromClass(AS_CLASS(receiver), name, argCount);
 }
 
-Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...)
+Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...)
 {
     push(receiver);
     va_list args;
@@ -374,12 +388,12 @@ Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, 
     return NIL_VAL;
 }
 
-static bool bindMethod(ObjClass *klass, ObjString *name)
+static bool bindMethod(ObjClass *klass, Value name)
 {
     Value method;
     if (!tableGet(&klass->methods, name, &method))
     {
-        runtimeError("Undefined method '%s'.", name->chars);
+        runtimeError("Undefined method '%s'.", string_get_cstr(name));
         return false;
     }
 
@@ -428,7 +442,7 @@ static void closeUpvalues(Value *last)
     }
 }
 
-void defineMethod(ObjString *name, bool isStatic)
+void defineMethod(Value name, bool isStatic)
 {
     Value method = peek(0);
     ObjClass *klass = AS_CLASS(peek(1));
@@ -456,22 +470,6 @@ static bool isFalsey(Value value)
     return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
 }
 
-static void concatenate()
-{
-    ObjString *b = AS_STRING(peek(0));
-    ObjString *a = AS_STRING(peek(1));
-
-    int length = a->length + b->length;
-    char *chars = ALLOCATE(char, length + 1);
-    memcpy(chars, a->chars, a->length);
-    memcpy(chars + a->length, b->chars, b->length);
-    chars[length] = '\0';
-
-    ObjString *result = takeString(chars, length);
-    popMany(2);
-    push(OBJ_VAL(result));
-}
-
 static InterpretResult run(void)
 {
     CallFrame *frame = &vm.frames[vm.frameCount - 1];
@@ -481,7 +479,6 @@ static InterpretResult run(void)
     (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define READ_STRING() AS_STRING(READ_CONSTANT())
 #define BINARY_OP(valueType, op)                        \
     do                                                  \
     {                                                   \
@@ -523,21 +520,21 @@ static InterpretResult run(void)
             push(NIL_VAL);
             break;
         case OP_TRUE:
-            push(BOOL_VAL(true));
+            push(TRUE_VAL);
             break;
         case OP_FALSE:
-            push(BOOL_VAL(false));
+            push(FALSE_VAL);
             break;
         case OP_POP:
             pop();
             break;
         case OP_GET_GLOBAL:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             Value value;
             if (!tableGet(&globals, name, &value))
             {
-                runtimeError("Undefined variable '%s'.", name->chars);
+                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             push(value);
@@ -545,7 +542,7 @@ static InterpretResult run(void)
         }
         case OP_DEFINE_GLOBAL:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             tableSet(&globals, name, peek(0));
             pop();
             break;
@@ -564,11 +561,11 @@ static InterpretResult run(void)
         }
         case OP_SET_GLOBAL:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             if (tableSet(&globals, name, peek(0)))
             {
                 tableDelete(&globals, name);
-                runtimeError("Undefined variable '%s'.", name->chars);
+                runtimeError("Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
             break;
@@ -593,7 +590,7 @@ static InterpretResult run(void)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(0));
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
 
             Value value;
             if (tableGet(&instance->fields, name, &value))
@@ -617,7 +614,7 @@ static InterpretResult run(void)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(1));
-            tableSet(&instance->fields, READ_STRING(), peek(0));
+            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(0));
 
             Value value = pop();
             pop();
@@ -626,7 +623,7 @@ static InterpretResult run(void)
         }
         case OP_GET_SUPER:
         {
-            ObjString *name = READ_STRING();
+            Value name = READ_CONSTANT();
             ObjClass *superclass = AS_CLASS(pop());
             if (!bindMethod(superclass, name))
             {
@@ -649,11 +646,7 @@ static InterpretResult run(void)
             break;
         case OP_ADD:
         {
-            if (IS_STRING(peek(0)) && IS_STRING(peek(1)))
-            {
-                concatenate();
-            }
-            else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
+            if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1)))
             {
                 double b = AS_NUMBER(pop());
                 double a = AS_NUMBER(pop());
@@ -661,8 +654,11 @@ static InterpretResult run(void)
             }
             else
             {
-                runtimeError("Operands must be two numbers or two strings.");
-                return INTERPRET_RUNTIME_ERROR;
+                if (!callBinaryOperator(OPERATOR_PLUS))
+                {
+                    return INTERPRET_RUNTIME_ERROR;;
+                }
+                frame = &vm.frames[vm.frameCount - 1];
             }
             break;
         }
@@ -724,7 +720,7 @@ static InterpretResult run(void)
         }
         case OP_INVOKE:
         {
-            ObjString *method = READ_STRING();
+            Value method = READ_CONSTANT();
             int argCount = READ_BYTE();
             if (!invoke(method, argCount))
             {
@@ -736,7 +732,7 @@ static InterpretResult run(void)
         case OP_SUPER:
         {
             int argCount = READ_BYTE();
-            ObjString *method = READ_STRING();
+            Value method = READ_CONSTANT();
             ObjClass *superclass = AS_CLASS(pop());
             if (!invokeFromClass(superclass, method, argCount))
             {
@@ -787,7 +783,7 @@ static InterpretResult run(void)
             break;
         }
         case OP_CLASS:
-            push(OBJ_VAL(newClass(READ_STRING())));
+            push(OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()))));
             break;
         case OP_INHERIT:
         {
@@ -811,10 +807,10 @@ static InterpretResult run(void)
             break;
         }
         case OP_METHOD:
-            defineMethod(READ_STRING(), false);
+            defineMethod(READ_CONSTANT(), false);
             break;
         case OP_STATIC_METHOD:
-            defineMethod(READ_STRING(), true);
+            defineMethod(READ_CONSTANT(), true);
             break;
         case OP_ENUM:
             // An enum is a class that inherits from Enum and has a bunch of static properties
@@ -851,7 +847,7 @@ static InterpretResult run(void)
         case OP_THROW:
         {
             ObjInstance *exception = AS_INSTANCE(peek(0));
-            runtimeError("Uncaught %s", exception->klass->name->chars);
+            runtimeError("Uncaught %s", exception->klass->name);
             return INTERPRET_RUNTIME_ERROR;;
         }
         case OP_DUP_TOP:

@@ -40,8 +40,8 @@ VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
         // Throw an exception
         return NIL_VAL;
     }
-    const char *path = AS_CSTRING(arguments[0]);
-    const char *mode = AS_CSTRING(arguments[1]);
+    const char *path = string_get_cstr(arguments[0]);
+    const char *mode = string_get_cstr(arguments[1]);
     FILE *fp = fopen(path, mode);
     //should probably check for NULL and free the object, returning NIL, or throwing an exception or something
     ((FileData *)instance->data)->fp = fp;
@@ -64,7 +64,7 @@ VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
-    int result = fprintf(data->fp, "%s", AS_CSTRING(arguments[0]));
+    int result = fprintf(data->fp, "%s", string_get_cstr(arguments[0]));
     return NUMBER_VAL(result);
 }
 
@@ -81,7 +81,7 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
-    return OBJ_VAL(takeString(buffer, fileSize));
+    return takeString(buffer, fileSize);
 }
 
 VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -108,7 +108,7 @@ VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
+    if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(true);
     return BOOL_VAL(false);
 }
@@ -116,7 +116,7 @@ VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *ar
 VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
+    if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(statbuf.st_mode & __S_IFDIR);
     return BOOL_VAL(false);
 }
@@ -124,7 +124,7 @@ VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE 
 VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
-    if (stat(AS_CSTRING(arguments[0]), &statbuf) == 0)
+    if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
         return BOOL_VAL(statbuf.st_mode & __S_IFREG);
     return BOOL_VAL(false);
 }

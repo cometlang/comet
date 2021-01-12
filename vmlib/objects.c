@@ -41,7 +41,7 @@ ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method)
     return bound;
 }
 
-ObjClass *newClass(ObjString *name)
+ObjClass *newClass(Value name)
 {
     ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
     klass->name = name;
@@ -54,7 +54,7 @@ ObjClass *newClass(ObjString *name)
     return klass;
 }
 
-ObjNativeClass *newNativeClass(ObjString *name, NativeConstructor constructor, NativeDestructor destructor)
+ObjNativeClass *newNativeClass(Value name, NativeConstructor constructor, NativeDestructor destructor)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
     klass->klass.name = name;
@@ -92,7 +92,7 @@ ObjFunction *newFunction()
 
 Obj *newInstance(ObjClass *klass)
 {
-    if (strncmp(klass->name->chars, "nil", klass->name->length) == 0)
+    if (string_compare_to_cstr(klass->name, "nil") == 0)
     {
         fprintf(stderr, "Can't instantiate nil\n");
         abort();
@@ -174,7 +174,7 @@ static uint32_t hashString(const char *key, int length)
 Value takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, length, hash);
+    Value interned = findInternedString(chars, hash);
     if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
@@ -186,7 +186,7 @@ Value takeString(char *chars, int length)
 Value copyString(const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, length, hash);
+    Value interned = findInternedString(chars, hash);
     if (interned != NIL_VAL)
         return interned;
     char *heapChars = ALLOCATE(char, length + 1);
@@ -226,7 +226,7 @@ void printObject(Value value)
     {
     case OBJ_CLASS:
     case OBJ_NATIVE_CLASS:
-        printf("%s Class", AS_CLASS(value)->name->chars);
+        printf("%s Class", string_get_cstr(AS_CLASS(value)->name));
         break;
     case OBJ_NATIVE_METHOD:
         printf("<native method>");
@@ -243,13 +243,10 @@ void printObject(Value value)
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
         // obj.to_string();
-        printf("%s instance", AS_INSTANCE(value)->klass->name->chars);
+        printf("%s instance", string_get_cstr(AS_INSTANCE(value)->klass->name));
         break;
     case OBJ_NATIVE:
         printf("<native fn>");
-        break;
-    case OBJ_STRING:
-        printf("%s", get_cstr(value));
         break;
     case OBJ_UPVALUE:
         printf("upvalue");
@@ -281,8 +278,6 @@ const char *objTypeName(ObjType type)
         return "native instance";
     case OBJ_NATIVE:
         return "native function";
-    case OBJ_STRING:
-        return "string";
     case OBJ_UPVALUE:
         return "upvalue";
     }

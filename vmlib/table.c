@@ -26,7 +26,7 @@ void freeTable(Table *table)
 static Entry *findEntry(Entry *entries, int capacity,
                         Value key)
 {
-    uint32_t index = obj_hash(key) & capacity;
+    uint32_t index = obj_hash(key, 0, NULL) & capacity;
     Entry *tombstone = NULL;
 
     for (;;)
@@ -146,11 +146,10 @@ void tableAddAll(Table *from, Table *to)
     }
 }
 
-ObjString *tableFindString(Table *table, const char *chars, int length,
-                           uint32_t hash)
+Value tableFindString(Table *table, const char *chars, uint32_t hash)
 {
     if (table->count == 0)
-        return NULL;
+        return NIL_VAL;
 
     uint32_t index = hash & table->capacity;
 
@@ -162,11 +161,11 @@ ObjString *tableFindString(Table *table, const char *chars, int length,
         {
             // Stop if we find an empty non-tombstone entry.
             if (IS_NIL(entry->value))
-                return NULL;
+                return NIL_VAL;
         }
-        else if (entry->key->length == length &&
-                 entry->key->hash == hash &&
-                 memcmp(entry->key->chars, chars, length) == 0)
+        else if (
+            obj_hash(entry->key, 0, NULL) == hash &&
+            string_compare_to_cstr(entry->key, chars) == 0)
         {
             // We found it.
             return entry->key;

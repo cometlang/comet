@@ -49,7 +49,7 @@ void initVM(void);
 
 void freeVM(void);
 
-Value findInternedString(const char *chars, const size_t length, uint32_t hash);
+Value findInternedString(const char *chars, uint32_t hash);
 
 bool internString(Value string);
 void markGlobals(void);
@@ -60,13 +60,13 @@ bool findGlobal(Value name, Value *value);
 
 InterpretResult interpret(const SourceFile *source);
 void runtimeError(const char *format, ...);
-void defineMethod(ObjString *name, bool isStatic);
+void defineMethod(Value name, bool isStatic);
 void defineOperator(OPERATOR operator);
 
 void push(Value value);
 Value pop(void);
 Value peek(int distance);
 
-Value nativeInvokeMethod(Value receiver, ObjString *method_name, int arg_count, ...);
+Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...);
 
 #endif

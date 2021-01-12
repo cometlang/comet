@@ -1,9 +1,10 @@
+#include <string.h>
+
 #include "comet.h"
 
 VALUE instanceof(VALUE self, VALUE klass)
 {
-    Obj *lhs = AS_OBJ(self);
-    if ((lhs->type == OBJ_INSTANCE || lhs->type == OBJ_NATIVE_INSTANCE) && IS_CLASS(klass))
+    if ((IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self)) && IS_CLASS(klass))
     {
         ObjInstance *instance = AS_INSTANCE(self);
         if (instance->klass == AS_CLASS(klass))
@@ -18,7 +19,7 @@ VALUE instanceof(VALUE self, VALUE klass)
     return FALSE_VAL;
 }
 
-VALUE obj_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
+VALUE obj_equals(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     Obj *rhs = AS_OBJ(arguments[0]);
     return BOOL_VAL(AS_OBJ(self) == rhs);
@@ -38,9 +39,10 @@ VALUE obj_hash(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NUMBER_VAL(hash);
 }
 
-VALUE obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString("Object", 6);
+    ObjInstance *instance = AS_INSTANCE(self);
+    return copyString(instance->klass->name, strlen(instance->klass->name));
 }
 
 VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -14,16 +14,16 @@ void defineNativeFunction(VM *vm, const char *name, NativeFn function)
     pop(vm);
 }
 
-VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
+VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
-    return OBJ_VAL(newNativeClass(name, constructor, destructor));
+    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor));
 }
 
-VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
+VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
 {
     ObjClass *klass = AS_CLASS(klass_);
     Value name_string = copyString(klass->name, strlen(klass->name));
-    push(&vm, name_string);
+    push(vm, name_string);
     if (string_compare_to_cstr(name_string, "Object") !=0)
     {
         Value parent;
@@ -51,15 +51,15 @@ VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name)
     }
     else
     {
-        runtimeError(&vm, "Redefining class %s", klass->name);
+        runtimeError(vm, "Redefining class %s", klass->name);
         return NIL_VAL;
     }
 }
 
-VALUE defineNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
 {
-    VALUE klass = OBJ_VAL(newNativeClass(name, constructor, destructor));
-    return completeNativeClassDefinition(klass, super_name);
+    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor));
+    return completeNativeClassDefinition(vm, klass, super_name);
 }
 
 void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, bool isStatic)

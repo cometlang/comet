@@ -15,13 +15,26 @@ static InterpretResult run(VM *vm);
 __thread VM vm;
 static Table globals;
 static Table strings;
-static ObjString *initString;
+Value initString;
+
+void initGlobals(void)
+{
+    initTable(&globals);
+    initTable(&strings);
+}
+
+void freeGlobals(void)
+{
+    freeTable(&globals);
+    freeTable(&strings);
+    initString = NIL_VAL;
+}
 
 void markGlobals(void)
 {
     markTable(&globals);
     markTable(&strings);
-    markObject((Obj *)initString);
+    markObject(AS_OBJ(initString));
 }
 
 void removeWhiteStrings(void)
@@ -56,7 +69,7 @@ static void resetStack(VM *vm)
     vm->openUpvalues = NULL;
 }
 
-ObjString *getStackTrace(VM *vm)
+Value getStackTrace(VM *vm)
 {
 #define MAX_LINE_LENGTH 1024
     char *stacktrace = ALLOCATE(char, vm->frameCount * MAX_LINE_LENGTH);
@@ -101,18 +114,12 @@ void initVM(VM *vm)
     vm->grayCount = 0;
     vm->grayCapacity = 0;
     vm->grayStack = NULL;
-    initTable(&globals);
-    initTable(&strings);
 
     register_thread(vm);
-    initString = copyString("init", 4);
 }
 
 void freeVM(VM *vm)
 {
-    freeTable(&globals);
-    freeTable(&strings);
-    vm.initString = NIL_VAL;
     freeObjects(vm);
     deregister_thread(vm);
 }
@@ -182,7 +189,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
         case OBJ_CLASS:
         {
             ObjClass *klass = AS_CLASS(callee);
-            Value instance = OBJ_VAL(newInstance(klass));
+            Value instance = OBJ_VAL(newInstance(vm, klass));
             vm->stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
@@ -312,9 +319,9 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
     return false;
 }
 
-static bool callBinaryOperator(OPERATOR operator)
+static bool callBinaryOperator(VM *vm, OPERATOR operator)
 {
-    return callOperator(peek(1), 1, operator);
+    return callOperator(vm, peek(vm, 1), 1, operator);
 }
 
 static bool invokeFromNativeInstance(VM *vm, ObjNativeInstance *instance, Value name, int argCount)
@@ -664,11 +671,11 @@ static InterpretResult run(VM *vm)
             }
             else
             {
-                if (!callBinaryOperator(OPERATOR_PLUS))
+                if (!callBinaryOperator(vm, OPERATOR_PLUS))
                 {
                     return INTERPRET_RUNTIME_ERROR;;
                 }
-                frame = &vm.frames[vm.frameCount - 1];
+                frame = &vm->frames[vm->frameCount - 1];
             }
             break;
         }
@@ -862,7 +869,7 @@ static InterpretResult run(VM *vm)
         }
         case OP_DUP_TOP:
         {
-            push(peek(0));
+            push(vm, peek(vm, 0));
             break;
         }
         }

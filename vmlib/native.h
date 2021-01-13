@@ -12,6 +12,6 @@ void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE valu
 VALUE getNativeProperty(VALUE self, const char *property);
 
 
-VALUE bootstrapNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor);
-VALUE completeNativeClassDefinition(VALUE klass_, const char *super_name);
+VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor);
+VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name);
 #endif

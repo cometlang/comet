@@ -156,12 +156,12 @@ VALUE string_concatenate(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
-void init_string(VALUE obj_klass)
+void init_string(VM *vm, VALUE obj_klass)
 {
-    VALUE klass = bootstrapNativeClass("String", string_constructor, string_destructor);
+    VALUE klass = bootstrapNativeClass(vm, "String", string_constructor, string_destructor);
     registerStringClass(klass);
-    completeNativeClassDefinition(obj_klass, NULL);
-    completeNativeClassDefinition(klass, NULL);
+    completeNativeClassDefinition(vm, obj_klass, NULL);
+    completeNativeClassDefinition(vm, klass, NULL);
     defineNativeMethod(vm, klass, &string_trim_left, "left_trim", false);
     defineNativeMethod(vm, klass, &string_trim_right, "right_trim", false);
     defineNativeMethod(vm, klass, &string_find, "find", false);

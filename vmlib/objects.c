@@ -5,9 +5,6 @@
 #include "mem.h"
 #include "objects.h"
 #include "scanner.h"
-#include "table.h"
-#include "value.h"
-#include "vm.h"
 #include "comet.h"
 
 static ObjClass *_string_class;
@@ -61,10 +58,10 @@ ObjClass *newClass(const char *name)
     return klass;
 }
 
-ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
+ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
-    push(OBJ_VAL(klass));
+    push(vm, OBJ_VAL(klass));
     init_class((ObjClass *)klass, name);
     klass->constructor = constructor;
     klass->destructor = destructor;
@@ -96,7 +93,7 @@ ObjFunction *newFunction()
     return function;
 }
 
-Obj *newInstance(ObjClass *klass)
+Obj *newInstance(VM *vm, ObjClass *klass)
 {
     if (OBJ_VAL(klass) == NIL_VAL)
     {
@@ -120,12 +117,12 @@ Obj *newInstance(ObjClass *klass)
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
-        push(OBJ_VAL(native_klass));
+        push(vm, OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {
             instance->data = native_klass->constructor();
         }
-        pop();
+        pop(vm);
         return (Obj *)instance;
     }
     default:
@@ -155,7 +152,7 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
 
 static Value allocateString(const char *chars, int length)
 {
-    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
+    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(&vm, _string_class);
     Value string_obj = OBJ_VAL(string);
     push(&vm, string_obj);
     string->data = string_set_cstr(string, chars, length);

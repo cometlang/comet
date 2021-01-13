@@ -33,7 +33,7 @@ void file_destructor(void *data)
 
 VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(AS_CLASS(klass));
+    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(&vm, AS_CLASS(klass));
     if (arg_count != 2)
     {
         fprintf(stderr, "Wrong number of arguments: got %d, needed 2\n", arg_count);

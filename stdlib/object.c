@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "comet.h"
+#include "cometlib.h"
 
 VALUE instanceof(VALUE self, VALUE klass)
 {
@@ -50,10 +51,10 @@ VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*argumen
     return FALSE_VAL;
 }
 
-void init_object(VALUE klass)
+void init_object(VM *vm, VALUE klass)
 {
     defineNativeMethod(vm, klass, &obj_hash, "hash", false);
     defineNativeMethod(vm, klass, &obj_to_string, "to_string", false);
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", false);
-    defineNativeOperator(klass, &obj_equals, OPERATOR_EQUALS);
+    defineNativeOperator(vm, klass, &obj_equals, OPERATOR_EQUALS);
 }

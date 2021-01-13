@@ -73,8 +73,10 @@ static void runFile(const char *path)
 
 int main(int argc, const char **argv)
 {
+    initGlobals();
     initVM(&virtualMachine);
     init_stdlib(&virtualMachine);
+    initString = copyString("init", 4);
 
     if (argc == 1)
     {
@@ -90,6 +92,7 @@ int main(int argc, const char **argv)
         exit(64);
     }
 
-    freeVM(&vm);
+    freeVM(&virtualMachine);
+    freeGlobals();
     return 0;
 }

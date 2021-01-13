@@ -2,7 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
-#include "objects.h"
+#include "object_defs.h"
 #include "table.h"
 #include "value.h"
 #include "common.h"
@@ -43,8 +43,11 @@ typedef enum
 
 extern __thread VM vm;
 
-void initVM(VM *vm);
+extern Value initString;
+void initGlobals(void);
+void freeGlobals(void);
 
+void initVM(VM *vm);
 void freeVM(VM *vm);
 
 Value findInternedString(const char *chars, uint32_t hash);
@@ -66,6 +69,6 @@ Value pop(VM *vm);
 Value peek(VM *vm, int distance);
 
 Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_count, ...);
-ObjString *getStackTrace(VM *vm);
+Value getStackTrace(VM *vm);
 
 #endif

@@ -76,8 +76,8 @@ void string_destructor(void *data)
 
 VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    StringData *lhs = (StringData *) AS_NATIVE_INSTANCE(self)->data;
-    StringData *rhs = (StringData *) AS_NATIVE_INSTANCE(arguments[0])->data;
+    StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
     if (lhs->length != rhs->length)
         return FALSE_VAL;
 

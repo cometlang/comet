@@ -884,7 +884,7 @@ static InterpretResult run(VM *vm)
 
 InterpretResult interpret(VM *vm, const SourceFile *source)
 {
-    ObjFunction *function = compile(source);
+    ObjFunction *function = compile(source, vm);
     if (function == NULL)
         return INTERPRET_COMPILE_ERROR;
 

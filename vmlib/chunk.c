@@ -30,14 +30,6 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line)
     chunk->count++;
 }
 
-int addConstant(Chunk *chunk, Value value)
-{
-    push(&vm, value);
-    writeValueArray(&chunk->constants, value);
-    pop(&vm);
-    return chunk->constants.count - 1;
-}
-
 void freeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);

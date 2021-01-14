@@ -94,6 +94,8 @@ static Compiler *current = NULL;
 
 ClassCompiler *currentClass = NULL;
 
+static VM *main_thread = NULL;
+
 static Chunk *currentChunk()
 {
     return &current->function->chunk;
@@ -214,6 +216,14 @@ static void emitReturn()
         emitByte(OP_NIL);
     }
     emitByte(OP_RETURN);
+}
+
+static int addConstant(Chunk *chunk, Value value)
+{
+    push(main_thread, value);
+    writeValueArray(&chunk->constants, value);
+    pop(main_thread);
+    return chunk->constants.count - 1;
 }
 
 static uint8_t makeConstant(Value value)
@@ -1317,9 +1327,10 @@ static void statement()
     }
 }
 
-ObjFunction *compile(const SourceFile *source)
+ObjFunction *compile(const SourceFile *source, VM *thread)
 {
     initScanner(source);
+    main_thread = thread;
 
     parser.filename = source->path;
     parser.hadError = false;

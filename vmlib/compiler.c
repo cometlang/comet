@@ -800,6 +800,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_FUN
     {NULL, NULL, PREC_NONE},         // TOKEN_IF
     {NULL, NULL, PREC_NONE},         // TOKEN_IN
+    {NULL, NULL, PREC_NONE},         // TOKEN_INSTANCEOF
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
     {NULL, NULL, PREC_NONE},         // TOKEN_OPERATOR
     {NULL, or_, PREC_OR},            // TOKEN_OR

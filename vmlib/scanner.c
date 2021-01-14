@@ -182,7 +182,13 @@ static TokenType identifierType()
                 case 'f':
                     return checkKeyword(1, 1, "f", TOKEN_IF);
                 case 'n':
+                {
+                    if (scanner.current - scanner.start > 2)
+                    {
+                        return checkKeyword(2, 8, "stanceof", TOKEN_INSTANCEOF);
+                    }
                     return checkKeyword(1, 1, "n", TOKEN_IN);
+                }
             }
         }
         break;

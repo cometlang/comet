@@ -5,24 +5,21 @@
 #include "mem.h"
 #include "objects.h"
 #include "scanner.h"
-#include "table.h"
-#include "value.h"
-#include "vm.h"
 #include "comet.h"
 
 static ObjClass *_string_class;
 
-#define ALLOCATE_OBJ(type, objectType) \
-    (type *)allocateObject(sizeof(type), objectType)
+#define ALLOCATE_OBJ(vm, type, objectType) \
+    (type *)allocateObject(vm, sizeof(type), objectType)
 
-static Obj *allocateObject(size_t size, ObjType type)
+static Obj *allocateObject(VM *vm, size_t size, ObjType type)
 {
     Obj *object = (Obj *)reallocate(NULL, 0, size);
     object->type = type;
     object->isMarked = false;
 
-    object->next = vm.objects;
-    vm.objects = object;
+    object->next = vm->objects;
+    vm->objects = object;
 
 #if DEBUG_LOG_GC
     printf("%p allocate %ld for %s\n", (void *)object, size, objTypeName(type));
@@ -31,10 +28,9 @@ static Obj *allocateObject(size_t size, ObjType type)
     return object;
 }
 
-ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method)
+ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method)
 {
-    ObjBoundMethod *bound = ALLOCATE_OBJ(ObjBoundMethod,
-                                         OBJ_BOUND_METHOD);
+    ObjBoundMethod *bound = ALLOCATE_OBJ(vm, ObjBoundMethod, OBJ_BOUND_METHOD);
 
     bound->receiver = receiver;
     bound->method = method;
@@ -54,40 +50,40 @@ static void init_class(ObjClass *klass, const char *name)
     }
 }
 
-ObjClass *newClass(const char *name)
+ObjClass *newClass(VM *vm, const char *name)
 {
-    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
     init_class(klass, name);
     return klass;
 }
 
-ObjNativeClass *newNativeClass(const char *name, NativeConstructor constructor, NativeDestructor destructor)
+ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor)
 {
-    ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
-    push(OBJ_VAL(klass));
+    ObjNativeClass *klass = ALLOCATE_OBJ(vm, ObjNativeClass, OBJ_NATIVE_CLASS);
+    push(vm, OBJ_VAL(klass));
     init_class((ObjClass *)klass, name);
     klass->constructor = constructor;
     klass->destructor = destructor;
     return klass;
 }
 
-ObjClosure *newClosure(ObjFunction *function)
+ObjClosure *newClosure(VM *vm, ObjFunction *function)
 {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue *, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++)
     {
         upvalues[i] = NULL;
     }
-    ObjClosure *closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    ObjClosure *closure = ALLOCATE_OBJ(vm, ObjClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
     return closure;
 }
 
-ObjFunction *newFunction()
+ObjFunction *newFunction(VM *vm)
 {
-    ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
     function->upvalueCount = 0;
@@ -96,7 +92,7 @@ ObjFunction *newFunction()
     return function;
 }
 
-Obj *newInstance(ObjClass *klass)
+Obj *newInstance(VM *vm, ObjClass *klass)
 {
     if (OBJ_VAL(klass) == NIL_VAL)
     {
@@ -109,23 +105,23 @@ Obj *newInstance(ObjClass *klass)
     {
     case OBJ_CLASS:
     {
-        ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+        ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
         instance->klass = klass;
         initTable(&instance->fields);
         return (Obj *)instance;
     }
     case OBJ_NATIVE_CLASS:
     {
-        ObjNativeInstance *instance = ALLOCATE_OBJ(ObjNativeInstance, OBJ_NATIVE_INSTANCE);
+        ObjNativeInstance *instance = ALLOCATE_OBJ(vm, ObjNativeInstance, OBJ_NATIVE_INSTANCE);
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
-        push(OBJ_VAL(native_klass));
+        push(vm, OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {
             instance->data = native_klass->constructor();
         }
-        pop();
+        pop(vm);
         return (Obj *)instance;
     }
     default:
@@ -137,30 +133,30 @@ Obj *newInstance(ObjClass *klass)
     }
 }
 
-ObjNative *newNativeFunction(NativeFn function)
+ObjNative *newNativeFunction(VM *vm, NativeFn function)
 {
-    ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    ObjNative *native = ALLOCATE_OBJ(vm, ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isStatic)
+ObjNativeMethod *newNativeMethod(VM *vm, Value receiver, NativeMethod function, bool isStatic)
 {
-    ObjNativeMethod *method = ALLOCATE_OBJ(ObjNativeMethod, OBJ_NATIVE_METHOD);
+    ObjNativeMethod *method = ALLOCATE_OBJ(vm, ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->receiver = receiver;
     method->function = function;
     method->isStatic = isStatic;
     return method;
 }
 
-static Value allocateString(const char *chars, int length)
+static Value allocateString(VM *vm, const char *chars, int length)
 {
-    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(_string_class);
+    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(vm, _string_class);
     Value string_obj = OBJ_VAL(string);
-    push(string_obj);
+    push(vm, string_obj);
     string->data = string_set_cstr(string, chars, length);
-    internString(string_obj);
-    pop();
+    internString(vm, string_obj);
+    pop(vm);
 
     return string_obj;
 }
@@ -178,31 +174,31 @@ static uint32_t hashString(const char *key, int length)
     return hash;
 }
 
-Value takeString(char *chars, int length)
+Value takeString(VM *vm, char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, hash);
+    Value interned = findInternedString(vm, chars, hash);
     if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
         return interned;
     }
-    return allocateString(chars, length);
+    return allocateString(vm, chars, length);
 }
 
-Value copyString(const char *chars, int length)
+Value copyString(VM *vm, const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, hash);
+    Value interned = findInternedString(vm, chars, hash);
     if (interned != NIL_VAL)
         return interned;
 
-    return allocateString(chars, length);
+    return allocateString(vm, chars, length);
 }
 
-ObjUpvalue *newUpvalue(Value *slot)
+ObjUpvalue *newUpvalue(VM *vm, Value *slot)
 {
-    ObjUpvalue *upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+    ObjUpvalue *upvalue = ALLOCATE_OBJ(vm, ObjUpvalue, OBJ_UPVALUE);
     upvalue->closed = NIL_VAL;
     upvalue->location = slot;
     upvalue->next = NULL;

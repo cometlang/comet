@@ -24,17 +24,17 @@ typedef struct {
     int count;
 } HashTableIterator;
 
-VALUE hash_iterable_contains_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE hash_iterable_empty_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_empty_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE hash_iterable_iterator(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_iterator(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     // This needs to be a HashIterator class and return an instance of that.
     // Ideally this would be done as a generator method, instead of always
@@ -69,9 +69,9 @@ void hash_destructor(void *data)
     FREE(HashTable, table);
 }
 
-static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
+static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key)
 {
-    uint32_t index = obj_hash(key, 0, NULL) & capacity;
+    uint32_t index = obj_hash(vm, key, 0, NULL) & capacity;
     HashEntry *tombstone = NULL;
 
     for (;;)
@@ -102,21 +102,21 @@ static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
     }
 }
 
-VALUE hash_get(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_get(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
         return false;
 
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry->key == NIL_VAL)
         return NIL_VAL;  // throw an exception
 
     return entry->value;
 }
 
-static void adjust_capacity(HashTable *table, int capacity)
+static void adjust_capacity(VM *vm, HashTable *table, int capacity)
 {
     HashEntry *entries = ALLOCATE(HashEntry, capacity + 1);
     for (int i = 0; i <= capacity; i++)
@@ -132,7 +132,7 @@ static void adjust_capacity(HashTable *table, int capacity)
         if (entry->key == NIL_VAL)
             continue;
 
-        HashEntry *dest = find_entry(entries, capacity, entry->key);
+        HashEntry *dest = find_entry(vm, entries, capacity, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
         table->count++;
@@ -143,19 +143,19 @@ static void adjust_capacity(HashTable *table, int capacity)
     table->capacity = capacity;
 }
 
-VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
         // Figure out the new table size.
         int capacity = GROW_CAPACITY(table->capacity + 1) - 1;
-        adjust_capacity(table, capacity);
+        adjust_capacity(vm, table, capacity);
     }
 
     VALUE key = arguments[0];
     VALUE value = arguments[1];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
 
     bool isNewKey = entry->key == NIL_VAL;
     if (isNewKey && IS_NIL(entry->value))
@@ -166,7 +166,7 @@ VALUE hash_add(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return isNewKey;
 }
 
-VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
@@ -174,7 +174,7 @@ VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
     // Find the entry.
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry->key == NIL_VAL)
         return false;
 
@@ -185,7 +185,7 @@ VALUE hash_remove(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return true;
 }
 
-void hash_add_all(HashTable *from, HashTable *to)
+void hash_add_all(VM *vm, HashTable *from, HashTable *to)
 {
     for (size_t i = 0; i <= from->capacity; i++)
     {
@@ -193,34 +193,34 @@ void hash_add_all(HashTable *from, HashTable *to)
         VALUE args[2] = {entry->key, entry->value};
         if (entry->key != NIL_VAL)
         {
-            hash_add(OBJ_VAL(to), 2, args);
+            hash_add(vm, OBJ_VAL(to), 2, args);
         }
     }
 }
 
-void table_remove_white(HashTable *table)
+void table_remove_white(VM *vm, HashTable *table)
 {
     for (size_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
         if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
         {
-            hash_remove(OBJ_VAL(table), 1, &entry->key);
+            hash_remove(vm, OBJ_VAL(table), 1, &entry->key);
         }
     }
 }
 
-void mark_table(HashTable *table)
+void mark_table(VM *vm, HashTable *table)
 {
     for (size_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
-        markValue(entry->key);
-        markValue(entry->value);
+        markValue(vm, entry->key);
+        markValue(vm, entry->value);
     }
 }
 
-VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
 
     // for (int i = 0; i <= table->capacity; i++)
@@ -235,15 +235,15 @@ VALUE hash_obj_to_string(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
-void init_hash(void)
+void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass("Hash", hash_constructor, hash_destructor, NULL);
-    defineNativeMethod(klass, &hash_add, "add", false);
-    defineNativeMethod(klass, &hash_remove, "remove", false);
-    defineNativeMethod(klass, &hash_iterable_contains_q, "contains?", false);
-    defineNativeMethod(klass, &hash_iterable_empty_q, "empty?", false);
-    defineNativeMethod(klass, &hash_iterable_iterator, "iterator", false);
-    defineNativeMethod(klass, &hash_obj_to_string, "to_string", false);
-    defineNativeOperator(klass, &hash_get, OPERATOR_INDEX);
-    defineNativeOperator(klass, &hash_add, OPERATOR_INDEX_ASSIGN);
+    VALUE klass = defineNativeClass(vm, "Hash", hash_constructor, hash_destructor, NULL);
+    defineNativeMethod(vm, klass, &hash_add, "add", false);
+    defineNativeMethod(vm, klass, &hash_remove, "remove", false);
+    defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", false);
+    defineNativeMethod(vm, klass, &hash_iterable_empty_q, "empty?", false);
+    defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", false);
+    defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", false);
+    defineNativeOperator(vm, klass, &hash_get, OPERATOR_INDEX);
+    defineNativeOperator(vm, klass, &hash_add, OPERATOR_INDEX_ASSIGN);
 }

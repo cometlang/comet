@@ -94,6 +94,8 @@ static Compiler *current = NULL;
 
 ClassCompiler *currentClass = NULL;
 
+static VM *main_thread = NULL;
+
 static Chunk *currentChunk()
 {
     return &current->function->chunk;
@@ -216,6 +218,14 @@ static void emitReturn()
     emitByte(OP_RETURN);
 }
 
+static int addConstant(Chunk *chunk, Value value)
+{
+    push(main_thread, value);
+    writeValueArray(&chunk->constants, value);
+    pop(main_thread);
+    return chunk->constants.count - 1;
+}
+
 static uint8_t makeConstant(Value value)
 {
     int constant = addConstant(currentChunk(), value);
@@ -254,13 +264,13 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction();
+    compiler->function = newFunction(main_thread);
     compiler->function->chunk.filename = parser.filename;
     current = compiler;
 
     if (type != TYPE_SCRIPT)
     {
-        current->function->name = copyString(parser.previous.start,
+        current->function->name = copyString(main_thread, parser.previous.start,
                                              parser.previous.length);
     }
 
@@ -329,7 +339,7 @@ static void parsePrecedence(Precedence precedence);
 
 static uint8_t identifierConstant(Token *name)
 {
-    return makeConstant(copyString(name->start, name->length));
+    return makeConstant(copyString(main_thread, name->start, name->length));
 }
 
 static bool identifiersEqual(Token *a, Token *b)
@@ -616,7 +626,7 @@ static void or_(bool UNUSED(canAssign))
 
 static void string(bool UNUSED(canAssign))
 {
-    emitConstant(copyString(parser.previous.start + 1,
+    emitConstant(copyString(main_thread, parser.previous.start + 1,
                             parser.previous.length - 2));
 }
 
@@ -1317,9 +1327,10 @@ static void statement()
     }
 }
 
-ObjFunction *compile(const SourceFile *source)
+ObjFunction *compile(const SourceFile *source, VM *thread)
 {
     initScanner(source);
+    main_thread = thread;
 
     parser.filename = source->path;
     parser.hadError = false;
@@ -1338,12 +1349,12 @@ ObjFunction *compile(const SourceFile *source)
     return parser.hadError ? NULL : function;
 }
 
-void markCompilerRoots()
+void markCompilerRoots(VM *vm)
 {
     Compiler *compiler = current;
     while (compiler != NULL)
     {
-        markObject((Obj *)compiler->function);
+        markObject(vm, (Obj *)compiler->function);
         compiler = compiler->enclosing;
     }
 }

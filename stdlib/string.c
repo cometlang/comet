@@ -74,7 +74,7 @@ void string_destructor(void *data)
     FREE(StringData, string_data);
 }
 
-VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
     StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
@@ -84,97 +84,94 @@ VALUE string_equals(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arg
     return BOOL_VAL(strncmp(lhs->chars, rhs->chars, lhs->length) == 0);
 }
 
-VALUE string_hash(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_hash(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     return NUMBER_VAL(data->hash);
 }
 
-VALUE string_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return self;
 }
 
-VALUE string_trim(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_trim(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_trim_left(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_trim_left(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_trim_right(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_find(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_split(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_split(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_replace(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_replace(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_starts_with_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_starts_with_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_ends_with_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_ends_with_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_to_lower(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_to_lower(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_to_upper(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_to_upper(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE string_empty_q(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
     return BOOL_VAL(data->length == 0);
 }
 
-VALUE string_concatenate(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_concatenate(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-void init_string(VALUE obj_klass)
+void init_string(VM *vm, VALUE obj_klass)
 {
-    VALUE klass = bootstrapNativeClass("String", string_constructor, string_destructor);
+    VALUE klass = bootstrapNativeClass(vm, "String", string_constructor, string_destructor);
     registerStringClass(klass);
-    completeNativeClassDefinition(obj_klass, NULL);
-    completeNativeClassDefinition(klass, NULL);
-    defineNativeMethod(klass, &string_hash, "hash", false);
-    defineNativeMethod(klass, &string_to_string, "to_string", false);
-    defineNativeMethod(klass, &string_trim, "trim", false);
-    defineNativeMethod(klass, &string_trim_left, "left_trim", false);
-    defineNativeMethod(klass, &string_trim_right, "right_trim", false);
-    defineNativeMethod(klass, &string_find, "find", false);
-    defineNativeMethod(klass, &string_split, "split", false);
-    defineNativeMethod(klass, &string_replace, "replace", false);
-    defineNativeMethod(klass, &string_starts_with_q, "starts_with?", false);
-    defineNativeMethod(klass, &string_ends_with_q, "ends_with?", false);
-    defineNativeMethod(klass, &string_empty_q, "empty?", false);
-    defineNativeMethod(klass, &string_to_lower, "to_lower", false);
-    defineNativeMethod(klass, &string_to_upper, "to_upper", false);
-    defineNativeOperator(klass, &string_concatenate, OPERATOR_PLUS);
-    defineNativeOperator(klass, &string_equals, OPERATOR_EQUALS);
+    completeNativeClassDefinition(vm, obj_klass, NULL);
+    completeNativeClassDefinition(vm, klass, NULL);
+    defineNativeMethod(vm, klass, &string_trim_left, "left_trim", false);
+    defineNativeMethod(vm, klass, &string_trim_right, "right_trim", false);
+    defineNativeMethod(vm, klass, &string_find, "find", false);
+    defineNativeMethod(vm, klass, &string_split, "split", false);
+    defineNativeMethod(vm, klass, &string_replace, "replace", false);
+    defineNativeMethod(vm, klass, &string_starts_with_q, "starts_with?", false);
+    defineNativeMethod(vm, klass, &string_ends_with_q, "ends_with?", false);
+    defineNativeMethod(vm, klass, &string_empty_q, "empty?", false);
+    defineNativeMethod(vm, klass, &string_to_lower, "to_lower", false);
+    defineNativeMethod(vm, klass, &string_to_upper, "to_upper", false);
+    defineNativeOperator(vm, klass, &string_concatenate, OPERATOR_PLUS);
+    defineNativeOperator(vm, klass, &string_equals, OPERATOR_EQUALS);
 }

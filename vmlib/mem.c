@@ -2,7 +2,6 @@
 #include "common.h"
 #include "mem.h"
 #include "compiler.h"
-#include "vm.h"
 
 #if DEBUG_LOG_GC
 #include <stdio.h>
@@ -12,19 +11,62 @@
 #define GC_HEAP_GROW_FACTOR 2
 #define MINIMUM_GC_MARK 8192
 
+size_t _bytes_allocated = 0;
+size_t _next_GC = 1024 * 1024;
+
+static void collectGarbage(VM *vm);
+
+static VM **threads;
+static size_t num_threads = 0;
+static size_t thread_capacity = 0;
+
+void register_thread(VM *vm)
+{
+    if (thread_capacity <= num_threads)
+    {
+        size_t new_capacity = GROW_CAPACITY(thread_capacity);
+        threads = GROW_ARRAY(threads, VM*, thread_capacity, new_capacity);
+        thread_capacity = new_capacity;
+    }
+    threads[num_threads++] = vm;
+}
+
+void deregister_thread(VM *vm)
+{
+    size_t index = 0;
+    for (; index < num_threads; index++)
+    {
+        if (threads[index] == vm)
+        {
+            threads[index] = NULL;
+        }
+    }
+    for (; index < (num_threads - 1); index++)
+    {
+        threads[index] = threads[index + 1];
+    }
+    num_threads--;
+}
+
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
-    vm.bytesAllocated += newSize - oldSize;
+    _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        collectGarbage();
-#if DEBUG_STRESS_GC
-        if (vm.bytesAllocated > vm.nextGC)
+        for (size_t i = 0; i < num_threads; i++)
         {
-            collectGarbage();
+            collectGarbage(threads[i]);
         }
-#endif
     }
+#if DEBUG_STRESS_GC
+    if (_bytes_allocated > _next_GC)
+    {
+        for (int i = 0; i < num_threads; i++)
+        {
+            collectGarbage(threads[i]);
+        }
+    }
+#endif
     if (newSize == 0)
     {
         free(previous);
@@ -34,7 +76,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     return realloc(previous, newSize);
 }
 
-void markObject(Obj *object)
+void markObject(VM *vm, Obj *object)
 {
     if (object == NULL)
         return;
@@ -49,32 +91,32 @@ void markObject(Obj *object)
 
     object->isMarked = true;
 
-    if (vm.grayCapacity < vm.grayCount + 1)
+    if (vm->grayCapacity < vm->grayCount + 1)
     {
-        vm.grayCapacity = GROW_CAPACITY(vm.grayCapacity);
-        vm.grayStack = realloc(vm.grayStack,
-                               sizeof(Obj *) * vm.grayCapacity);
+        vm->grayCapacity = GROW_CAPACITY(vm->grayCapacity);
+        vm->grayStack = realloc(vm->grayStack,
+                               sizeof(Obj *) * vm->grayCapacity);
     }
 
-    vm.grayStack[vm.grayCount++] = object;
+    vm->grayStack[vm->grayCount++] = object;
 }
 
-void markValue(Value value)
+void markValue(VM *vm, Value value)
 {
     if (!IS_OBJ(value))
         return;
-    markObject(AS_OBJ(value));
+    markObject(vm, AS_OBJ(value));
 }
 
-static void markArray(ValueArray *array)
+static void markArray(VM *vm, ValueArray *array)
 {
     for (int i = 0; i < array->count; i++)
     {
-        markValue(array->values[i]);
+        markValue(vm, array->values[i]);
     }
 }
 
-static void blackenObject(Obj *object)
+static void blackenObject(VM *vm, Obj *object)
 {
 #if DEBUG_LOG_GC
     printf("%p blacken ", (void *)object);
@@ -86,65 +128,63 @@ static void blackenObject(Obj *object)
     case OBJ_BOUND_METHOD:
     {
         ObjBoundMethod *bound = (ObjBoundMethod *)object;
-        markValue(bound->receiver);
-        markObject((Obj *)bound->method);
+        markValue(vm, bound->receiver);
+        markObject(vm, (Obj *)bound->method);
         break;
     }
     case OBJ_CLASS:
     {
         ObjClass *klass = (ObjClass *)object;
-        markObject((Obj *)klass->name);
-        markTable(&klass->methods);
-        markTable(&klass->staticMethods);
+        markTable(vm, &klass->methods);
+        markTable(vm, &klass->staticMethods);
         break;
     }
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeClass *klass = (ObjNativeClass *)object;
-        markObject((Obj *)klass->klass.name);
-        markTable(&klass->klass.methods);
-        markTable(&klass->klass.staticMethods);
+        markTable(vm, &klass->klass.methods);
+        markTable(vm, &klass->klass.staticMethods);
         break;
     }
     case OBJ_NATIVE_METHOD:
     {
         ObjNativeMethod *method = (ObjNativeMethod *)object;
-        markValue(method->receiver);
+        markValue(vm, method->receiver);
         break;
     }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
-        markObject((Obj *)closure->function);
+        markObject(vm, (Obj *)closure->function);
         for (int i = 0; i < closure->upvalueCount; i++)
         {
-            markObject((Obj *)closure->upvalues[i]);
+            markObject(vm, (Obj *)closure->upvalues[i]);
         }
         break;
     }
     case OBJ_FUNCTION:
     {
         ObjFunction *function = (ObjFunction *)object;
-        markObject((Obj *)function->name);
-        markArray(&function->chunk.constants);
+        markObject(vm, (Obj *)function->name);
+        markArray(vm, &function->chunk.constants);
         break;
     }
     case OBJ_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
-        markObject((Obj *)instance->klass);
-        markTable(&instance->fields);
+        markObject(vm, (Obj *)instance->klass);
+        markTable(vm, &instance->fields);
         break;
     }
     case OBJ_NATIVE_INSTANCE:
     {
         ObjNativeInstance *instance = (ObjNativeInstance *)object;
-        markObject((Obj *)instance->instance.klass);
-        markTable(&instance->instance.fields);
+        markObject(vm, (Obj *)instance->instance.klass);
+        markTable(vm, &instance->instance.fields);
         break;
     }
     case OBJ_UPVALUE:
-        markValue(((ObjUpvalue *)object)->closed);
+        markValue(vm, ((ObjUpvalue *)object)->closed);
         break;
     case OBJ_NATIVE:
         break;
@@ -224,42 +264,42 @@ static void freeObject(Obj *object)
     }
 }
 
-static void markRoots()
+static void markRoots(VM *vm)
 {
-    for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+    for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
-        markValue(*slot);
+        markValue(vm, *slot);
     }
 
-    for (int i = 0; i < vm.frameCount; i++)
+    for (int i = 0; i < vm->frameCount; i++)
     {
-        markObject((Obj *)vm.frames[i].closure);
+        markObject(vm, (Obj *)vm->frames[i].closure);
     }
 
-    for (ObjUpvalue *upvalue = vm.openUpvalues;
+    for (ObjUpvalue *upvalue = vm->openUpvalues;
          upvalue != NULL;
          upvalue = upvalue->next)
     {
-        markObject((Obj *)upvalue);
+        markObject(vm, (Obj *)upvalue);
     }
 
-    markGlobals();
-    markCompilerRoots();
+    markGlobals(vm);
+    markCompilerRoots(vm);
 }
 
-static void traceReferences()
+static void traceReferences(VM *vm)
 {
-    while (vm.grayCount > 0)
+    while (vm->grayCount > 0)
     {
-        Obj *object = vm.grayStack[--vm.grayCount];
-        blackenObject(object);
+        Obj *object = vm->grayStack[--vm->grayCount];
+        blackenObject(vm, object);
     }
 }
 
-static void sweep()
+static void sweep(VM *vm)
 {
     Obj *previous = NULL;
-    Obj *object = vm.objects;
+    Obj *object = vm->objects;
     while (object != NULL)
     {
         if (object->isMarked)
@@ -279,7 +319,7 @@ static void sweep()
             }
             else
             {
-                vm.objects = object;
+                vm->objects = object;
             }
 
             freeObject(unreached);
@@ -287,30 +327,30 @@ static void sweep()
     }
 }
 
-void collectGarbage()
+static void collectGarbage(VM *vm)
 {
 #if DEBUG_LOG_GC
     printf("-- gc begin\n");
-    size_t before = vm.bytesAllocated;
+    size_t before = _bytes_allocated;
 #endif
 
-    markRoots();
-    traceReferences();
-    removeWhiteStrings();
-    sweep();
+    markRoots(vm);
+    traceReferences(vm);
+    removeWhiteStrings(vm);
+    sweep(vm);
 
-    vm.nextGC = vm.bytesAllocated * GC_HEAP_GROW_FACTOR;
+    _next_GC = _bytes_allocated * GC_HEAP_GROW_FACTOR;
 #if DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
-           before - vm.bytesAllocated, before, vm.bytesAllocated,
-           vm.nextGC);
+           before - _bytes_allocated, before, _bytes_allocated,
+           _next_GC);
 #endif
 }
 
-void freeObjects()
+void freeObjects(VM *vm)
 {
-    Obj *object = vm.objects;
+    Obj *object = vm->objects;
     while (object != NULL)
     {
         Obj *next = object->next;
@@ -318,5 +358,5 @@ void freeObjects()
         object = next;
     }
 
-    free(vm.grayStack);
+    free(vm->grayStack);
 }

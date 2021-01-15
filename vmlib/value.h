@@ -102,6 +102,8 @@ typedef struct
 
 #define VALUE Value
 
+typedef struct _vm VM;
+
 typedef struct
 {
     int capacity;

@@ -3,17 +3,16 @@
 
 #include "comet.h"
 
-void init_object(VALUE klass);
-void init_string(VALUE obj_klass);
-void init_file(void);
-void init_iterable(void);
-void init_hash(void);
-void init_list(void);
-void init_nil(void);
-void init_socket(void);
-void init_thread(void);
-void init_enum(void);
-void init_exception(void);
-void init_functions(void);
+void init_object(VM *vm, VALUE klass);
+void init_string(VM *vm, VALUE obj_klass);
+void init_exception(VM *vm);
+void init_file(VM *vm);
+void init_functions(VM *vm);
+void init_iterable(VM *vm);
+void init_hash(VM *vm);
+void init_list(VM *vm);
+void init_nil(VM *vm);
+void init_socket(VM *vm);
+void init_thread(VM *vm);
 
 #endif

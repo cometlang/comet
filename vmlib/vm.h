@@ -2,7 +2,7 @@
 #define clox_vm_h
 
 #include "chunk.h"
-#include "objects.h"
+#include "object_defs.h"
 #include "table.h"
 #include "value.h"
 #include "common.h"
@@ -20,7 +20,7 @@ typedef struct
     Value *slots;
 } CallFrame;
 
-typedef struct
+struct _vm
 {
     CallFrame frames[FRAMES_MAX];
     int frameCount;
@@ -28,13 +28,11 @@ typedef struct
     Value *stackTop;
     Value initString;
     ObjUpvalue *openUpvalues;
-    size_t bytesAllocated;
-    size_t nextGC;
     Obj *objects;
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
-} VM;
+};
 
 typedef enum
 {
@@ -43,30 +41,32 @@ typedef enum
     INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
 
-extern __thread VM vm;
+extern Value initString;
+void initGlobals(void);
+void freeGlobals(void);
 
-void initVM(void);
+void initVM(VM *vm);
+void freeVM(VM *vm);
 
-void freeVM(void);
+Value findInternedString(VM *vm, const char *chars, uint32_t hash);
 
-Value findInternedString(const char *chars, uint32_t hash);
+bool internString(VM *vm, Value string);
+void markGlobals(VM *vm);
+void removeWhiteStrings(VM *vm);
 
-bool internString(Value string);
-void markGlobals(void);
-void removeWhiteStrings(void);
+bool addGlobal(VM *vm, Value name, Value value);
+bool findGlobal(VM *vm, Value name, Value *value);
 
-bool addGlobal(Value name, Value value);
-bool findGlobal(Value name, Value *value);
+InterpretResult interpret(VM *vm, const SourceFile *source);
+void runtimeError(VM *vm, const char *format, ...);
+void defineMethod(VM *vm, Value name, bool isStatic);
+void defineOperator(VM *vm, OPERATOR operator);
 
-InterpretResult interpret(const SourceFile *source);
-void runtimeError(const char *format, ...);
-void defineMethod(Value name, bool isStatic);
-void defineOperator(OPERATOR operator);
+void push(VM *vm, Value value);
+Value pop(VM *vm);
+Value peek(VM *vm, int distance);
 
-void push(Value value);
-Value pop(void);
-Value peek(int distance);
-
-Value nativeInvokeMethod(Value receiver, Value method_name, int arg_count, ...);
+Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_count, ...);
+Value getStackTrace(VM *vm);
 
 #endif

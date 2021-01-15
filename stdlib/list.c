@@ -30,7 +30,7 @@ void list_destructor(void *data)
     FREE(ListData, data);
 }
 
-VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
+VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     ListData *data = instance->data;
@@ -53,13 +53,13 @@ VALUE list_add(VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_remove(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_remove(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     // valuesEqual
     return NIL_VAL;
 }
 
-VALUE list_get_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     ListData *data = (ListData *)instance->data;
@@ -74,7 +74,7 @@ VALUE list_get_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_assign_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance UNUSED(*instance) = AS_NATIVE_INSTANCE(self);
     int UNUSED(index) = (int)AS_NUMBER(arguments[0]);
@@ -83,19 +83,19 @@ VALUE list_assign_at(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_iterable_empty_q(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_iterable_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     ListData *data = (ListData *)instance->data;
     return BOOL_VAL(data->length == 0);
 }
 
-VALUE list_iterable_iterator(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_iterable_iterator(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE list_iterable_contains_q(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     ListData *data = (ListData *)instance->data;
@@ -111,12 +111,12 @@ VALUE list_iterable_contains_q(VALUE self, int UNUSED(arg_count), VALUE *argumen
     return FALSE_VAL;
 }
 
-VALUE list_sort(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     ListData *data = (ListData *)instance->data;
@@ -133,7 +133,7 @@ VALUE list_obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argume
     return NIL_VAL;
 }
 
-VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
+VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
@@ -143,23 +143,23 @@ VALUE list_init(VALUE self, int arg_count, VALUE *arguments)
         {
             args[i] = NIL_VAL;
         }
-        list_add(self, initial_length, args);
+        list_add(vm, self, initial_length, args);
     }
     return NIL_VAL;
 }
 
-void init_list(void)
+void init_list(VM *vm)
 {
-    VALUE klass = defineNativeClass("List", list_constructor, list_destructor, "Iterable");
-    defineNativeMethod(klass, &list_init, "init", false);
-    defineNativeMethod(klass, &list_add, "add", false);
-    defineNativeMethod(klass, &list_add, "push", false);
-    defineNativeMethod(klass, &list_remove, "remove", false);
-    defineNativeMethod(klass, &list_iterable_contains_q, "contains?", false);
-    defineNativeMethod(klass, &list_iterable_empty_q, "empty?", false);
-    defineNativeMethod(klass, &list_iterable_iterator, "iterator", false);
-    defineNativeMethod(klass, &list_get_at, "get_at", false);
-    defineNativeMethod(klass, &list_obj_to_string, "to_string", false);
-    defineNativeOperator(klass, &list_get_at, OPERATOR_INDEX);
-    defineNativeOperator(klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
+    VALUE klass = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable");
+    defineNativeMethod(vm, klass, &list_init, "init", false);
+    defineNativeMethod(vm, klass, &list_add, "add", false);
+    defineNativeMethod(vm, klass, &list_add, "push", false);
+    defineNativeMethod(vm, klass, &list_remove, "remove", false);
+    defineNativeMethod(vm, klass, &list_iterable_contains_q, "contains?", false);
+    defineNativeMethod(vm, klass, &list_iterable_empty_q, "empty?", false);
+    defineNativeMethod(vm, klass, &list_iterable_iterator, "iterator", false);
+    defineNativeMethod(vm, klass, &list_get_at, "get_at", false);
+    defineNativeMethod(vm, klass, &list_obj_to_string, "to_string", false);
+    defineNativeOperator(vm, klass, &list_get_at, OPERATOR_INDEX);
+    defineNativeOperator(vm, klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
 }

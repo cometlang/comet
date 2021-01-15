@@ -31,9 +31,9 @@ void file_destructor(void *data)
     FREE(FileData, file_data);
 }
 
-VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
+VALUE file_static_open(VM *vm, VALUE klass, int arg_count, VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(AS_CLASS(klass));
+    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     if (arg_count != 2)
     {
         fprintf(stderr, "Wrong number of arguments: got %d, needed 2\n", arg_count);
@@ -48,7 +48,7 @@ VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
     return OBJ_VAL(instance);
 }
 
-VALUE file_close(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -60,7 +60,7 @@ VALUE file_close(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE file_write(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -68,7 +68,7 @@ VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NUMBER_VAL(result);
 }
 
-VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -81,10 +81,10 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
-    return takeString(buffer, fileSize);
+    return takeString(vm, buffer, fileSize);
 }
 
-VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -96,7 +96,7 @@ VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_sync(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -105,7 +105,7 @@ VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -113,7 +113,7 @@ VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *ar
     return BOOL_VAL(false);
 }
 
-VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -121,7 +121,7 @@ VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE 
     return BOOL_VAL(false);
 }
 
-VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -129,22 +129,22 @@ VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
     return BOOL_VAL(false);
 }
 
-VALUE file_static_read_all_lines(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-void init_file(void)
+void init_file(VM *vm)
 {
-    VALUE klass = defineNativeClass("File", &file_constructor, &file_destructor, "Object");
-    defineNativeMethod(klass, &file_static_open, "open", true);
-    defineNativeMethod(klass, &file_close, "close", false);
-    defineNativeMethod(klass, &file_write, "write", false);
-    defineNativeMethod(klass, &file_read, "read", false);
-    defineNativeMethod(klass, &file_sync, "sync", false);
-    defineNativeMethod(klass, &file_flush, "flush", false);
-    defineNativeMethod(klass, &file_static_exists_q, "exists?", true);
-    defineNativeMethod(klass, &file_static_directory_q, "directory?", true);
-    defineNativeMethod(klass, &file_static_file_q, "file?", true);
-    defineNativeMethod(klass, &file_static_read_all_lines, "read_all_lines", true);
+    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object");
+    defineNativeMethod(vm, klass, &file_static_open, "open", true);
+    defineNativeMethod(vm, klass, &file_close, "close", false);
+    defineNativeMethod(vm, klass, &file_write, "write", false);
+    defineNativeMethod(vm, klass, &file_read, "read", false);
+    defineNativeMethod(vm, klass, &file_sync, "sync", false);
+    defineNativeMethod(vm, klass, &file_flush, "flush", false);
+    defineNativeMethod(vm, klass, &file_static_exists_q, "exists?", true);
+    defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", true);
+    defineNativeMethod(vm, klass, &file_static_file_q, "file?", true);
+    defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", true);
 }

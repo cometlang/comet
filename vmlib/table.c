@@ -202,12 +202,12 @@ void tableRemoveWhite(VM *vm, Table *table)
     }
 }
 
-void markTable(Table *table)
+void markTable(VM *vm, Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        markObject((Obj *)entry->key);
-        markValue(entry->value);
+        markObject(vm, (Obj *)entry->key);
+        markValue(vm, entry->value);
     }
 }

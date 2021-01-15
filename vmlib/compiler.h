@@ -7,6 +7,6 @@
 typedef struct Compiler Compiler;
 
 ObjFunction* compile(const SourceFile* source, VM *thread);
-void markCompilerRoots();
+void markCompilerRoots(VM *vm);
 
 #endif

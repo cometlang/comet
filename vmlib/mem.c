@@ -76,7 +76,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     return realloc(previous, newSize);
 }
 
-void markObject(Obj *object)
+void markObject(VM *vm, Obj *object)
 {
     if (object == NULL)
         return;
@@ -91,32 +91,32 @@ void markObject(Obj *object)
 
     object->isMarked = true;
 
-    if (vm.grayCapacity < vm.grayCount + 1)
+    if (vm->grayCapacity < vm->grayCount + 1)
     {
-        vm.grayCapacity = GROW_CAPACITY(vm.grayCapacity);
-        vm.grayStack = realloc(vm.grayStack,
-                               sizeof(Obj *) * vm.grayCapacity);
+        vm->grayCapacity = GROW_CAPACITY(vm->grayCapacity);
+        vm->grayStack = realloc(vm->grayStack,
+                               sizeof(Obj *) * vm->grayCapacity);
     }
 
-    vm.grayStack[vm.grayCount++] = object;
+    vm->grayStack[vm->grayCount++] = object;
 }
 
-void markValue(Value value)
+void markValue(VM *vm, Value value)
 {
     if (!IS_OBJ(value))
         return;
-    markObject(AS_OBJ(value));
+    markObject(vm, AS_OBJ(value));
 }
 
-static void markArray(ValueArray *array)
+static void markArray(VM *vm, ValueArray *array)
 {
     for (int i = 0; i < array->count; i++)
     {
-        markValue(array->values[i]);
+        markValue(vm, array->values[i]);
     }
 }
 
-static void blackenObject(Obj *object)
+static void blackenObject(VM *vm, Obj *object)
 {
 #if DEBUG_LOG_GC
     printf("%p blacken ", (void *)object);
@@ -128,65 +128,63 @@ static void blackenObject(Obj *object)
     case OBJ_BOUND_METHOD:
     {
         ObjBoundMethod *bound = (ObjBoundMethod *)object;
-        markValue(bound->receiver);
-        markObject((Obj *)bound->method);
+        markValue(vm, bound->receiver);
+        markObject(vm, (Obj *)bound->method);
         break;
     }
     case OBJ_CLASS:
     {
         ObjClass *klass = (ObjClass *)object;
-        markObject((Obj *)klass->name);
-        markTable(&klass->methods);
-        markTable(&klass->staticMethods);
+        markTable(vm, &klass->methods);
+        markTable(vm, &klass->staticMethods);
         break;
     }
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeClass *klass = (ObjNativeClass *)object;
-        markObject((Obj *)klass->klass.name);
-        markTable(&klass->klass.methods);
-        markTable(&klass->klass.staticMethods);
+        markTable(vm, &klass->klass.methods);
+        markTable(vm, &klass->klass.staticMethods);
         break;
     }
     case OBJ_NATIVE_METHOD:
     {
         ObjNativeMethod *method = (ObjNativeMethod *)object;
-        markValue(method->receiver);
+        markValue(vm, method->receiver);
         break;
     }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
-        markObject((Obj *)closure->function);
+        markObject(vm, (Obj *)closure->function);
         for (int i = 0; i < closure->upvalueCount; i++)
         {
-            markObject((Obj *)closure->upvalues[i]);
+            markObject(vm, (Obj *)closure->upvalues[i]);
         }
         break;
     }
     case OBJ_FUNCTION:
     {
         ObjFunction *function = (ObjFunction *)object;
-        markObject((Obj *)function->name);
-        markArray(&function->chunk.constants);
+        markObject(vm, (Obj *)function->name);
+        markArray(vm, &function->chunk.constants);
         break;
     }
     case OBJ_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
-        markObject((Obj *)instance->klass);
-        markTable(&instance->fields);
+        markObject(vm, (Obj *)instance->klass);
+        markTable(vm, &instance->fields);
         break;
     }
     case OBJ_NATIVE_INSTANCE:
     {
         ObjNativeInstance *instance = (ObjNativeInstance *)object;
-        markObject((Obj *)instance->instance.klass);
-        markTable(&instance->instance.fields);
+        markObject(vm, (Obj *)instance->instance.klass);
+        markTable(vm, &instance->instance.fields);
         break;
     }
     case OBJ_UPVALUE:
-        markValue(((ObjUpvalue *)object)->closed);
+        markValue(vm, ((ObjUpvalue *)object)->closed);
         break;
     case OBJ_NATIVE:
         break;
@@ -270,23 +268,23 @@ static void markRoots(VM *vm)
 {
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
-        markValue(*slot);
+        markValue(vm, *slot);
     }
 
     for (int i = 0; i < vm->frameCount; i++)
     {
-        markObject((Obj *)vm->frames[i].closure);
+        markObject(vm, (Obj *)vm->frames[i].closure);
     }
 
     for (ObjUpvalue *upvalue = vm->openUpvalues;
          upvalue != NULL;
          upvalue = upvalue->next)
     {
-        markObject((Obj *)upvalue);
+        markObject(vm, (Obj *)upvalue);
     }
 
-    markGlobals();
-    markCompilerRoots();
+    markGlobals(vm);
+    markCompilerRoots(vm);
 }
 
 static void traceReferences(VM *vm)
@@ -294,7 +292,7 @@ static void traceReferences(VM *vm)
     while (vm->grayCount > 0)
     {
         Obj *object = vm->grayStack[--vm->grayCount];
-        blackenObject(object);
+        blackenObject(vm, object);
     }
 }
 

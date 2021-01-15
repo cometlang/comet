@@ -68,7 +68,7 @@ VALUE file_write(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argum
     return NUMBER_VAL(result);
 }
 
-VALUE file_read(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -81,7 +81,7 @@ VALUE file_read(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
-    return takeString(buffer, fileSize);
+    return takeString(vm, buffer, fileSize);
 }
 
 VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

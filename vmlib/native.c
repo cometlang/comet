@@ -7,7 +7,7 @@
 
 void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 {
-    push(vm, OBJ_VAL(newNativeFunction(function)));
+    push(vm, OBJ_VAL(newNativeFunction(vm, function)));
     push(vm, copyString(vm, name, (int)strlen(name)));
     addGlobal(vm, peek(vm, 0), peek(vm, 1));
     pop(vm);
@@ -31,7 +31,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         {
             super_name = "Object";
         }
-        if (!findGlobal(copyString(vm, super_name, strlen(super_name)), &parent))
+        if (!findGlobal(vm, copyString(vm, super_name, strlen(super_name)), &parent))
         {
             runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
@@ -67,7 +67,7 @@ void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *
     Value name_string = copyString(vm, name, strlen(name));
     push(vm, name_string);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(klass, function, isStatic)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, klass, function, isStatic)));
     defineMethod(vm, name_string, isStatic);
     pop(vm);
     pop(vm);
@@ -76,7 +76,7 @@ void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *
 void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, OPERATOR operator)
 {
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(klass, function, false)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, klass, function, false)));
     defineOperator(vm, operator);
     pop(vm);
 }

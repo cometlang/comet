@@ -25,7 +25,7 @@ bool tableDelete(VM *vm, Table *table, Value key);
 void tableAddAll(VM *vm, Table *from, Table *to);
 Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash);
 void tableRemoveWhite(VM *vm, Table *table);
-void markTable(Table *table);
+void markTable(VM *vm, Table *table);
 
 void tablePrintKeys(Table *table);
 

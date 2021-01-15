@@ -12,7 +12,6 @@
 
 static InterpretResult run(VM *vm);
 
-__thread VM vm;
 static Table globals;
 static Table strings;
 Value initString;
@@ -30,11 +29,11 @@ void freeGlobals(void)
     initString = NIL_VAL;
 }
 
-void markGlobals(void)
+void markGlobals(VM *vm)
 {
-    markTable(&globals);
-    markTable(&strings);
-    markObject(AS_OBJ(initString));
+    markTable(vm, &globals);
+    markTable(vm, &strings);
+    markObject(vm, AS_OBJ(initString));
 }
 
 void removeWhiteStrings(VM *vm)
@@ -47,14 +46,14 @@ Value findInternedString(VM *vm, const char *chars, uint32_t hash)
     return tableFindString(vm, &strings, chars, hash);
 }
 
-bool internString(Value string)
+bool internString(VM *vm, Value string)
 {
-    return tableSet(&vm, &strings, string, NIL_VAL);
+    return tableSet(vm, &strings, string, NIL_VAL);
 }
 
-bool findGlobal(Value name, Value *value)
+bool findGlobal(VM *vm, Value name, Value *value)
 {
-    return tableGet(&vm, &globals, name, value);
+    return tableGet(vm, &globals, name, value);
 }
 
 bool addGlobal(VM *vm, Value name, Value value)
@@ -408,7 +407,7 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
         return false;
     }
 
-    ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
+    ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(method));
     pop(vm); // Instance.
     push(vm, OBJ_VAL(bound));
     return true;
@@ -428,7 +427,7 @@ static ObjUpvalue *captureUpvalue(VM *vm, Value *local)
     if (upvalue != NULL && upvalue->location == local)
         return upvalue;
 
-    ObjUpvalue *createdUpvalue = newUpvalue(local);
+    ObjUpvalue *createdUpvalue = newUpvalue(vm, local);
     createdUpvalue->next = upvalue;
     if (prevUpvalue == NULL)
     {
@@ -761,7 +760,7 @@ static InterpretResult run(VM *vm)
         case OP_CLOSURE:
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
-            ObjClosure *closure = newClosure(function);
+            ObjClosure *closure = newClosure(vm, function);
             push(vm, OBJ_VAL(closure));
             for (int i = 0; i < closure->upvalueCount; i++)
             {
@@ -800,7 +799,7 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_CLASS:
-            push(vm, OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()))));
+            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()))));
             break;
         case OP_INHERIT:
         {
@@ -889,7 +888,7 @@ InterpretResult interpret(VM *vm, const SourceFile *source)
         return INTERPRET_COMPILE_ERROR;
 
     push(vm, OBJ_VAL(function));
-    ObjClosure *closure = newClosure(function);
+    ObjClosure *closure = newClosure(vm, function);
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);

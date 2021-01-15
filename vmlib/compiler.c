@@ -264,7 +264,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction();
+    compiler->function = newFunction(main_thread);
     compiler->function->chunk.filename = parser.filename;
     current = compiler;
 
@@ -1349,12 +1349,12 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
     return parser.hadError ? NULL : function;
 }
 
-void markCompilerRoots()
+void markCompilerRoots(VM *vm)
 {
     Compiler *compiler = current;
     while (compiler != NULL)
     {
-        markObject((Obj *)compiler->function);
+        markObject(vm, (Obj *)compiler->function);
         compiler = compiler->enclosing;
     }
 }

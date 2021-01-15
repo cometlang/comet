@@ -23,7 +23,7 @@
 void register_thread(VM *vm);
 void deregister_thread(VM *vm);
 void *reallocate(void *previous, size_t oldSize, size_t newSize);
-void markObject(Obj* object);
-void markValue(Value value);
+void markObject(VM *vm, Obj* object);
+void markValue(VM *vm, Value value);
 void freeObjects(VM *vm);
 #endif

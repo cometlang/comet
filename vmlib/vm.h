@@ -41,8 +41,6 @@ typedef enum
     INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
 
-extern __thread VM vm;
-
 extern Value initString;
 void initGlobals(void);
 void freeGlobals(void);
@@ -52,12 +50,12 @@ void freeVM(VM *vm);
 
 Value findInternedString(VM *vm, const char *chars, uint32_t hash);
 
-bool internString(Value string);
-void markGlobals(void);
+bool internString(VM *vm, Value string);
+void markGlobals(VM *vm);
 void removeWhiteStrings(VM *vm);
 
 bool addGlobal(VM *vm, Value name, Value value);
-bool findGlobal(Value name, Value *value);
+bool findGlobal(VM *vm, Value name, Value *value);
 
 InterpretResult interpret(VM *vm, const SourceFile *source);
 void runtimeError(VM *vm, const char *format, ...);

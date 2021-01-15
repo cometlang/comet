@@ -31,9 +31,9 @@ void file_destructor(void *data)
     FREE(FileData, file_data);
 }
 
-VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
+VALUE file_static_open(VM *vm, VALUE klass, int arg_count, VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(&vm, AS_CLASS(klass));
+    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     if (arg_count != 2)
     {
         fprintf(stderr, "Wrong number of arguments: got %d, needed 2\n", arg_count);
@@ -48,7 +48,7 @@ VALUE file_static_open(VALUE klass, int arg_count, VALUE *arguments)
     return OBJ_VAL(instance);
 }
 
-VALUE file_close(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -60,7 +60,7 @@ VALUE file_close(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE file_write(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -68,7 +68,7 @@ VALUE file_write(VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NUMBER_VAL(result);
 }
 
-VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_read(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -84,7 +84,7 @@ VALUE file_read(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return takeString(buffer, fileSize);
 }
 
-VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -96,7 +96,7 @@ VALUE file_flush(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_sync(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
@@ -105,7 +105,7 @@ VALUE file_sync(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NIL_VAL;
 }
 
-VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -113,7 +113,7 @@ VALUE file_static_exists_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *ar
     return BOOL_VAL(false);
 }
 
-VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -121,7 +121,7 @@ VALUE file_static_directory_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE 
     return BOOL_VAL(false);
 }
 
-VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
@@ -129,7 +129,7 @@ VALUE file_static_file_q(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
     return BOOL_VAL(false);
 }
 
-VALUE file_static_read_all_lines(VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }

@@ -37,29 +37,29 @@ void markGlobals(void)
     markObject(AS_OBJ(initString));
 }
 
-void removeWhiteStrings(void)
+void removeWhiteStrings(VM *vm)
 {
-    tableRemoveWhite(&strings);
+    tableRemoveWhite(vm, &strings);
 }
 
-Value findInternedString(const char *chars, uint32_t hash)
+Value findInternedString(VM *vm, const char *chars, uint32_t hash)
 {
-    return tableFindString(&strings, chars, hash);
+    return tableFindString(vm, &strings, chars, hash);
 }
 
 bool internString(Value string)
 {
-    return tableSet(&strings, string, NIL_VAL);
+    return tableSet(&vm, &strings, string, NIL_VAL);
 }
 
 bool findGlobal(Value name, Value *value)
 {
-    return tableGet(&globals, name, value);
+    return tableGet(&vm, &globals, name, value);
 }
 
-bool addGlobal(Value name, Value value)
+bool addGlobal(VM *vm, Value name, Value value)
 {
-    return tableSet(&globals, name, value);
+    return tableSet(vm, &globals, name, value);
 }
 
 static void resetStack(VM *vm)
@@ -90,7 +90,7 @@ Value getStackTrace(VM *vm)
             lineno,
             function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
-    Value result = copyString(stacktrace, index);
+    Value result = copyString(vm, stacktrace, index);
     FREE_ARRAY(char, stacktrace, vm->frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
@@ -193,11 +193,11 @@ static bool callValue(VM *vm, Value callee, int argCount)
             vm->stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
-            if (tableGet(&klass->methods, initString, &initializer))
+            if (tableGet(vm, &klass->methods, initString, &initializer))
             {
                 if (IS_NATIVE_METHOD(initializer))
                 {
-                    AS_NATIVE_METHOD(initializer)->function(instance, argCount, vm->stackTop - argCount);
+                    AS_NATIVE_METHOD(initializer)->function(vm, instance, argCount, vm->stackTop - argCount);
                     popMany(vm, argCount);
                     return true;
                 }
@@ -239,26 +239,26 @@ static bool callValue(VM *vm, Value callee, int argCount)
 
 static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, int argCount)
 {
-    Value result = method->function(receiver, argCount, vm->stackTop - argCount);
+    Value result = method->function(vm, receiver, argCount, vm->stackTop - argCount);
     popMany(vm, argCount + 1);
     push(vm, result);
     return true;
 }
 
-static Value findMethod(ObjClass *klass, Value name)
+static Value findMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value result;
-    if (tableGet(&klass->methods, name, &result))
+    if (tableGet(vm, &klass->methods, name, &result))
     {
         return result;
     }
     return NIL_VAL;
 }
 
-static Value findStaticMethod(ObjClass *klass, Value name)
+static Value findStaticMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value result;
-    if (tableGet(&klass->staticMethods, name, &result))
+    if (tableGet(vm, &klass->staticMethods, name, &result))
     {
         return result;
     }
@@ -268,13 +268,13 @@ static Value findStaticMethod(ObjClass *klass, Value name)
 static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
                             int argCount)
 {
-    Value method = findMethod(klass, name);
+    Value method = findMethod(vm, klass, name);
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
     {
         return call(vm, AS_CLOSURE(method), argCount);
     }
 
-    method = findStaticMethod(klass, name);
+    method = findStaticMethod(vm, klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -326,7 +326,7 @@ static bool callBinaryOperator(VM *vm, OPERATOR operator)
 
 static bool invokeFromNativeInstance(VM *vm, ObjNativeInstance *instance, Value name, int argCount)
 {
-    Value method = findMethod(instance->instance.klass, name);
+    Value method = findMethod(vm, instance->instance.klass, name);
     if (IS_NIL(method))
     {
         runtimeError(vm, "'%s' has no method or property '%s'.",
@@ -361,7 +361,7 @@ static bool invoke(VM *vm, Value name, int argCount)
 
         // First look for a field which may shadow a method.
         Value value;
-        if (tableGet(&instance->fields, name, &value))
+        if (tableGet(vm, &instance->fields, name, &value))
         {
             // Load the field onto the stack in place of the receiver.
             vm->stackTop[-argCount - 1] = value;
@@ -402,7 +402,7 @@ Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_coun
 static bool bindMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value method;
-    if (!tableGet(&klass->methods, name, &method))
+    if (!tableGet(vm, &klass->methods, name, &method))
     {
         runtimeError(vm, "Undefined method '%s'.", string_get_cstr(name));
         return false;
@@ -459,11 +459,11 @@ void defineMethod(VM *vm, Value name, bool isStatic)
     ObjClass *klass = AS_CLASS(peek(vm, 1));
     if (isStatic)
     {
-        tableSet(&klass->staticMethods, name, method);
+        tableSet(vm, &klass->staticMethods, name, method);
     }
     else
     {
-        tableSet(&klass->methods, name, method);
+        tableSet(vm, &klass->methods, name, method);
     }
     pop(vm);
 }
@@ -548,7 +548,7 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             Value value;
-            if (!tableGet(&globals, name, &value))
+            if (!tableGet(vm, &globals, name, &value))
             {
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
@@ -559,7 +559,7 @@ static InterpretResult run(VM *vm)
         case OP_DEFINE_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            tableSet(&globals, name, peek(vm, 0));
+            tableSet(vm, &globals, name, peek(vm, 0));
             pop(vm);
             break;
         }
@@ -578,9 +578,9 @@ static InterpretResult run(VM *vm)
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            if (tableSet(&globals, name, peek(vm, 0)))
+            if (tableSet(vm, &globals, name, peek(vm, 0)))
             {
-                tableDelete(&globals, name);
+                tableDelete(vm, &globals, name);
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -609,7 +609,7 @@ static InterpretResult run(VM *vm)
             Value name = READ_CONSTANT();
 
             Value value;
-            if (tableGet(&instance->fields, name, &value))
+            if (tableGet(vm, &instance->fields, name, &value))
             {
                 pop(vm); // Instance.
                 push(vm, value);
@@ -630,7 +630,7 @@ static InterpretResult run(VM *vm)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
+            tableSet(vm, &instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
 
             Value value = pop(vm);
             pop(vm);
@@ -813,8 +813,8 @@ static InterpretResult run(VM *vm)
 
             ObjClass *subclass = AS_CLASS(peek(vm, 0));
             ObjClass *superclass = AS_CLASS(super_);
-            tableAddAll(&superclass->methods, &subclass->methods);
-            tableAddAll(&superclass->staticMethods, &subclass->staticMethods);
+            tableAddAll(vm, &superclass->methods, &subclass->methods);
+            tableAddAll(vm, &superclass->staticMethods, &subclass->staticMethods);
             for (int i = 0; i < NUM_OPERATORS; i++)
             {
                 subclass->operators[i] = superclass->operators[i];

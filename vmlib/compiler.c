@@ -270,7 +270,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
 
     if (type != TYPE_SCRIPT)
     {
-        current->function->name = copyString(parser.previous.start,
+        current->function->name = copyString(main_thread, parser.previous.start,
                                              parser.previous.length);
     }
 
@@ -339,7 +339,7 @@ static void parsePrecedence(Precedence precedence);
 
 static uint8_t identifierConstant(Token *name)
 {
-    return makeConstant(copyString(name->start, name->length));
+    return makeConstant(copyString(main_thread, name->start, name->length));
 }
 
 static bool identifiersEqual(Token *a, Token *b)
@@ -626,7 +626,7 @@ static void or_(bool UNUSED(canAssign))
 
 static void string(bool UNUSED(canAssign))
 {
-    emitConstant(copyString(parser.previous.start + 1,
+    emitConstant(copyString(main_thread, parser.previous.start + 1,
                             parser.previous.length - 2));
 }
 

@@ -338,7 +338,7 @@ static void collectGarbage(VM *vm)
 
     markRoots(vm);
     traceReferences(vm);
-    removeWhiteStrings();
+    removeWhiteStrings(vm);
     sweep(vm);
 
     _next_GC = _bytes_allocated * GC_HEAP_GROW_FACTOR;

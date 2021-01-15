@@ -150,14 +150,14 @@ ObjNativeMethod *newNativeMethod(Value receiver, NativeMethod function, bool isS
     return method;
 }
 
-static Value allocateString(const char *chars, int length)
+static Value allocateString(VM *vm, const char *chars, int length)
 {
-    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(&vm, _string_class);
+    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(vm, _string_class);
     Value string_obj = OBJ_VAL(string);
-    push(&vm, string_obj);
+    push(vm, string_obj);
     string->data = string_set_cstr(string, chars, length);
     internString(string_obj);
-    pop(&vm);
+    pop(vm);
 
     return string_obj;
 }
@@ -178,23 +178,23 @@ static uint32_t hashString(const char *key, int length)
 Value takeString(char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, hash);
+    Value interned = findInternedString(&vm, chars, hash);
     if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
         return interned;
     }
-    return allocateString(chars, length);
+    return allocateString(&vm, chars, length);
 }
 
-Value copyString(const char *chars, int length)
+Value copyString(VM *vm, const char *chars, int length)
 {
     uint32_t hash = hashString(chars, length);
-    Value interned = findInternedString(chars, hash);
+    Value interned = findInternedString(vm, chars, hash);
     if (interned != NIL_VAL)
         return interned;
 
-    return allocateString(chars, length);
+    return allocateString(vm, chars, length);
 }
 
 ObjUpvalue *newUpvalue(Value *slot)

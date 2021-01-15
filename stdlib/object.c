@@ -20,13 +20,13 @@ VALUE instanceof(VALUE self, VALUE klass)
     return FALSE_VAL;
 }
 
-VALUE obj_equals(VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE obj_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     Obj *rhs = AS_OBJ(arguments[0]);
     return BOOL_VAL(AS_OBJ(self) == rhs);
 }
 
-VALUE obj_hash(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_hash(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     uint32_t hash = 2166136261u;
     uintptr_t address = (uintptr_t) AS_OBJ(self);
@@ -40,13 +40,13 @@ VALUE obj_hash(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
     return NUMBER_VAL(hash);
 }
 
-VALUE obj_to_string(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjInstance *instance = AS_INSTANCE(self);
-    return copyString(instance->klass->name, strlen(instance->klass->name));
+    return copyString(vm, instance->klass->name, strlen(instance->klass->name));
 }
 
-VALUE obj_nil_q(VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_nil_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return FALSE_VAL;
 }

@@ -110,7 +110,7 @@ typedef struct sObjClass
 
 typedef void *(*NativeConstructor)(void);
 typedef void(*NativeDestructor)(void *data);
-typedef Value (*NativeMethod)(Value receiver, int argCount, Value *args);
+typedef Value (*NativeMethod)(VM *vm, Value receiver, int argCount, Value *args);
 
 typedef struct sNativeClass
 {

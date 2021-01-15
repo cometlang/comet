@@ -20,7 +20,7 @@ typedef struct
     Value *slots;
 } CallFrame;
 
-typedef struct
+struct _vm
 {
     CallFrame frames[FRAMES_MAX];
     int frameCount;
@@ -32,7 +32,7 @@ typedef struct
     int grayCount;
     int grayCapacity;
     Obj **grayStack;
-} VM;
+};
 
 typedef enum
 {
@@ -50,13 +50,13 @@ void freeGlobals(void);
 void initVM(VM *vm);
 void freeVM(VM *vm);
 
-Value findInternedString(const char *chars, uint32_t hash);
+Value findInternedString(VM *vm, const char *chars, uint32_t hash);
 
 bool internString(Value string);
 void markGlobals(void);
-void removeWhiteStrings(void);
+void removeWhiteStrings(VM *vm);
 
-bool addGlobal(Value name, Value value);
+bool addGlobal(VM *vm, Value name, Value value);
 bool findGlobal(Value name, Value *value);
 
 InterpretResult interpret(VM *vm, const SourceFile *source);

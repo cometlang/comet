@@ -8,8 +8,8 @@
 void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 {
     push(vm, OBJ_VAL(newNativeFunction(function)));
-    push(vm, copyString(name, (int)strlen(name)));
-    addGlobal(peek(vm, 0), peek(vm, 1));
+    push(vm, copyString(vm, name, (int)strlen(name)));
+    addGlobal(vm, peek(vm, 0), peek(vm, 1));
     pop(vm);
     pop(vm);
 }
@@ -22,7 +22,7 @@ VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor construct
 VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
 {
     ObjClass *klass = AS_CLASS(klass_);
-    Value name_string = copyString(klass->name, strlen(klass->name));
+    Value name_string = copyString(vm, klass->name, strlen(klass->name));
     push(vm, name_string);
     if (string_compare_to_cstr(name_string, "Object") !=0)
     {
@@ -31,7 +31,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         {
             super_name = "Object";
         }
-        if (!findGlobal(copyString(super_name, strlen(super_name)), &parent))
+        if (!findGlobal(copyString(vm, super_name, strlen(super_name)), &parent))
         {
             runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
@@ -39,11 +39,11 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
 
         ObjClass *parent_class = AS_CLASS(parent);
 
-        tableAddAll(&parent_class->methods, &klass->methods);
-        tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
+        tableAddAll(vm, &parent_class->methods, &klass->methods);
+        tableAddAll(vm, &parent_class->staticMethods, &klass->staticMethods);
         klass->super_ = AS_CLASS(parent);
     }
-    if (addGlobal(name_string, OBJ_VAL(klass)))
+    if (addGlobal(vm, name_string, OBJ_VAL(klass)))
     {
         pop(vm);
         pop(vm);
@@ -64,7 +64,7 @@ VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor,
 
 void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, bool isStatic)
 {
-    Value name_string = copyString(name, strlen(name));
+    Value name_string = copyString(vm, name, strlen(name));
     push(vm, name_string);
     push(vm, klass);
     push(vm, OBJ_VAL(newNativeMethod(klass, function, isStatic)));
@@ -85,19 +85,19 @@ void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE valu
 {
     push(vm, self);
     push(vm, value);
-    Value name_string = copyString(property_name, strlen(property_name));
+    Value name_string = copyString(vm, property_name, strlen(property_name));
     push(vm, name_string);
-    tableSet(&AS_INSTANCE(self)->fields, name_string, value);
+    tableSet(vm, &AS_INSTANCE(self)->fields, name_string, value);
     pop(vm);
     pop(vm);
     pop(vm);
 }
 
-VALUE getNativeProperty(VALUE self, const char *property_name)
+VALUE getNativeProperty(VM *vm, VALUE self, const char *property_name)
 {
     Value value;
-    Value name_string = copyString(property_name, strlen(property_name));
-    if (tableGet(&AS_INSTANCE(self)->fields, name_string, &value))
+    Value name_string = copyString(vm, property_name, strlen(property_name));
+    if (tableGet(vm, &AS_INSTANCE(self)->fields, name_string, &value))
     {
         return value;
     }

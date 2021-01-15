@@ -9,7 +9,7 @@ VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor,
 void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, bool isStatic);
 void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, OPERATOR operator);
 void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE value);
-VALUE getNativeProperty(VALUE self, const char *property);
+VALUE getNativeProperty(VM *vm, VALUE self, const char *property_name);
 
 
 VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor);

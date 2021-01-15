@@ -76,7 +76,7 @@ int main(int argc, const char **argv)
     initGlobals();
     initVM(&virtualMachine);
     init_stdlib(&virtualMachine);
-    initString = copyString("init", 4);
+    initString = copyString(&virtualMachine, "init", 4);
 
     if (argc == 1)
     {

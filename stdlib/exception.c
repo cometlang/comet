@@ -2,7 +2,7 @@
 #include "cometlib.h"
 #include "native.h"
 
-VALUE exception_init(VALUE UNUSED(self), int arg_count, VALUE UNUSED(*arguments))
+VALUE exception_init(VM UNUSED(*vm), VALUE UNUSED(self), int arg_count, VALUE UNUSED(*arguments))
 {
     if (arg_count == 1)
     {
@@ -11,9 +11,9 @@ VALUE exception_init(VALUE UNUSED(self), int arg_count, VALUE UNUSED(*arguments)
     return NIL_VAL;
 }
 
-VALUE exception_get_message(VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE exception_get_message(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return getNativeProperty(self, "_message");
+    return getNativeProperty(vm, self, "_message");
 }
 
 void init_exception(VM *vm)

@@ -6,6 +6,7 @@
 #include "value.h"
 #include "object_defs.h"
 #include "vm.h"
+#include "native.h"
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(const char *name);
@@ -16,7 +17,7 @@ ObjFunction *newFunction();
 Obj *newInstance(VM *vm, ObjClass *klass);
 ObjNative *newNativeFunction(NativeFn function);
 Value takeString(char *chars, int length);
-Value copyString(const char *chars, int length);
+Value copyString(VM *vm, const char *chars, int length);
 ObjUpvalue *newUpvalue(Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);

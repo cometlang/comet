@@ -77,6 +77,7 @@ int main(int argc, const char **argv)
     initVM(&virtualMachine);
     init_stdlib(&virtualMachine);
     initString = copyString(&virtualMachine, "init", 4);
+    hashString = copyString(&virtualMachine, "hash", 4);
 
     if (argc == 1)
     {

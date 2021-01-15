@@ -15,6 +15,7 @@ static InterpretResult run(VM *vm);
 static Table globals;
 static Table strings;
 Value initString;
+Value hashString;
 
 void initGlobals(void)
 {
@@ -27,13 +28,15 @@ void freeGlobals(void)
     freeTable(&globals);
     freeTable(&strings);
     initString = NIL_VAL;
+    hashString = NIL_VAL;
 }
 
 void markGlobals(VM *vm)
 {
     markTable(vm, &globals);
     markTable(vm, &strings);
-    markObject(vm, AS_OBJ(initString));
+    markValue(vm, initString);
+    markValue(vm, hashString);
 }
 
 void removeWhiteStrings(VM *vm)

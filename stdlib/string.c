@@ -12,7 +12,7 @@ typedef struct StringData
     uint32_t hash;
 } StringData;
 
-static uint32_t hashString(const char *key, int length)
+static uint32_t hash_string(const char *key, int length)
 {
     uint32_t hash = 2166136261u;
 
@@ -41,7 +41,7 @@ void *string_set_cstr(ObjNativeInstance *instance, const char *string, int lengt
     memcpy(data->chars, string, length);
     data->chars[length] = '\0';
     data->length = length;
-    data->hash = hashString(data->chars, length);
+    data->hash = hash_string(data->chars, length);
     return (void *) data;
 }
 
@@ -160,6 +160,7 @@ void init_string(VM *vm, VALUE obj_klass)
 {
     VALUE klass = bootstrapNativeClass(vm, "String", string_constructor, string_destructor);
     registerStringClass(klass);
+    init_object(vm, obj_klass);
     completeNativeClassDefinition(vm, obj_klass, NULL);
     completeNativeClassDefinition(vm, klass, NULL);
     defineNativeMethod(vm, klass, &string_trim_left, "left_trim", false);

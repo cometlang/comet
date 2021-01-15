@@ -26,7 +26,8 @@ void freeTable(Table *table)
 static Entry *findEntry(VM *vm, Entry *entries, int capacity,
                         Value key)
 {
-    uint32_t hash = (uint32_t) AS_NUMBER(string_hash(vm, key, 0, NULL));
+    Value hash_value = string_hash(vm, key, 0, NULL);
+    uint32_t hash = (uint32_t) AS_NUMBER(hash_value);
     uint32_t index = hash & capacity;
     Entry *tombstone = NULL;
 
@@ -164,12 +165,15 @@ Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash)
             if (IS_NIL(entry->value))
                 return NIL_VAL;
         }
-        else if (
-            obj_hash(vm, entry->key, 0, NULL) == hash &&
-            string_compare_to_cstr(entry->key, chars) == 0)
+        else
         {
-            // We found it.
-            return entry->key;
+            uint32_t entry_hash = (uint32_t) AS_NUMBER(string_hash(vm, entry->key, 0, NULL));
+            if (entry_hash == hash &&
+                string_compare_to_cstr(entry->key, chars) == 0)
+            {
+                // We found it.
+                return entry->key;
+            }
         }
 
         index = (index + 1) & table->capacity;

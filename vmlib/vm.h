@@ -26,7 +26,6 @@ struct _vm
     int frameCount;
     Value stack[STACK_MAX];
     Value *stackTop;
-    Value initString;
     ObjUpvalue *openUpvalues;
     Obj *objects;
     int grayCount;
@@ -42,6 +41,7 @@ typedef enum
 } InterpretResult;
 
 extern Value initString;
+extern Value hashString;
 void initGlobals(void);
 void freeGlobals(void);
 

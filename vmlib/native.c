@@ -24,7 +24,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
     ObjClass *klass = AS_CLASS(klass_);
     Value name_string = copyString(vm, klass->name, strlen(klass->name));
     push(vm, name_string);
-    if (string_compare_to_cstr(name_string, "Object") !=0)
+    if (string_compare_to_cstr(name_string, "Object") != 0)
     {
         Value parent;
         if (super_name == NULL)

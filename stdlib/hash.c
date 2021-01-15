@@ -69,9 +69,10 @@ void hash_destructor(void *data)
     FREE(HashTable, table);
 }
 
-static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key)
+static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
 {
-    uint32_t index = obj_hash(vm, key, 0, NULL) & capacity;
+    Value hash_value = call_function(key, hashString, 0, NULL);
+    uint32_t index = (uint32_t) AS_NUMBER(hash_value) & capacity;
     HashEntry *tombstone = NULL;
 
     for (;;)
@@ -102,21 +103,21 @@ static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key
     }
 }
 
-VALUE hash_get(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_get(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
         return false;
 
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
     if (entry->key == NIL_VAL)
         return NIL_VAL;  // throw an exception
 
     return entry->value;
 }
 
-static void adjust_capacity(VM *vm, HashTable *table, int capacity)
+static void adjust_capacity(HashTable *table, int capacity)
 {
     HashEntry *entries = ALLOCATE(HashEntry, capacity + 1);
     for (int i = 0; i <= capacity; i++)
@@ -132,7 +133,7 @@ static void adjust_capacity(VM *vm, HashTable *table, int capacity)
         if (entry->key == NIL_VAL)
             continue;
 
-        HashEntry *dest = find_entry(vm, entries, capacity, entry->key);
+        HashEntry *dest = find_entry(entries, capacity, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
         table->count++;
@@ -143,19 +144,19 @@ static void adjust_capacity(VM *vm, HashTable *table, int capacity)
     table->capacity = capacity;
 }
 
-VALUE hash_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
         // Figure out the new table size.
         int capacity = GROW_CAPACITY(table->capacity + 1) - 1;
-        adjust_capacity(vm, table, capacity);
+        adjust_capacity(table, capacity);
     }
 
     VALUE key = arguments[0];
     VALUE value = arguments[1];
-    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
 
     bool isNewKey = entry->key == NIL_VAL;
     if (isNewKey && IS_NIL(entry->value))
@@ -166,7 +167,7 @@ VALUE hash_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return isNewKey;
 }
 
-VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
@@ -174,7 +175,7 @@ VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
     // Find the entry.
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
     if (entry->key == NIL_VAL)
         return false;
 
@@ -222,7 +223,7 @@ void mark_table(VM *vm, HashTable *table)
 
 VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    return copyString(vm, "Some Hash", 9);
 }
 
 void init_hash(VM *vm)

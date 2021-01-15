@@ -172,6 +172,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, klass, &string_empty_q, "empty?", false);
     defineNativeMethod(vm, klass, &string_to_lower, "to_lower", false);
     defineNativeMethod(vm, klass, &string_to_upper, "to_upper", false);
+    defineNativeMethod(vm, klass, &string_to_string, "to_string", false);
     defineNativeOperator(vm, klass, &string_concatenate, OPERATOR_PLUS);
     defineNativeOperator(vm, klass, &string_equals, OPERATOR_EQUALS);
 }

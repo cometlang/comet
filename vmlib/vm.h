@@ -57,6 +57,8 @@ void removeWhiteStrings(VM *vm);
 bool addGlobal(VM *vm, Value name, Value value);
 bool findGlobal(VM *vm, Value name, Value *value);
 
+VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
+
 InterpretResult interpret(VM *vm, const SourceFile *source);
 void runtimeError(VM *vm, const char *format, ...);
 void defineMethod(VM *vm, Value name, bool isStatic);
@@ -66,7 +68,6 @@ void push(VM *vm, Value value);
 Value pop(VM *vm);
 Value peek(VM *vm, int distance);
 
-Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_count, ...);
 Value getStackTrace(VM *vm);
 
 #endif

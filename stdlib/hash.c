@@ -222,16 +222,6 @@ void mark_table(VM *vm, HashTable *table)
 
 VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-
-    // for (int i = 0; i <= table->capacity; i++)
-//     {
-//         Entry *entry = &table->entries[i];
-//         if (entry->key != NULL)
-//         {
-//             printValue(OBJ_VAL(entry->key));
-//             printf("\n");
-//         }
-//     }
     return NIL_VAL;
 }
 

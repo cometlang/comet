@@ -378,26 +378,6 @@ static bool invoke(VM *vm, Value name, int argCount)
     return invokeFromClass(vm, AS_CLASS(receiver), name, argCount);
 }
 
-Value nativeInvokeMethod(VM *vm, Value receiver, Value method_name, int arg_count, ...)
-{
-    push(vm, receiver);
-    va_list args;
-    va_start(args, arg_count);
-    for (int i = 0; i < arg_count; i++)
-    {
-        push(vm, va_arg(args, Value));
-    }
-    va_end(args);
-
-    if (invoke(vm, method_name, arg_count))
-    {
-        run(vm);
-        // Pretty sure this won't work - it will have an empty stack, right?
-        return pop(vm);
-    }
-    return NIL_VAL;
-}
-
 static bool bindMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value method;
@@ -515,7 +495,7 @@ static InterpretResult run(VM *vm)
         disassembleInstruction(&frame->closure->function->chunk,
                                (int)(frame->ip - frame->closure->function->chunk.code));
         printf("          ");
-        for (Value *slot = vm.stack; slot < vm.stackTop; slot++)
+        for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
         {
             printf("[ ");
             printValue(*slot);
@@ -700,8 +680,9 @@ static InterpretResult run(VM *vm)
             break;
         case OP_PRINT:
         {
-            printValue(pop(vm));
-            printf("\n");
+            Value to_string = copyString(vm, "to_string", 9);
+            Value string = call_function(peek(vm, 0), to_string, 0, NULL);
+            printf("%s\n", string_get_cstr(string));
             frame = updateFrame(vm);
             break;
         }
@@ -879,6 +860,26 @@ static InterpretResult run(VM *vm)
 #undef READ_SHORT
 #undef READ_CONSTANT
 #undef READ_BYTE
+}
+
+VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments)
+{
+    VM frame;
+    initVM(&frame);
+    Value result = NIL_VAL;
+    push(&frame, receiver);
+    for (int i = 0; i < arg_count; i++)
+    {
+        push(&frame, arguments[i]);
+    }
+    if (invoke(&frame, method_name, arg_count))
+    {
+        // This works if it's a String or Global, but not so much if it's a regular object
+        // A regular object would be free'd with the VM.  Should clone() them.
+        result = pop(&frame);
+    }
+    freeVM(&frame);
+    return result;
 }
 
 InterpretResult interpret(VM *vm, const SourceFile *source)

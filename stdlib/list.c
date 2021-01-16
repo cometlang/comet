@@ -130,7 +130,7 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALU
         current = current->next;
     }
 
-    return NIL_VAL;
+    return copyString(vm, "Native List Instance", 20);
 }
 
 VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)

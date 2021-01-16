@@ -149,15 +149,14 @@ ObjNativeMethod *newNativeMethod(VM *vm, Value receiver, NativeMethod function, 
     return method;
 }
 
-static Value allocateString(VM *vm, const char *chars, int length)
+static Value allocateString(VM *vm, char *chars, int length)
 {
     ObjNativeInstance *string = (ObjNativeInstance *) newInstance(vm, _string_class);
     Value string_obj = OBJ_VAL(string);
-    push(vm, string_obj);
     string->data = string_set_cstr(string, chars, length);
+    push(vm, string_obj);
     internString(vm, string_obj);
     pop(vm);
-
     return string_obj;
 }
 
@@ -193,7 +192,10 @@ Value copyString(VM *vm, const char *chars, int length)
     if (interned != NIL_VAL)
         return interned;
 
-    return allocateString(vm, chars, length);
+    char *copied_string = ALLOCATE(char, length + 1);
+    memcpy(copied_string, chars, length);
+    copied_string[length] = '\0';
+    return allocateString(vm, copied_string, length);
 }
 
 ObjUpvalue *newUpvalue(VM *vm, Value *slot)

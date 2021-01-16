@@ -12,13 +12,13 @@ typedef struct StringData
     uint32_t hash;
 } StringData;
 
-static uint32_t hash_string(const char *key, int length)
+uint32_t string_hash_cstr(const char *string, int length)
 {
     uint32_t hash = 2166136261u;
 
     for (int i = 0; i < length; i++)
     {
-        hash ^= key[i];
+        hash ^= string[i];
         hash *= 16777619;
     }
 
@@ -34,14 +34,12 @@ void *string_constructor(void)
     return (void *) data;
 }
 
-void *string_set_cstr(ObjNativeInstance *instance, const char *string, int length)
+void *string_set_cstr(ObjNativeInstance *instance, char *string, int length)
 {
     StringData *data = (StringData *) instance->data;
-    data->chars = ALLOCATE(char, length + 1);
-    memcpy(data->chars, string, length);
-    data->chars[length] = '\0';
+    data->chars = string;
     data->length = length;
-    data->hash = hash_string(data->chars, length);
+    data->hash = string_hash_cstr(data->chars, length);
     return (void *) data;
 }
 

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "comet.h"
 #include "cometlib.h"
@@ -43,7 +44,10 @@ VALUE obj_hash(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
 VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjInstance *instance = AS_INSTANCE(self);
-    return copyString(vm, instance->klass->name, strlen(instance->klass->name));
+    size_t string_len = strlen(instance->klass->name) + strlen(" instance") + 1;
+    char string[string_len];
+    snprintf(string, string_len, "%s instance", instance->klass->name);
+    return copyString(vm, string, string_len);
 }
 
 VALUE obj_nil_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

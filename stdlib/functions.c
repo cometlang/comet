@@ -13,8 +13,26 @@ static VALUE printNative(int arg_count, VALUE *args)
 {
     for (int i = 0; i < arg_count; i++)
     {
-        VALUE string = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL);
-        printf("%s", string_get_cstr(string));
+        if (IS_NUMBER(args[i]))
+        {
+            printf("%lf", AS_NUMBER(args[i]));
+        }
+        else if (IS_BOOL(args[i]))
+        {
+            if (args[i] == TRUE_VAL)
+            {
+                printf("true");
+            }
+            else
+            {
+                printf("false");
+            }
+        }
+        else
+        {
+            VALUE string = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL);
+            printf("%s", string_get_cstr(string));
+        }
     }
     printf("\n");
     return NIL_VAL;

@@ -35,6 +35,7 @@ typedef enum
     PREC_TERM,       // + -
     PREC_FACTOR,     // * /
     PREC_UNARY,      // ! -
+    PREC_INSTANCEOF, // instanceof
     PREC_CALL,       // . () []
     PREC_PRIMARY
 } Precedence;
@@ -549,6 +550,9 @@ static void binary(bool UNUSED(canAssign))
     case TOKEN_SLASH:
         emitByte(OP_DIVIDE);
         break;
+    case TOKEN_INSTANCEOF:
+        emitByte(OP_INSTANCEOF);
+        break;
     default:
         return; // Unreachable.
     }
@@ -810,7 +814,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_FUN
     {NULL, NULL, PREC_NONE},         // TOKEN_IF
     {NULL, NULL, PREC_NONE},         // TOKEN_IN
-    {NULL, NULL, PREC_NONE},         // TOKEN_INSTANCEOF
+    {NULL, binary, PREC_INSTANCEOF}, // TOKEN_INSTANCEOF
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
     {NULL, NULL, PREC_NONE},         // TOKEN_OPERATOR
     {NULL, or_, PREC_OR},            // TOKEN_OR
@@ -1284,6 +1288,7 @@ static void declaration()
 
 static void statement()
 {
+    match(TOKEN_EOL);
     if (match(TOKEN_FOR))
     {
         forStatement();

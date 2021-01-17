@@ -6,16 +6,20 @@
 
 VALUE instanceof(VALUE self, VALUE klass)
 {
-    if ((IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self)) && IS_CLASS(klass))
+    if ((IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self)) &&
+        (IS_CLASS(klass) || IS_NATIVE_CLASS(klass)))
     {
         ObjInstance *instance = AS_INSTANCE(self);
         if (instance->klass == AS_CLASS(klass))
         {
             return TRUE_VAL;
         }
-        else if (instance->klass->super_ != NULL)
+        ObjClass *current_klass = instance->klass->super_;
+        while (current_klass != NULL)
         {
-            return instanceof(self, OBJ_VAL(instance->klass->super_));
+            if (current_klass == AS_CLASS(klass))
+                return TRUE_VAL;
+            current_klass = current_klass->super_;
         }
     }
     return FALSE_VAL;

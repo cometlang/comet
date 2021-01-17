@@ -1,0 +1,11 @@
+class SomeClass
+{
+}
+
+var instance = SomeClass()
+var inherits = instance instanceof Object
+
+print(inherits)
+print(instance.hash())
+print(instance.to_string())
+print(instance.nil?())

@@ -174,6 +174,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_THROW", offset);
     case OP_DUP_TOP:
         return simpleInstruction("OP_DUP_TOP", offset);
+    case OP_INSTANCEOF:
+        return simpleInstruction("OP_INSTANCEOF", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

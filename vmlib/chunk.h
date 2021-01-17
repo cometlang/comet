@@ -49,6 +49,7 @@ typedef enum
     OP_DEFINE_OPERATOR,
     OP_THROW,
     OP_DUP_TOP,
+    OP_INSTANCEOF,
 } OpCode;
 
 typedef struct

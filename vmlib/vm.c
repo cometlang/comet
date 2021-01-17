@@ -156,8 +156,10 @@ static bool call(VM *vm, ObjClosure *closure, int argCount)
 {
     if (argCount != closure->function->arity)
     {
-        runtimeError(vm, "Expected %d arguments but got %d.",
-                     closure->function->arity, argCount);
+        runtimeError(vm, "'%s' Expects %d arguments to but got %d.",
+                     string_get_cstr(closure->function->name),
+                     closure->function->arity,
+                     argCount);
         return false;
     }
 
@@ -213,7 +215,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
             }
             else if (argCount != 0)
             {
-                runtimeError(vm, "Expected 0 arguments but got %d.", argCount);
+                runtimeError(vm, "'%s()' expects 0 arguments but got %d.", klass->name, argCount);
                 return false;
             }
             return true;
@@ -273,13 +275,7 @@ static Value findStaticMethod(VM *vm, ObjClass *klass, Value name)
 static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
                             int argCount)
 {
-    Value method = findMethod(vm, klass, name);
-    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
-    {
-        return call(vm, AS_CLOSURE(method), argCount);
-    }
-
-    method = findStaticMethod(vm, klass, name);
+    Value method = findStaticMethod(vm, klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -329,20 +325,6 @@ static bool callBinaryOperator(VM *vm, OPERATOR operator)
     return callOperator(vm, peek(vm, 1), 1, operator);
 }
 
-static bool invokeFromNativeInstance(VM *vm, ObjNativeInstance *instance, Value name, int argCount)
-{
-    Value method = findMethod(vm, instance->instance.klass, name);
-    if (IS_NIL(method))
-    {
-        runtimeError(vm, "'%s' has no method or property '%s'.",
-            instance->instance.klass->name,
-            string_get_cstr(name));
-        return false;
-    }
-
-    return callNativeMethod(vm, OBJ_VAL(instance), AS_NATIVE_METHOD(method), argCount);
-}
-
 static bool invoke(VM *vm, Value name, int argCount)
 {
     Value receiver = peek(vm, argCount);
@@ -374,9 +356,15 @@ static bool invoke(VM *vm, Value name, int argCount)
             return callValue(vm, value, argCount);
         }
 
-        if (IS_NATIVE_INSTANCE(receiver))
+        Value method = findMethod(vm, instance->klass, name);
+        if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
         {
-            return invokeFromNativeInstance(vm, AS_NATIVE_INSTANCE(receiver), name, argCount);
+            return call(vm, AS_CLOSURE(method), argCount);
+        }
+
+        if (IS_NATIVE_METHOD(method))
+        {
+            return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(method), argCount);
         }
 
         return invokeFromClass(vm, instance->klass, name, argCount);
@@ -848,6 +836,11 @@ static InterpretResult run(VM *vm)
         case OP_DUP_TOP:
         {
             push(vm, peek(vm, 0));
+            break;
+        }
+        case OP_INSTANCEOF:
+        {
+            push(vm, instanceof(peek(vm, 1), peek(vm, 0)));
             break;
         }
         }

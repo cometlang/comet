@@ -1,5 +1,6 @@
 #include "comet.h"
 #include "cometlib.h"
+#include "comet_stdlib.h"
 
 #include <stdlib.h>
 
@@ -32,8 +33,7 @@ void list_destructor(void *data)
 
 VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    ListData *data = instance->data;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     for (int i = 0; i < arg_count; i++)
     {
         list_node_t *node = (list_node_t *)malloc(sizeof(list_node_t));
@@ -61,8 +61,7 @@ VALUE list_remove(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
 
 VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    ListData *data = (ListData *)instance->data;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     int index = (int)AS_NUMBER(arguments[0]);
     list_node_t *current = data->head;
     for (int i = 0; i < data->length; i++)
@@ -85,8 +84,7 @@ VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *a
 
 VALUE list_iterable_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    ListData *data = (ListData *)instance->data;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     return BOOL_VAL(data->length == 0);
 }
 
@@ -97,8 +95,7 @@ VALUE list_iterable_iterator(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_
 
 VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    ListData *data = (ListData *)instance->data;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE contains = arguments[0];
     list_node_t *current = data->head;
     while (current != NULL)
@@ -118,8 +115,7 @@ VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE
 
 VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    ListData *data = (ListData *)instance->data;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE contains = arguments[0];
     list_node_t *current = data->head;
     while (current != NULL)
@@ -131,6 +127,12 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALU
     }
 
     return copyString(vm, "Native List Instance", 20);
+}
+
+VALUE list_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    return NUMBER_VAL(data->length);
 }
 
 VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
@@ -160,6 +162,8 @@ void init_list(VM *vm)
     defineNativeMethod(vm, klass, &list_iterable_iterator, "iterator", false);
     defineNativeMethod(vm, klass, &list_get_at, "get_at", false);
     defineNativeMethod(vm, klass, &list_obj_to_string, "to_string", false);
+    defineNativeMethod(vm, klass, &list_length, "size", false);
+    defineNativeMethod(vm, klass, &list_length, "length", false);
     defineNativeOperator(vm, klass, &list_get_at, OPERATOR_INDEX);
     defineNativeOperator(vm, klass, &list_assign_at, OPERATOR_INDEX_ASSIGN);
 }

@@ -41,6 +41,7 @@ static void init_class(ObjClass *klass, const char *name)
 {
     size_t length = strlen(name) + 1;
     klass->name = ALLOCATE(char, length);
+    klass->super_ = NULL;
     strncpy(klass->name, name, length);
     initTable(&klass->methods);
     initTable(&klass->staticMethods);

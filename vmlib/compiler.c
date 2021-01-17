@@ -993,19 +993,22 @@ static void classDeclaration()
         {
             error("A class cannot inherit from itself.");
         }
-
         beginScope();
-
-        // Store the superclass in a local variable named "super".
         variable(false);
-        addLocal(syntheticToken("super"));
-        defineVariable(0);
-
-        namedVariable(className, false);
-        emitByte(OP_INHERIT);
-        classCompiler.hasSuperclass = true;
+    }
+    else
+    {
+        beginScope();
+        namedVariable(syntheticToken("Object"), false);
     }
 
+    // Store the superclass in a local variable named "super".
+    addLocal(syntheticToken("super"));
+    defineVariable(0);
+
+    namedVariable(className, false);
+    emitByte(OP_INHERIT);
+    classCompiler.hasSuperclass = true;
 
     namedVariable(className, false);
     match(TOKEN_EOL); // optional end of line.

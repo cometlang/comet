@@ -14,5 +14,6 @@ void init_list(VM *vm);
 void init_nil(VM *vm);
 void init_socket(VM *vm);
 void init_thread(VM *vm);
+void init_number(VM *vm);
 
 #endif

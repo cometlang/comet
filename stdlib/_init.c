@@ -14,4 +14,5 @@ void init_stdlib(VM *vm)
     init_hash(vm);
     init_socket(vm);
     init_thread(vm);
+    init_number(vm);
 }

@@ -1,7 +1,7 @@
 # print "This should not be shown";
 var test = []
 test.add("hi")
-print test[0]
+print(test[0])
 
 var list = List()
 
@@ -15,5 +15,5 @@ are
 multi-line
 by default")
 
-print list
-print list[4]
+print(list)
+print(list[4])

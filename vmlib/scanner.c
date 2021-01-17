@@ -219,8 +219,6 @@ static TokenType identifierType()
                         {
                             case 'v':
                                 return checkKeyword(4, 3, "ate", TOKEN_PRIVATE);
-                            case 'n':
-                                return checkKeyword(4, 1, "t", TOKEN_PRINT);
                         }
                         break;
                     }

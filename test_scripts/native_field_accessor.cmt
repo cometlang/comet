@@ -1,2 +1,2 @@
 var ex = Exception("This is a a native property")
-print ex.message()
+print(ex.message())

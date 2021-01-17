@@ -14,8 +14,7 @@ static InterpretResult run(VM *vm);
 
 static Table globals;
 static Table strings;
-Value initString;
-Value hashString;
+Value common_strings[NUM_COMMON_STRINGS];
 
 void initGlobals(void)
 {
@@ -27,16 +26,20 @@ void freeGlobals(void)
 {
     freeTable(&globals);
     freeTable(&strings);
-    initString = NIL_VAL;
-    hashString = NIL_VAL;
+    for (int i = 0; i < NUM_COMMON_STRINGS; i++)
+    {
+        common_strings[i] = NIL_VAL;
+    }
 }
 
 void markGlobals(VM *vm)
 {
     markTable(vm, &globals);
     markTable(vm, &strings);
-    markValue(vm, initString);
-    markValue(vm, hashString);
+    for (int i = 0; i < NUM_COMMON_STRINGS; i++)
+    {
+        markValue(vm, common_strings[i]);
+    }
 }
 
 void removeWhiteStrings(VM *vm)
@@ -195,7 +198,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
             vm->stackTop[-argCount - 1] = instance;
             // Call the initializer, if there is one.
             Value initializer;
-            if (tableGet(vm, &klass->methods, initString, &initializer))
+            if (tableGet(vm, &klass->methods, common_strings[STRING_INIT], &initializer))
             {
                 if (IS_NATIVE_METHOD(initializer))
                 {
@@ -681,14 +684,6 @@ static InterpretResult run(VM *vm)
             }
             push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
             break;
-        case OP_PRINT:
-        {
-            Value to_string = copyString(vm, "to_string", 9);
-            Value string = call_function(peek(vm, 0), to_string, 0, NULL);
-            printf("%s\n", string_get_cstr(string));
-            frame = updateFrame(vm);
-            break;
-        }
         case OP_JUMP:
         {
             uint16_t offset = READ_SHORT();

@@ -814,7 +814,6 @@ ParseRule rules[NUM_TOKENS] = {
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
     {NULL, NULL, PREC_NONE},         // TOKEN_OPERATOR
     {NULL, or_, PREC_OR},            // TOKEN_OR
-    {NULL, NULL, PREC_NONE},         // TOKEN_PRINT
     {NULL, NULL, PREC_NONE},         // TOKEN_RETURN
     {self, NULL, PREC_NONE},         // TOKEN_SELF
     {super_, NULL, PREC_NONE},       // TOKEN_SUPER
@@ -1165,14 +1164,6 @@ static void ifStatement()
     patchJump(elseJump);
 }
 
-static void printStatement()
-{
-    expression();
-    if (!check(TOKEN_EOF))
-        consume(TOKEN_EOL, "Only one statement per line allowed.");
-    emitByte(OP_PRINT);
-}
-
 static void returnStatement()
 {
     if (current->type == TYPE_SCRIPT)
@@ -1240,7 +1231,6 @@ static void synchronize()
         case TOKEN_IF:
         case TOKEN_WHILE:
         case TOKEN_THROW:
-        case TOKEN_PRINT:
         case TOKEN_RETURN:
         case TOKEN_STATIC:
             return;
@@ -1291,11 +1281,7 @@ static void declaration()
 
 static void statement()
 {
-    if (match(TOKEN_PRINT))
-    {
-        printStatement();
-    }
-    else if (match(TOKEN_FOR))
+    if (match(TOKEN_FOR))
     {
         forStatement();
     }

@@ -40,8 +40,14 @@ typedef enum
     INTERPRET_RUNTIME_ERROR,
 } InterpretResult;
 
-extern Value initString;
-extern Value hashString;
+typedef enum {
+    STRING_INIT,
+    STRING_HASH,
+    STRING_TO_STRING,
+    NUM_COMMON_STRINGS,
+} COMMON_STRINGS;
+
+extern Value common_strings[NUM_COMMON_STRINGS];
 void initGlobals(void);
 void freeGlobals(void);
 

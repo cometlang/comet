@@ -18,4 +18,4 @@ class TestClass
 
 var test = TestClass()
 test.print_object()
-print test.get_item()
+print(test.get_item())

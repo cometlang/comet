@@ -10,6 +10,7 @@
 
 #include "comet.h"
 
+static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
 
 static Table globals;
@@ -67,6 +68,33 @@ bool addGlobal(VM *vm, Value name, Value value)
     return tableSet(vm, &globals, name, value);
 }
 
+static bool create_instance(VM *vm, ObjClass *klass, int argCount)
+{
+    Value instance = OBJ_VAL(newInstance(vm, klass));
+    vm->stackTop[-argCount - 1] = instance;
+    // Call the initializer, if there is one.
+    Value initializer;
+    if (tableGet(vm, &klass->methods, common_strings[STRING_INIT], &initializer))
+    {
+        if (IS_NATIVE_METHOD(initializer))
+        {
+            AS_NATIVE_METHOD(initializer)->function(vm, instance, argCount, vm->stackTop - argCount);
+            popMany(vm, argCount);
+            return true;
+        }
+        else
+        {
+            return call(vm, AS_CLOSURE(initializer), argCount);
+        }
+    }
+    else if (argCount != 0)
+    {
+        runtimeError(vm, "'%s()' expects 0 arguments but got %d.", klass->name, argCount);
+        return false;
+    }
+    return true;
+}
+
 static void resetStack(VM *vm)
 {
     vm->stackTop = vm->stack;
@@ -99,6 +127,25 @@ Value getStackTrace(VM *vm)
     FREE_ARRAY(char, stacktrace, vm->frameCount * MAX_LINE_LENGTH);
     return result;
 #undef MAX_LINE_LENGTH
+}
+
+void throw_exception_native(VM *vm, const char *exception_type_name, const char *message_format, ...)
+{
+    Value type_name = copyString(vm, exception_type_name, strlen(exception_type_name));
+    Value exception_type = NIL_VAL;
+    if (findGlobal(vm, type_name, &exception_type))
+    {
+        va_list args;
+        va_start(args, message_format);
+        create_instance(vm, AS_CLASS(exception_type), 1);
+        va_end(args);
+        exception_set_stacktrace(vm, peek(vm, 0), getStackTrace(vm));
+        resetStack(vm);
+    }
+    else
+    {
+        runtimeError(vm, "Could not find any type named '%s'\n", exception_type_name);
+    }
 }
 
 void runtimeError(VM *vm, const char *format, ...)
@@ -196,29 +243,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
         case OBJ_CLASS:
         {
             ObjClass *klass = AS_CLASS(callee);
-            Value instance = OBJ_VAL(newInstance(vm, klass));
-            vm->stackTop[-argCount - 1] = instance;
-            // Call the initializer, if there is one.
-            Value initializer;
-            if (tableGet(vm, &klass->methods, common_strings[STRING_INIT], &initializer))
-            {
-                if (IS_NATIVE_METHOD(initializer))
-                {
-                    AS_NATIVE_METHOD(initializer)->function(vm, instance, argCount, vm->stackTop - argCount);
-                    popMany(vm, argCount);
-                    return true;
-                }
-                else
-                {
-                    return call(vm, AS_CLOSURE(initializer), argCount);
-                }
-            }
-            else if (argCount != 0)
-            {
-                runtimeError(vm, "'%s()' expects 0 arguments but got %d.", klass->name, argCount);
-                return false;
-            }
-            return true;
+            return create_instance(vm, klass, argCount);
         }
         case OBJ_CLOSURE:
             return call(vm, AS_CLOSURE(callee), argCount);

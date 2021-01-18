@@ -1,3 +1,6 @@
-var some_hash = {}
+var some_hash = {
+    "key": "value",
+    "other key" : "other value"
+}
 
 print(some_hash)

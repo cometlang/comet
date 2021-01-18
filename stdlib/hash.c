@@ -79,7 +79,7 @@ static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
     {
         HashEntry *entry = &entries[index];
 
-        if (entry->key == NIL_VAL)
+        if (entry == NULL || entry->key == NIL_VAL)
         {
             if (IS_NIL(entry->value))
             {
@@ -111,7 +111,7 @@ VALUE hash_get(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argumen
 
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(table->entries, table->capacity, key);
-    if (entry->key == NIL_VAL)
+    if (entry == NULL || entry->key == NIL_VAL)
         return NIL_VAL;  // throw an exception
 
     return entry->value;
@@ -130,7 +130,7 @@ static void adjust_capacity(HashTable *table, int capacity)
     for (size_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
-        if (entry->key == NIL_VAL)
+        if (entry == NULL || entry->key == NIL_VAL)
             continue;
 
         HashEntry *dest = find_entry(entries, capacity, entry->key);
@@ -176,7 +176,7 @@ VALUE hash_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
     // Find the entry.
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(table->entries, table->capacity, key);
-    if (entry->key == NIL_VAL)
+    if (entry == NULL || entry->key == NIL_VAL)
         return false;
 
     // Place a tombstone in the entry.
@@ -223,7 +223,7 @@ void mark_table(VM *vm, HashTable *table)
 
 VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString(vm, "Some Hash", 9);
+    return copyString(vm, "A Hash Instance\n", 16);
 }
 
 void init_hash(VM *vm)

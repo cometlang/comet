@@ -754,9 +754,31 @@ static void unary(bool UNUSED(canAssign))
 
 static void literal_hash(bool canAssign)
 {
-    consume(TOKEN_RIGHT_BRACE, "Expected '}' for a literal hash declaration");
     namedVariable(syntheticToken("Hash"), canAssign);
     emitBytes(OP_CALL, 0);
+    emitByte(OP_DUP_TOP);
+    match(TOKEN_EOL);
+
+    if (!check(TOKEN_RIGHT_BRACE))
+    {
+        do {
+            emitByte(OP_DUP_TOP);
+            match(TOKEN_EOL);
+            expression();
+            consume(TOKEN_COLON, "':' expected between key and value of a literal hash");
+            match(TOKEN_EOL);
+            expression();
+            Token addToken = syntheticToken("add");
+            uint8_t name = identifierConstant(&addToken);
+            emitBytes(OP_INVOKE, name);
+            emitByte(2); // argCount
+            emitByte(OP_POP);
+        } while (match(TOKEN_COMMA));
+    }
+
+    emitByte(OP_POP);
+    match(TOKEN_EOL);
+    consume(TOKEN_RIGHT_BRACE, "Expected '}' for a literal hash declaration");
 }
 
 static void literal_list(bool canAssign)

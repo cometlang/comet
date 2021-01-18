@@ -829,7 +829,9 @@ static InterpretResult run(VM *vm)
         }
         case OP_THROW:
         {
-            ObjInstance *exception = AS_INSTANCE(peek(vm, 0));
+            Value val = peek(vm, 0);
+            ObjInstance *exception = AS_INSTANCE(val);
+            exception_set_stacktrace(vm, val, getStackTrace(vm));
             runtimeError(vm, "Uncaught %s", exception->klass->name);
             return INTERPRET_RUNTIME_ERROR;
         }

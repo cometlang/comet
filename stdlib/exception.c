@@ -1,3 +1,4 @@
+#include <string.h>
 #include "comet.h"
 #include "cometlib.h"
 #include "native.h"
@@ -14,6 +15,11 @@ VALUE exception_init(VM *vm, VALUE UNUSED(self), int arg_count, VALUE UNUSED(*ar
 VALUE exception_get_message(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return getNativeProperty(vm, self, "_message");
+}
+
+void exception_set_stacktrace(VM *vm, VALUE self, VALUE stacktrace)
+{
+    setNativeProperty(vm, self, "stacktrace", stacktrace);
 }
 
 void init_exception(VM *vm)

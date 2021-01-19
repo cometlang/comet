@@ -313,7 +313,7 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
     if (IS_NIL(method))
     {
-        runtimeError(vm, "'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
+        runtimeError(vm, "'%s' has no static method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 
@@ -354,7 +354,10 @@ static bool invoke(VM *vm, Value name, int argCount)
 {
     Value receiver = peek(vm, argCount);
 
-    if (!(IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_CLASS(receiver) || IS_NATIVE_CLASS(receiver)))
+    if (!(IS_INSTANCE(receiver) ||
+          IS_NATIVE_INSTANCE(receiver) ||
+          IS_CLASS(receiver) ||
+          IS_NATIVE_CLASS(receiver)))
     {
         if (IS_NIL(receiver))
         {
@@ -498,7 +501,7 @@ static InterpretResult run(VM *vm)
     {                                                           \
         if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) \
         {                                                       \
-            runtimeError(vm, "Operands must be numbers.");          \
+            runtimeError(vm, "Operands must be numbers.");      \
             return INTERPRET_RUNTIME_ERROR;                     \
         }                                                       \
                                                                 \

@@ -146,4 +146,7 @@ typedef struct
     ObjClosure *method;
 } ObjBoundMethod;
 
+
+extern ObjNativeInstance nil_instance;
+
 #endif

@@ -10,7 +10,7 @@ include_directories(
 
 set(SOURCE 
   _init.c
-  # boolean.c
+  boolean.c
   # datetime.c
   exception.c
   file.c

@@ -146,12 +146,6 @@ static void blackenObject(VM *vm, Obj *object)
         markTable(vm, &klass->klass.staticMethods);
         break;
     }
-    case OBJ_NATIVE_METHOD:
-    {
-        ObjNativeMethod *method = (ObjNativeMethod *)object;
-        markValue(vm, method->receiver);
-        break;
-    }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
@@ -186,6 +180,7 @@ static void blackenObject(VM *vm, Obj *object)
     case OBJ_UPVALUE:
         markValue(vm, ((ObjUpvalue *)object)->closed);
         break;
+    case OBJ_NATIVE_METHOD:
     case OBJ_NATIVE:
         break;
     }

@@ -122,7 +122,6 @@ typedef struct sNativeClass
 typedef struct sNativeMethod
 {
     Obj obj;
-    Value receiver;
     NativeMethod function;
     bool isStatic;
 } ObjNativeMethod;

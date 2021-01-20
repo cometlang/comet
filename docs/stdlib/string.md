@@ -16,4 +16,4 @@ Will eventually be UTF-8, but for now it's ASCII.
 
 ### operators
 - == compares if the two strings are equal in a case-sensitive manner
-- + concatenates an object (calling its to_string() method) onto this string, returning a new String.  The existing string is left unchanged
+- \+ concatenates an object (calling its to_string() method) onto this string, returning a new String.  The existing string is left unchanged

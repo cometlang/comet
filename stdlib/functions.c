@@ -17,17 +17,6 @@ static VALUE printNative(int arg_count, VALUE *args)
         {
             printf("%lf", AS_NUMBER(args[i]));
         }
-        else if (IS_BOOL(args[i]))
-        {
-            if (args[i] == TRUE_VAL)
-            {
-                printf("true");
-            }
-            else
-            {
-                printf("false");
-            }
-        }
         else
         {
             VALUE string = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL);

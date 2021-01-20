@@ -20,4 +20,6 @@ uint32_t string_hash_cstr(const char *string, int length);
 void exception_set_stacktrace(VM *vm, VALUE self, VALUE stacktrace);
 VALUE instanceof(VALUE self, VALUE klass);
 
+bool bool_is_falsey(Value value);
+
 #endif

@@ -36,7 +36,7 @@ VALUE file_static_open(VM *vm, VALUE klass, int arg_count, VALUE *arguments)
     ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     if (arg_count != 2)
     {
-        fprintf(stderr, "Wrong number of arguments: got %d, needed 2\n", arg_count);
+        fprintf(stderr, "Require 2 arguments a path and opening mode: got %d\n", arg_count);
         // Throw an exception
         return NIL_VAL;
     }
@@ -109,24 +109,32 @@ VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_c
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
-        return BOOL_VAL(true);
-    return BOOL_VAL(false);
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
 VALUE file_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
-        return BOOL_VAL(statbuf.st_mode & __S_IFDIR);
-    return BOOL_VAL(false);
+    {
+        if (statbuf.st_mode & __S_IFDIR)
+            return TRUE_VAL;
+        return FALSE_VAL;
+    }
+    return FALSE_VAL;
 }
 
 VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;
     if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
-        return BOOL_VAL(statbuf.st_mode & __S_IFREG);
-    return BOOL_VAL(false);
+    {
+        if (statbuf.st_mode & __S_IFREG)
+            return TRUE_VAL;
+        return FALSE_VAL;
+    }
+    return FALSE_VAL;
 }
 
 VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))

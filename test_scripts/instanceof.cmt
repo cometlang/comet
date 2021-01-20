@@ -28,7 +28,7 @@ if (child instanceof Object)
 {
     print("4. Child was instanceof Object")
 }
-if (!child instanceof Exception)
+if (!(child instanceof Exception))
 {
     print("5. Child was not an instanceof Exception")
 }

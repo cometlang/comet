@@ -79,7 +79,9 @@ VALUE string_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
     if (lhs->length != rhs->length)
         return FALSE_VAL;
 
-    return BOOL_VAL(strncmp(lhs->chars, rhs->chars, lhs->length) == 0);
+    if (strncmp(lhs->chars, rhs->chars, lhs->length) == 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
 VALUE string_hash(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -145,8 +147,10 @@ VALUE string_to_upper(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count),
 
 VALUE string_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    StringData *data = (StringData *) AS_NATIVE_INSTANCE(self)->data;
-    return BOOL_VAL(data->length == 0);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    if (data->length == 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
 VALUE string_concatenate(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

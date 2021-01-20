@@ -148,5 +148,7 @@ typedef struct
 
 
 extern ObjNativeInstance nil_instance;
+extern ObjNativeInstance boolean_true;
+extern ObjNativeInstance boolean_false;
 
 #endif

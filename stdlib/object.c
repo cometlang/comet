@@ -27,8 +27,9 @@ VALUE instanceof(VALUE self, VALUE klass)
 
 VALUE obj_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    Obj *rhs = AS_OBJ(arguments[0]);
-    return BOOL_VAL(AS_OBJ(self) == rhs);
+    if (self == arguments[0])
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
 VALUE obj_hash(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -78,7 +78,9 @@ VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *a
 VALUE list_iterable_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    return BOOL_VAL(data->count == 0);
+    if(data->count == 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
 VALUE list_iterable_iterator(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

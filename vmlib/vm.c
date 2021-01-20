@@ -477,11 +477,6 @@ void defineOperator(VM *vm, OPERATOR operator)
     pop(vm);
 }
 
-static bool isFalsey(Value value)
-{
-    return IS_NIL(value) || (IS_BOOL(value) && !AS_BOOL(value));
-}
-
 static CallFrame *updateFrame(VM *vm)
 {
     return &vm->frames[vm->frameCount - 1];
@@ -537,10 +532,10 @@ static InterpretResult run(VM *vm)
             push(vm, NIL_VAL);
             break;
         case OP_TRUE:
-            push(vm, BOOL_VAL(true));
+            push(vm, TRUE_VAL);
             break;
         case OP_FALSE:
-            push(vm, BOOL_VAL(false));
+            push(vm, FALSE_VAL);
             break;
         case OP_POP:
             pop(vm);
@@ -652,14 +647,53 @@ static InterpretResult run(VM *vm)
         {
             Value b = pop(vm);
             Value a = pop(vm);
-            push(vm, BOOL_VAL(valuesEqual(a, b)));
+            if (valuesEqual(a, b))
+                push(vm, TRUE_VAL);
+            else
+                push(vm, FALSE_VAL);
             break;
         }
         case OP_GREATER:
-            BINARY_OP(BOOL_VAL, >);
+        {
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
+            {
+
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(pop(vm));
+                if (a > b)
+                    push(vm, TRUE_VAL);
+                else
+                    push(vm, FALSE_VAL);
+            }
+            else
+            {
+                if (!callBinaryOperator(vm, OPERATOR_GREATER_THAN))
+                {
+                    return INTERPRET_RUNTIME_ERROR;;
+                }
+                frame = &vm->frames[vm->frameCount - 1];
+            }
             break;
+        }
         case OP_LESS:
-            BINARY_OP(BOOL_VAL, <);
+            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
+            {
+
+                double b = AS_NUMBER(pop(vm));
+                double a = AS_NUMBER(pop(vm));
+                if (a < b)
+                    push(vm, TRUE_VAL);
+                else
+                    push(vm, FALSE_VAL);
+            }
+            else
+            {
+                if (!callBinaryOperator(vm, OPERATOR_LESS_THAN))
+                {
+                    return INTERPRET_RUNTIME_ERROR;;
+                }
+                frame = &vm->frames[vm->frameCount - 1];
+            }
             break;
         case OP_ADD:
         {
@@ -690,8 +724,14 @@ static InterpretResult run(VM *vm)
             BINARY_OP(NUMBER_VAL, /);
             break;
         case OP_NOT:
-            push(vm, BOOL_VAL(isFalsey(pop(vm))));
+        {
+            Value result = FALSE_VAL;
+            if (bool_is_falsey(pop(vm)))
+                result = TRUE_VAL;
+
+            push(vm, result);
             break;
+        }
         case OP_NEGATE:
             if (!IS_NUMBER(peek(vm, 0)))
             {
@@ -709,7 +749,7 @@ static InterpretResult run(VM *vm)
         case OP_JUMP_IF_FALSE:
         {
             uint16_t offset = READ_SHORT();
-            if (isFalsey(peek(vm, 0)))
+            if (bool_is_falsey(peek(vm, 0)))
                 frame->ip += offset;
             break;
         }

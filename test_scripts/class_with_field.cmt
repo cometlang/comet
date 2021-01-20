@@ -7,7 +7,7 @@ class TestClass
 
     print_object()
     {
-        print self.item
+        print(self.item)
     }
 
     get_item()

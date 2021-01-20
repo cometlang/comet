@@ -34,11 +34,7 @@ void freeValueArray(ValueArray *array)
 void printValue(Value value)
 {
 #if NAN_TAGGING
-    if (IS_BOOL(value))
-    {
-        printf(AS_BOOL(value) ? "true" : "false");
-    }
-    else if (IS_NIL(value))
+    if (IS_NIL(value))
     {
         printf("nil");
     }
@@ -53,9 +49,6 @@ void printValue(Value value)
 #else
     switch (value.type)
     {
-    case VAL_BOOL:
-        printf(AS_BOOL(value) ? "true" : "false");
-        break;
     case VAL_NIL:
         printf("nil");
         break;
@@ -79,8 +72,6 @@ bool valuesEqual(Value a, Value b)
 
     switch (a.type)
     {
-    case VAL_BOOL:
-        return AS_BOOL(a) == AS_BOOL(b);
     case VAL_NIL:
         return true;
     case VAL_NUMBER:

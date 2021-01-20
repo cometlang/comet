@@ -19,19 +19,14 @@ typedef struct sObj Obj;
 
 typedef uint64_t Value;
 
-#define IS_BOOL(v)    (((v) & FALSE_VAL) == FALSE_VAL)
 #define IS_NIL(v)     ((v) == NIL_VAL)
 // If the NaN bits are set, it's not a number.
 #define IS_NUMBER(v)  (((v) & QNAN) != QNAN)
 #define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
 
-#define AS_BOOL(v)    ((v) == TRUE_VAL)
 #define AS_NUMBER(v)  valueToNum(v)
 #define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
 
-#define BOOL_VAL(boolean) ((boolean) ? TRUE_VAL : FALSE_VAL)
-#define FALSE_VAL         ((Value)(uint64_t)(QNAN | TAG_FALSE))
-#define TRUE_VAL          ((Value)(uint64_t)(QNAN | TAG_TRUE))
 #define NUMBER_VAL(num)   numToValue(num)
 // The triple casting is necessary here to satisfy some compilers:
 // 1. (uintptr_t) Convert the pointer to a number of the right size.
@@ -64,7 +59,6 @@ static inline Value numToValue(double num) {
 
 typedef enum
 {
-    VAL_BOOL,
     VAL_NUMBER,
     VAL_OBJ,
 } ValueType;
@@ -79,17 +73,12 @@ typedef struct
     } as;
 } Value;
 
-#define IS_BOOL(value) ((value).type == VAL_BOOL)
 #define IS_NUMBER(value) ((value).type == VAL_NUMBER)
 #define IS_OBJ(value)     ((value).type == VAL_OBJ)
 
-#define AS_BOOL(value) ((value).as.boolean)
 #define AS_NUMBER(value) ((value).as.number)
 #define AS_OBJ(value)     ((value).as.obj)
 
-#define BOOL_VAL(value) ((Value){VAL_BOOL, {.boolean = value}})
-#define TRUE_VAL BOOL_VAL(true)
-#define FALSE_VAL BOOL_VAL(false)
 #define NUMBER_VAL(value) ((Value){VAL_NUMBER, {.number = value}})
 #define OBJ_VAL(object)   ((Value){ VAL_OBJ, { .obj = (Obj*)object } })
 
@@ -98,6 +87,8 @@ typedef struct
 #define VALUE Value
 
 #define NIL_VAL (OBJ_VAL(&nil_instance))
+#define TRUE_VAL (OBJ_VAL(&boolean_true))
+#define FALSE_VAL (OBJ_VAL(&boolean_false))
 
 typedef struct _vm VM;
 

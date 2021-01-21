@@ -896,6 +896,7 @@ void expression()
 
 static void block()
 {
+    match(TOKEN_EOL);
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
         declaration();
@@ -930,7 +931,7 @@ static void function(FunctionType type)
     consume(TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");
 
     // The body.
-    match(TOKEN_EOL); // optional end of line.
+    match(TOKEN_EOL);
     consume(TOKEN_LEFT_BRACE, "Expect '{' before function body.");
     block();
 
@@ -1115,7 +1116,9 @@ static void expressionStatement()
 {
     expression();
     if (!check(TOKEN_EOF))
+    {
         consume(TOKEN_EOL, "Only one statement per line allowed");
+    }
     emitByte(OP_POP);
 }
 
@@ -1211,7 +1214,7 @@ static void returnStatement()
             error("Cannot return a value from an initializer.");
         }
         expression();
-        consume(TOKEN_EOL, "Only one statement per line allowed.");
+        consume(TOKEN_EOL, "Only one statement per line allowed");
         emitByte(OP_RETURN);
     }
 }
@@ -1234,11 +1237,34 @@ static void whileStatement()
     emitByte(OP_POP);
 }
 
+static void tryStatement()
+{
+    // I need to say which exception types are handled here, during runtime, and where to go.
+    // emitByte(OP_PUSH_EXCEPTION_HANDLER);
+    statement();
+    // emitByte(OP_POP_EXCEPTION_HANDLER);
+    int successJump = emitJump(OP_JUMP);
+    match(TOKEN_EOL);
+    if (match(TOKEN_CATCH))
+    {
+        consume(TOKEN_LEFT_PAREN, "Expect '(' after catch");
+        consume(TOKEN_IDENTIFIER, "Expect type name to catch");
+        uint8_t UNUSED(name) = identifierConstant(&parser.previous);
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after type statement in catch");
+        // emitByte(OP_POP_EXCEPTION_HANDLER);
+        statement();
+    }
+
+    // How to do "finally" blocks?
+
+    patchJump(successJump);
+}
+
 static void throwStatement()
 {
     expression();
     if (!check(TOKEN_EOF))
-        consume(TOKEN_EOL, "Only one statement per line allowed.");
+        consume(TOKEN_EOL, "Only one statement per line allowed");
     emitByte(OP_THROW);
 }
 
@@ -1327,6 +1353,10 @@ static void statement()
     else if (match(TOKEN_WHILE))
     {
         whileStatement();
+    }
+    else if (match(TOKEN_TRY))
+    {
+        tryStatement();
     }
     else if (match(TOKEN_THROW))
     {

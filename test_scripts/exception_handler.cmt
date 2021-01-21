@@ -1,0 +1,21 @@
+function first_function()
+{
+    try
+    {
+        print("This is before the function call")
+        second_function()
+        print("This is after the function call")
+    }
+    catch (Exception)
+    {
+        print("This is the first exception handler")
+    }
+    print("This is after the handler")
+}
+
+function second_function()
+{
+    throw Exception("My exception has a message")
+}
+
+first_function()

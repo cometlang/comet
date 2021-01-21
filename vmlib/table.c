@@ -27,7 +27,7 @@ static Entry *findEntry(VM *vm, Entry *entries, int capacity,
                         Value key)
 {
     Value hash_value = string_hash(vm, key, 0, NULL);
-    uint32_t hash = (uint32_t) AS_NUMBER(hash_value);
+    uint32_t hash = (uint32_t) number_get_value(hash_value);
     uint32_t index = hash & capacity;
     Entry *tombstone = NULL;
 
@@ -167,7 +167,7 @@ Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash)
         }
         else
         {
-            uint32_t entry_hash = (uint32_t) AS_NUMBER(string_hash(vm, entry->key, 0, NULL));
+            uint32_t entry_hash = (uint32_t) number_get_value(string_hash(vm, entry->key, 0, NULL));
             if (entry_hash == hash &&
                 string_compare_to_cstr(entry->key, chars) == 0)
             {
@@ -187,7 +187,7 @@ void tablePrintKeys(Table *table)
         Entry *entry = &table->entries[i];
         if (entry->key != NIL_VAL)
         {
-            printValue(OBJ_VAL(entry->key));
+            printObject(OBJ_VAL(entry->key));
             printf("\n");
         }
     }

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
@@ -12,14 +13,14 @@ static VALUE number_class;
 
 void *number_constructor()
 {
-    NumberData *data = ALLOCATE(NumberData, 1);
+    NumberData *data = (NumberData *) malloc(sizeof(NumberData));
     data->bits64 = 0;
     return data;
 }
 
 void number_destructor(void *data)
 {
-    FREE(NumberData, data);
+    free(data);
 }
 
 VALUE number_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -36,45 +37,51 @@ VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arg
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
-    NumberData *result_data = GET_NATIVE_INSTANCE_DATA(NumberData, result);
-    result_data->num = lhs->num + rhs->num;
-    return result;
+    return create_number(vm, lhs->num + rhs->num);
 }
 
 VALUE number_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
-    NumberData *result_data = GET_NATIVE_INSTANCE_DATA(NumberData, result);
-    result_data->num = lhs->num - rhs->num;
-    return result;
+    return create_number(vm, lhs->num - rhs->num);
 }
 
 VALUE number_operator_divide(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
-    NumberData *result_data = GET_NATIVE_INSTANCE_DATA(NumberData, result);
-    result_data->num = lhs->num / rhs->num;
-    return result;
+    return create_number(vm, lhs->num / rhs->num);
 }
 
 VALUE number_operator_multiply(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
+    return create_number(vm, lhs->num * rhs->num);
+}
+
+VALUE create_number(VM *vm, double number)
+{
     VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
     NumberData *result_data = GET_NATIVE_INSTANCE_DATA(NumberData, result);
-    result_data->num = lhs->num * rhs->num;
+    result_data->num = number;
     return result;
 }
 
-void init_number(VM *vm)
+double number_get_value(VALUE self)
 {
-    number_class = defineNativeClass(vm, "Number", &number_constructor, &number_destructor, NULL);
+    return GET_NATIVE_INSTANCE_DATA(NumberData, self)->num;
+}
+
+void bootstrap_number(VM *vm)
+{
+    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor);
+}
+
+void complete_number(VM *vm)
+{
+    completeNativeClassDefinition(vm, number_class, NULL);
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", false);
     defineNativeOperator(vm, number_class, &number_operator_plus, OPERATOR_PLUS);
     defineNativeOperator(vm, number_class, &number_operator_minus, OPERATOR_MINUS);

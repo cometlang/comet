@@ -5,7 +5,6 @@
 #include <stddef.h>  
 #include <stdint.h>  
 
-#define NAN_TAGGING (1)
 #define DEBUG_PRINT_CODE (0)
 #define DEBUG_TRACE_EXECUTION (0)
 #define DEBUG_STRESS_GC (0)

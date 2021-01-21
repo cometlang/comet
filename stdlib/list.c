@@ -60,14 +60,14 @@ VALUE list_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
 VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    int index = (int)AS_NUMBER(arguments[0]);
+    int index = (int)number_get_value(arguments[0]);
     return data->entries[index].item;
 }
 
 VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    int index = (int) AS_NUMBER(arguments[0]);
+    int index = (int) number_get_value(arguments[0]);
 
     // If the index is larger than the current count, what do?
     // Probably throw an exception, except I can't do that yet...
@@ -113,16 +113,16 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 VALUE list_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    return NUMBER_VAL(data->count);
+    return create_number(vm, (double) data->count);
 }
 
 VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
-        uint64_t initial_length = AS_NUMBER(arguments[0]);
+        int64_t initial_length = (int64_t) number_get_value(arguments[0]);
         VALUE args[initial_length];
-        for (uint64_t i = 0; i < initial_length; i++)
+        for (int64_t i = 0; i < initial_length; i++)
         {
             args[i] = NIL_VAL;
         }

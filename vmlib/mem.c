@@ -85,7 +85,7 @@ void markObject(VM *vm, Obj *object)
 
 #if DEBUG_LOG_GC
     printf("%p mark ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printObject(OBJ_VAL(object));
     printf("\n");
 #endif
 
@@ -120,7 +120,7 @@ static void blackenObject(VM *vm, Obj *object)
 {
 #if DEBUG_LOG_GC
     printf("%p blacken ", (void *)object);
-    printValue(OBJ_VAL(object));
+    printObject(OBJ_VAL(object));
     printf("\n");
 #endif
     switch (object->type)

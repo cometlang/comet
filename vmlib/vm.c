@@ -491,18 +491,14 @@ static InterpretResult run(VM *vm)
     (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define BINARY_OP(valueType, op)                                \
-    do                                                          \
-    {                                                           \
-        if (!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) \
-        {                                                       \
-            runtimeError(vm, "Operands must be numbers.");      \
-            return INTERPRET_RUNTIME_ERROR;                     \
-        }                                                       \
-                                                                \
-        double b = AS_NUMBER(pop(vm));                          \
-        double a = AS_NUMBER(pop(vm));                          \
-        push(vm, valueType(a op b));                            \
+#define BINARY_OP(operator)                          \
+    do                                               \
+    {                                                \
+        if (!callBinaryOperator(vm, operator))  \
+        {                                            \
+            return INTERPRET_RUNTIME_ERROR;          \
+        }                                            \
+        frame = &vm->frames[vm->frameCount - 1];     \
     } while (false)
 
     for (;;)
@@ -515,7 +511,7 @@ static InterpretResult run(VM *vm)
         for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
         {
             printf("[ ");
-            printValue(*slot);
+            printObject(*slot);
             printf(" ]");
         }
         printf("\n");
@@ -644,84 +640,25 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_EQUAL:
-        {
-            Value b = pop(vm);
-            Value a = pop(vm);
-            if (valuesEqual(a, b))
-                push(vm, TRUE_VAL);
-            else
-                push(vm, FALSE_VAL);
+            BINARY_OP(OPERATOR_EQUALS);
             break;
-        }
         case OP_GREATER:
-        {
-            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
-            {
-
-                double b = AS_NUMBER(pop(vm));
-                double a = AS_NUMBER(pop(vm));
-                if (a > b)
-                    push(vm, TRUE_VAL);
-                else
-                    push(vm, FALSE_VAL);
-            }
-            else
-            {
-                if (!callBinaryOperator(vm, OPERATOR_GREATER_THAN))
-                {
-                    return INTERPRET_RUNTIME_ERROR;;
-                }
-                frame = &vm->frames[vm->frameCount - 1];
-            }
+            BINARY_OP(OPERATOR_GREATER_THAN);
             break;
-        }
         case OP_LESS:
-            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
-            {
-
-                double b = AS_NUMBER(pop(vm));
-                double a = AS_NUMBER(pop(vm));
-                if (a < b)
-                    push(vm, TRUE_VAL);
-                else
-                    push(vm, FALSE_VAL);
-            }
-            else
-            {
-                if (!callBinaryOperator(vm, OPERATOR_LESS_THAN))
-                {
-                    return INTERPRET_RUNTIME_ERROR;;
-                }
-                frame = &vm->frames[vm->frameCount - 1];
-            }
+            BINARY_OP(OPERATOR_LESS_THAN);
             break;
         case OP_ADD:
-        {
-            if (IS_NUMBER(peek(vm, 0)) && IS_NUMBER(peek(vm, 1)))
-            {
-
-                double b = AS_NUMBER(pop(vm));
-                double a = AS_NUMBER(pop(vm));
-                push(vm, NUMBER_VAL(a + b));
-            }
-            else
-            {
-                if (!callBinaryOperator(vm, OPERATOR_PLUS))
-                {
-                    return INTERPRET_RUNTIME_ERROR;;
-                }
-                frame = &vm->frames[vm->frameCount - 1];
-            }
+            BINARY_OP(OPERATOR_PLUS);
             break;
-        }
         case OP_SUBTRACT:
-            BINARY_OP(NUMBER_VAL, -);
+            BINARY_OP(OPERATOR_MINUS);
             break;
         case OP_MULTIPLY:
-            BINARY_OP(NUMBER_VAL, *);
+            BINARY_OP(OPERATOR_MULTIPLICATION);
             break;
         case OP_DIVIDE:
-            BINARY_OP(NUMBER_VAL, /);
+            BINARY_OP(OPERATOR_DIVISION);
             break;
         case OP_NOT:
         {
@@ -733,12 +670,7 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_NEGATE:
-            if (!IS_NUMBER(peek(vm, 0)))
-            {
-                runtimeError(vm, "Operand must be a number.");
-                return INTERPRET_RUNTIME_ERROR;
-            }
-            push(vm, NUMBER_VAL(-AS_NUMBER(pop(vm))));
+            push(vm, create_number(vm, number_get_value(pop(vm)) * -1));
             break;
         case OP_JUMP:
         {

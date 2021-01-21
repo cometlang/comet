@@ -72,7 +72,7 @@ void hash_destructor(void *data)
 static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
 {
     Value hash_value = call_function(key, common_strings[STRING_HASH], 0, NULL);
-    uint32_t index = (uint32_t) AS_NUMBER(hash_value) & capacity;
+    uint32_t index = ((uint32_t) number_get_value(hash_value)) & capacity;
     HashEntry *tombstone = NULL;
 
     for (;;)

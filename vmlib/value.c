@@ -31,55 +31,7 @@ void freeValueArray(ValueArray *array)
     initValueArray(array);
 }
 
-void printValue(Value value)
-{
-#if NAN_TAGGING
-    if (IS_NIL(value))
-    {
-        printf("nil");
-    }
-    else if (IS_NUMBER(value))
-    {
-        printf("%g", AS_NUMBER(value));
-    }
-    else if (IS_OBJ(value))
-    {
-        printObject(value);
-    }
-#else
-    switch (value.type)
-    {
-    case VAL_NIL:
-        printf("nil");
-        break;
-    case VAL_NUMBER:
-        printf("%g", AS_NUMBER(value));
-        break;
-    case VAL_OBJ:
-        printObject(value);
-        break;
-    }
-#endif
-}
-
 bool valuesEqual(Value a, Value b)
 {
-#if NAN_TAGGING
     return a == b;
-#else
-    if (a.type != b.type)
-        return false;
-
-    switch (a.type)
-    {
-    case VAL_NIL:
-        return true;
-    case VAL_NUMBER:
-        return AS_NUMBER(a) == AS_NUMBER(b);
-    case VAL_OBJ:
-        return AS_OBJ(a) == AS_OBJ(b);
-    }
-
-    return false;
-#endif
 }

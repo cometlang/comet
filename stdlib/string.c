@@ -84,10 +84,10 @@ VALUE string_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
     return FALSE_VAL;
 }
 
-VALUE string_hash(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_hash(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    return NUMBER_VAL(data->hash);
+    return create_number(vm, (double) data->hash);
 }
 
 VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -6,6 +6,7 @@
 #include "compiler.h"
 #include "mem.h"
 #include "scanner.h"
+#include "comet.h"
 
 #if DEBUG_PRINT_CODE
 #include "debug.h"
@@ -613,7 +614,7 @@ static void grouping(bool UNUSED(canAssign))
 static void number(bool UNUSED(canAssign))
 {
     double value = strtod(parser.previous.start, NULL);
-    emitConstant(NUMBER_VAL(value));
+    emitConstant(create_number(main_thread, value));
 }
 
 static void or_(bool UNUSED(canAssign))

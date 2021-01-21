@@ -60,12 +60,12 @@ VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
-VALUE file_write(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE file_write(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
     FileData *data = (FileData *)instance->data;
     int result = fprintf(data->fp, "%s", string_get_cstr(arguments[0]));
-    return NUMBER_VAL(result);
+    return create_number(vm, (double)result);
 }
 
 VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

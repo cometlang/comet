@@ -22,4 +22,7 @@ VALUE instanceof(VALUE self, VALUE klass);
 
 bool bool_is_falsey(Value value);
 
+VALUE create_number(VM *vm, double number);
+double number_get_value(VALUE self);
+
 #endif

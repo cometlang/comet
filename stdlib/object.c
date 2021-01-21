@@ -32,7 +32,7 @@ VALUE obj_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argum
     return FALSE_VAL;
 }
 
-VALUE obj_hash(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE obj_hash(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     uint32_t hash = 2166136261u;
     uintptr_t address = (uintptr_t) AS_OBJ(self);
@@ -43,7 +43,7 @@ VALUE obj_hash(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
         hash *= 16777619;
     }
 
-    return NUMBER_VAL(hash);
+    return create_number(vm, (double) hash);
 }
 
 VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

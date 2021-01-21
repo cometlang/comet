@@ -27,7 +27,7 @@ VALUE number_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
     NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
 #define TEMP_STRING_MAX_LEN 64
     char temp[TEMP_STRING_MAX_LEN];
-    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%ld", (int64_t) data->num);
+    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%.17g", data->num);
     return copyString(vm, temp, length);
 #undef TEMP_STRING_MAX_LEN
 }

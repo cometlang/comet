@@ -592,7 +592,7 @@ static InterpretResult run(VM *vm)
         }
         case OP_GET_PROPERTY:
         {
-            if (!IS_INSTANCE(peek(vm, 0)))
+            if (!IS_INSTANCE(peek(vm, 0)) && !IS_NATIVE_INSTANCE(peek(vm, 0)))
             {
                 runtimeError(vm, "Only instances have properties.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -616,7 +616,7 @@ static InterpretResult run(VM *vm)
         }
         case OP_SET_PROPERTY:
         {
-            if (!IS_INSTANCE(peek(vm, 1)))
+            if (!IS_INSTANCE(peek(vm, 1)) && !IS_NATIVE_INSTANCE(peek(vm, 1)))
             {
                 runtimeError(vm, "Only instances have fields.");
                 return INTERPRET_RUNTIME_ERROR;
@@ -845,6 +845,20 @@ static InterpretResult run(VM *vm)
             push(vm, instanceof(peek(vm, 1), peek(vm, 0)));
             break;
         }
+        case OP_PUSH_EXCEPTION_HANDLER:
+        {
+            VALUE type = READ_CONSTANT();
+            uint16_t UNUSED(handlerAddress) = READ_SHORT();
+            Value value;
+            if (!findGlobal(vm, type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
+            {
+                runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
+                return INTERPRET_RUNTIME_ERROR;
+            }
+            break;
+        }
+        case OP_POP_EXCEPTION_HANDLER:
+            break;
         }
     }
 

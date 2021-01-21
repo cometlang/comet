@@ -57,6 +57,15 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset)
     return offset + 2;
 }
 
+static int exceptionHandlerInstruction(const char *name, Chunk *chunk, int offset)
+{
+    uint8_t type = chunk->code[offset + 1];
+    uint16_t handlerAddress = (uint16_t)(chunk->code[offset + 2] << 8);
+    handlerAddress |= chunk->code[offset + 3];
+    printf("%-16s %4d -> %d\n", name, type, handlerAddress);
+    return offset;
+}
+
 int disassembleInstruction(Chunk *chunk, int offset)
 {
     printf("%04d ", offset);
@@ -176,6 +185,10 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_DUP_TOP", offset);
     case OP_INSTANCEOF:
         return simpleInstruction("OP_INSTANCEOF", offset);
+    case OP_PUSH_EXCEPTION_HANDLER:
+        return exceptionHandlerInstruction("OP_PUSH_EXCEPTION_HANDLER", chunk, offset);
+    case OP_POP_EXCEPTION_HANDLER:
+        return simpleInstruction("OP_POP_EXCEPTION_HANDLER", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

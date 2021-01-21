@@ -50,6 +50,8 @@ typedef enum
     OP_THROW,
     OP_DUP_TOP,
     OP_INSTANCEOF,
+    OP_PUSH_EXCEPTION_HANDLER,
+    OP_POP_EXCEPTION_HANDLER,
 } OpCode;
 
 typedef struct

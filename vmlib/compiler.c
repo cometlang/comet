@@ -1239,23 +1239,32 @@ static void whileStatement()
 
 static void tryStatement()
 {
-    // I need to say which exception types are handled here, during runtime, and where to go.
-    // emitByte(OP_PUSH_EXCEPTION_HANDLER);
+    emitByte(OP_PUSH_EXCEPTION_HANDLER);
+    int exceptionType = currentChunk()->count;
+    emitByte(0xff);
+    int handlerAddress = currentChunk()->count;
+    emitBytes(0xff, 0xff);
     statement();
-    // emitByte(OP_POP_EXCEPTION_HANDLER);
+    emitByte(OP_POP_EXCEPTION_HANDLER);
     int successJump = emitJump(OP_JUMP);
     match(TOKEN_EOL);
     if (match(TOKEN_CATCH))
     {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after catch");
         consume(TOKEN_IDENTIFIER, "Expect type name to catch");
-        uint8_t UNUSED(name) = identifierConstant(&parser.previous);
+        uint8_t name = identifierConstant(&parser.previous);
+        currentChunk()->code[exceptionType] = name;
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after type statement in catch");
-        // emitByte(OP_POP_EXCEPTION_HANDLER);
+        patchJump(handlerAddress);
+        emitByte(OP_POP_EXCEPTION_HANDLER);
         statement();
     }
 
     // How to do "finally" blocks?
+    /**
+     * At the end of the block, I can add an OP_JUMP_IF_FALSE over an OP_RETURN or special variety
+     * of "return to the stack pop process" instruction.
+     */
 
     patchJump(successJump);
 }

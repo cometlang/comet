@@ -13,11 +13,19 @@
 #define str(x) #x
 #define enum_str(x) str(x)
 
+typedef struct {
+    uint16_t address;
+    Value klass;
+} ExceptionHandler;
+
 typedef struct
 {
     ObjClosure *closure;
     uint8_t *ip;
     Value *slots;
+    uint8_t handlerCount;
+    ExceptionHandler handlerStack[MAX_HANDLER_FRAMES];
+
 } CallFrame;
 
 struct _vm

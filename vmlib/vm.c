@@ -477,6 +477,14 @@ void defineOperator(VM *vm, OPERATOR operator)
     pop(vm);
 }
 
+static void pushExceptionHandler(VM *vm, Value type, uint16_t address)
+{
+    CallFrame *frame = &vm->frames[vm->frameCount];
+    frame->handlerStack[frame->handlerCount].address = address;
+    frame->handlerStack[frame->handlerCount].klass = type;
+    frame->handlerCount++;
+}
+
 static CallFrame *updateFrame(VM *vm)
 {
     return &vm->frames[vm->frameCount - 1];
@@ -848,16 +856,18 @@ static InterpretResult run(VM *vm)
         case OP_PUSH_EXCEPTION_HANDLER:
         {
             VALUE type = READ_CONSTANT();
-            uint16_t UNUSED(handlerAddress) = READ_SHORT();
+            uint16_t handlerAddress = READ_SHORT();
             Value value;
             if (!findGlobal(vm, type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
             {
                 runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
                 return INTERPRET_RUNTIME_ERROR;
             }
+            pushExceptionHandler(vm, value, handlerAddress);
             break;
         }
         case OP_POP_EXCEPTION_HANDLER:
+            frame->handlerCount--;
             break;
         }
     }

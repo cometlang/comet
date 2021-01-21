@@ -10,6 +10,7 @@
 #define DEBUG_STRESS_GC (0)
 #define DEBUG_LOG_GC (0)
 #define MAX_VAR_COUNT (UINT8_MAX + 1)
+#define MAX_HANDLER_FRAMES (UINT8_MAX)
 #define DEBUG_ASSERT_ENABLED (0)
 
 #ifndef UNUSED

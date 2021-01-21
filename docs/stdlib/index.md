@@ -18,4 +18,7 @@
 
 # Functions
 ## clock
+- `clock()` returns a [Number](number.md) representing the fractional number of seconds of CPU time the process has used
+
 ## print
+- `print([...])` print every argument by first calling `to_string()` on it first, ending with the newline

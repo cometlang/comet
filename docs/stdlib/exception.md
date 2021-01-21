@@ -5,10 +5,10 @@ inherits [Object](object.md)
 Exception(message)
 
 ### fields
-- stacktrace the string representation of the stacktrace
+- `stacktrace` the string representation of the stacktrace
 
 ### methods
-- message() gets the message set in the constructor
+- `message()` gets the message set in the constructor
 
 ### operators
-- == compares if the two objects are the same instance
+- `==` compares if the two objects are the same instance

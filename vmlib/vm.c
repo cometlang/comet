@@ -102,6 +102,31 @@ static void resetStack(VM *vm)
     vm->openUpvalues = NULL;
 }
 
+static CallFrame *currentFrame(VM *vm)
+{
+    return &vm->frames[vm->frameCount - 1];
+}
+
+static void propagateException(VM *vm)
+{
+    Value exception = peek(vm, 0);
+    while (vm->frameCount > 0)
+    {
+        CallFrame *frame = currentFrame(vm);
+        for (int numHandlers = frame->handlerCount; numHandlers > 0; numHandlers--)
+        {
+            ExceptionHandler handler = frame->handlerStack[numHandlers - 1];
+            if (instanceof(exception, handler.klass))
+            {
+                frame->ip = &frame->closure->function->chunk.code[handler.address];
+                return;
+            }
+        }
+        vm->frameCount--;
+    }
+    printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
+}
+
 Value getStackTrace(VM *vm)
 {
 #define MAX_LINE_LENGTH 1024
@@ -479,7 +504,7 @@ void defineOperator(VM *vm, OPERATOR operator)
 
 static void pushExceptionHandler(VM *vm, Value type, uint16_t address)
 {
-    CallFrame *frame = &vm->frames[vm->frameCount];
+    CallFrame *frame = currentFrame(vm);
     frame->handlerStack[frame->handlerCount].address = address;
     frame->handlerStack[frame->handlerCount].klass = type;
     frame->handlerCount++;
@@ -838,10 +863,10 @@ static InterpretResult run(VM *vm)
         case OP_THROW:
         {
             Value val = peek(vm, 0);
-            ObjInstance *exception = AS_INSTANCE(val);
             exception_set_stacktrace(vm, val, getStackTrace(vm));
-            runtimeError(vm, "Uncaught %s", exception->klass->name);
-            return INTERPRET_RUNTIME_ERROR;
+            propagateException(vm);
+            frame = updateFrame(vm);
+            break;
         }
         case OP_DUP_TOP:
         {

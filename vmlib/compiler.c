@@ -259,6 +259,12 @@ static void patchJump(int offset)
     currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
+static void patchAddress(int offset)
+{
+    currentChunk()->code[offset] = (currentChunk()->count >> 8) & 0xff;
+    currentChunk()->code[offset + 1] = currentChunk()->count & 0xff;
+}
+
 static void initCompiler(Compiler *compiler, FunctionType type)
 {
     compiler->enclosing = current;
@@ -1255,7 +1261,7 @@ static void tryStatement()
         uint8_t name = identifierConstant(&parser.previous);
         currentChunk()->code[exceptionType] = name;
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after type statement in catch");
-        patchJump(handlerAddress);
+        patchAddress(handlerAddress);
         emitByte(OP_POP_EXCEPTION_HANDLER);
         statement();
     }

@@ -16,6 +16,8 @@
 #define UNINITIALIZED_LOCAL_SCOPE -1
 #define UNRESOLVED_VARIABLE_INDEX -1
 
+static void block();
+
 typedef struct
 {
     Token current;
@@ -68,7 +70,8 @@ typedef enum
     TYPE_FUNCTION,
     TYPE_INITIALIZER,
     TYPE_METHOD,
-    TYPE_SCRIPT
+    TYPE_SCRIPT,
+    TYPE_LAMBDA,
 } FunctionType;
 
 struct Compiler
@@ -276,7 +279,7 @@ static void initCompiler(Compiler *compiler, FunctionType type)
     compiler->function->chunk.filename = parser.filename;
     current = compiler;
 
-    if (type != TYPE_SCRIPT)
+    if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
     {
         current->function->name = copyString(main_thread, parser.previous.start,
                                              parser.previous.length);
@@ -807,6 +810,44 @@ static void subscript(bool UNUSED(canAssign))
     emitBytes(OP_INDEX, argCount);
 }
 
+static void lambda(bool UNUSED(canAssign))
+{
+    Compiler compiler;
+    initCompiler(&compiler, TYPE_LAMBDA);
+    beginScope();
+
+    if (!check(TOKEN_VBAR))
+    {
+        do
+        {
+            current->function->arity++;
+            if (current->function->arity > 255)
+            {
+                errorAtCurrent("Cannot have more than 255 parameters.");
+            }
+
+            uint8_t paramConstant = parseVariable("Expect parameter name.");
+            defineVariable(paramConstant);
+        } while (match(TOKEN_COMMA));
+    }
+    consume(TOKEN_VBAR, "Expect '|' after lambda parameters.");
+
+    // The body.
+    match(TOKEN_EOL);
+    consume(TOKEN_LEFT_BRACE, "Expect '{' before lambda body.");
+    block();
+
+    // Create the function object.
+    ObjFunction *function = endCompiler();
+    emitBytes(OP_CLOSURE, makeConstant(OBJ_VAL(function)));
+
+    for (int i = 0; i < function->upvalueCount; i++)
+    {
+        emitByte(compiler.upvalues[i].isLocal ? 1 : 0);
+        emitByte(compiler.upvalues[i].index);
+    }
+}
+
 ParseRule rules[NUM_TOKENS] = {
     {grouping, call, PREC_CALL},     // TOKEN_LEFT_PAREN
     {NULL, NULL, PREC_NONE},         // TOKEN_RIGHT_PAREN
@@ -823,6 +864,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, binary, PREC_FACTOR},     // TOKEN_STAR
     {NULL, NULL, PREC_NONE},         // TOKEN_COLON
     {NULL, NULL, PREC_NONE},         // TOKEN_EOL
+    {lambda, NULL, PREC_NONE},         // TOKEN_VBAR
     {unary, NULL, PREC_NONE},        // TOKEN_BANG
     {NULL, binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_EQUAL

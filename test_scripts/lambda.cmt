@@ -1,0 +1,7 @@
+function callee(lambda) {
+    lambda("This is from inside the lamda")
+}
+
+callee(|string| {
+    print(string)
+})

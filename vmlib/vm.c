@@ -107,7 +107,7 @@ static CallFrame *currentFrame(VM *vm)
     return &vm->frames[vm->frameCount - 1];
 }
 
-static void propagateException(VM *vm)
+static bool propagateException(VM *vm)
 {
     Value exception = peek(vm, 0);
     while (vm->frameCount > 0)
@@ -119,12 +119,13 @@ static void propagateException(VM *vm)
             if (instanceof(exception, handler.klass))
             {
                 frame->ip = &frame->closure->function->chunk.code[handler.address];
-                return;
+                return true;
             }
         }
         vm->frameCount--;
     }
     printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
+    return false;
 }
 
 Value getStackTrace(VM *vm)
@@ -864,9 +865,12 @@ static InterpretResult run(VM *vm)
         {
             Value val = peek(vm, 0);
             exception_set_stacktrace(vm, val, getStackTrace(vm));
-            propagateException(vm);
-            frame = updateFrame(vm);
-            break;
+            if (propagateException(vm))
+            {
+                frame = updateFrame(vm);
+                break;
+            }
+            return INTERPRET_RUNTIME_ERROR;
         }
         case OP_DUP_TOP:
         {

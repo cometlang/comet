@@ -4,13 +4,12 @@
 #include <stdio.h>
 #include <time.h>
 
-static Value clockNative(int UNUSED(argCount), Value UNUSED(*args))
+static Value clockNative(VM *vm, int UNUSED(argCount), Value UNUSED(*args))
 {
-    // return NUMBER_VAL((double)clock() / CLOCKS_PER_SEC);
-    return NIL_VAL;
+    return create_number(vm, (double)clock() / CLOCKS_PER_SEC);
 }
 
-static VALUE printNative(int arg_count, VALUE *args)
+static VALUE printNative(VM UNUSED(*vm), int arg_count, VALUE *args)
 {
     for (int i = 0; i < arg_count; i++)
     {
@@ -21,8 +20,18 @@ static VALUE printNative(int arg_count, VALUE *args)
     return NIL_VAL;
 }
 
+static VALUE assertNative(VM *vm, int UNUSED(arg_count), VALUE *args)
+{
+    if (bool_is_falsey(args[0]))
+    {
+        throw_exception_native(vm, "AssertionException", "assert failed");
+    }
+    return NIL_VAL;
+}
+
 void init_functions(VM *vm)
 {
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
+    defineNativeFunction(vm, "assert", &assertNative);
 }

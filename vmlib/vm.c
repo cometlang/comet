@@ -166,7 +166,7 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
         create_instance(vm, AS_CLASS(exception_type), 1);
         va_end(args);
         exception_set_stacktrace(vm, peek(vm, 0), getStackTrace(vm));
-        resetStack(vm);
+        propagateException(vm);
     }
     else
     {
@@ -277,7 +277,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
         case OBJ_NATIVE:
         {
             NativeFn native = AS_NATIVE(callee);
-            Value result = native(argCount, vm->stackTop - argCount);
+            Value result = native(vm, argCount, vm->stackTop - argCount);
             popMany(vm, argCount + 1);
             push(vm, result);
             return true;
@@ -840,7 +840,7 @@ static InterpretResult run(VM *vm)
             Value receiver = peek(vm, argCount);
             if (!callOperator(vm, receiver, argCount, OPERATOR_INDEX))
             {
-                return INTERPRET_RUNTIME_ERROR;;
+                return INTERPRET_RUNTIME_ERROR;
             }
             frame = updateFrame(vm);
             break;
@@ -851,7 +851,7 @@ static InterpretResult run(VM *vm)
             Value receiver = peek(vm, argCount);
             if (!callOperator(vm, receiver, argCount, OPERATOR_INDEX_ASSIGN))
             {
-                return INTERPRET_RUNTIME_ERROR;;
+                return INTERPRET_RUNTIME_ERROR;
             }
             frame = updateFrame(vm);
             break;

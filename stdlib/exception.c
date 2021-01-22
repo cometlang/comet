@@ -27,4 +27,6 @@ void init_exception(VM *vm)
     VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL);
     defineNativeMethod(vm, klass, &exception_init, "init", false);
     defineNativeMethod(vm, klass, &exception_get_message, "message", false);
+
+    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception");
 }

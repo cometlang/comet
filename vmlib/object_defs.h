@@ -74,7 +74,7 @@ typedef struct
     Value name;
 } ObjFunction;
 
-typedef Value (*NativeFn)(int argCount, Value *args);
+typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);
 
 typedef struct
 {

@@ -688,8 +688,14 @@ static InterpretResult run(VM *vm)
         case OP_GREATER:
             BINARY_OP(OPERATOR_GREATER_THAN);
             break;
+        case OP_GREATER_EQUAL:
+            BINARY_OP(OPERATOR_GREATER_EQUAL);
+            break;
         case OP_LESS:
             BINARY_OP(OPERATOR_LESS_THAN);
+            break;
+        case OP_LESS_EQUAL:
+            BINARY_OP(OPERATOR_LESS_EQUAL);
             break;
         case OP_ADD:
             BINARY_OP(OPERATOR_PLUS);

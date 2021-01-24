@@ -244,15 +244,17 @@ void printObject(Value value)
         break;
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
+    {
         if (strcmp(AS_INSTANCE(value)->klass->name, "String") == 0)
         {
-            printf("%s", string_get_cstr(value));
+            printf("\"%s\"", string_get_cstr(value));
         }
         else
         {
             printf("%s instance", AS_INSTANCE(value)->klass->name);
         }
         break;
+    }
     case OBJ_NATIVE:
         printf("<native fn>");
         break;

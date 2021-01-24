@@ -118,12 +118,12 @@ static bool propagateException(VM *vm)
         for (int numHandlers = frame->handlerCount; numHandlers > 0; numHandlers--)
         {
             ExceptionHandler handler = frame->handlerStack[numHandlers - 1];
-            if (instanceof(exception, handler.klass))
+            if (instanceof(exception, handler.klass) == TRUE_VAL)
             {
                 frame->ip = &frame->closure->function->chunk.code[handler.handlerAddress];
                 return true;
             }
-            else if (handler.handlerAddress != PLACEHOLDER_ADDRESS)
+            else if (handler.finallyAddress != PLACEHOLDER_ADDRESS)
             {
                 push(vm, TRUE_VAL); // continue propagating once the finally block completes
                 frame->ip = &frame->closure->function->chunk.code[handler.finallyAddress];
@@ -915,6 +915,7 @@ static InterpretResult run(VM *vm)
             frame->handlerCount--;
             break;
         case OP_PROPAGATE_EXCEPTION:
+            frame->handlerCount--;
             if (propagateException(vm))
             {
                 frame = updateFrame(vm);

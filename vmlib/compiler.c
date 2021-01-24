@@ -311,7 +311,7 @@ static ObjFunction *endCompiler()
     if (!parser.hadError)
     {
         disassembleChunk(currentChunk(),
-                         function->name != NULL ? function->name->chars : "<script>");
+                         function->name != NIL_VAL ? string_get_cstr(function->name) : "<script>");
     }
 #endif
     current = current->enclosing;
@@ -1321,11 +1321,11 @@ static void tryStatement()
         // want to continue propagating the exception
         emitByte(OP_FALSE);
 
-        patchJump(finallyAddress);
+        patchAddress(finallyAddress);
         statement();
 
         int continueExecution = emitJump(OP_JUMP_IF_FALSE);
-        emitByte(OP_POP);
+        emitByte(OP_POP); // Pop the bool off the stack
         emitByte(OP_PROPAGATE_EXCEPTION);
         patchJump(continueExecution);
         emitByte(OP_POP);

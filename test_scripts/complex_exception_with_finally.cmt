@@ -19,7 +19,7 @@ function function_a()
     }
 }
 
-function function_a()
+function function_b()
 {
     try
     {

@@ -33,13 +33,13 @@ void file_destructor(void *data)
 
 VALUE file_static_open(VM *vm, VALUE klass, int arg_count, VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     if (arg_count != 2)
     {
         fprintf(stderr, "Require 2 arguments a path and opening mode: got %d\n", arg_count);
         // Throw an exception
         return NIL_VAL;
     }
+    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     const char *path = string_get_cstr(arguments[0]);
     const char *mode = string_get_cstr(arguments[1]);
     FILE *fp = fopen(path, mode);

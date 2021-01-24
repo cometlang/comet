@@ -289,9 +289,9 @@ static Token number()
     return makeToken(TOKEN_NUMBER);
 }
 
-static Token string()
+static Token string(char terminator)
 {
-    while (peek() != '"' && !isAtEnd())
+    while (peek() != terminator && !isAtEnd())
     {
         if (peek() == '\n')
             scanner.line++;
@@ -301,7 +301,7 @@ static Token string()
     if (isAtEnd())
         return errorToken("Unterminated string.");
 
-    // The closing quote.
+    // The terminator.
     advance();
     return makeToken(TOKEN_STRING);
 }
@@ -368,7 +368,8 @@ Token scanToken()
     case '>':
         return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"':
-        return string();
+    case '\'':
+        return string(c);
     }
 
     return errorToken("Unexpected character.");

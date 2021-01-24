@@ -134,8 +134,6 @@ static TokenType identifierType()
 {
     switch (scanner.start[0])
     {
-    case 'a':
-        return checkKeyword(1, 2, "nd", TOKEN_AND);
     case 'c':
         if (scanner.current - scanner.start > 1)
         {
@@ -195,17 +193,7 @@ static TokenType identifierType()
     case 'n':
         return checkKeyword(1, 2, "il", TOKEN_NIL);
     case 'o':
-        if (scanner.current - scanner.start > 1)
-        {
-            switch (scanner.start[1])
-            {
-            case 'p':
-                return checkKeyword(2, 6, "erator", TOKEN_OPERATOR);
-            case 'r':
-                return checkKeyword(1, 1, "r", TOKEN_OR);
-            }
-        }
-        break;
+        return checkKeyword(1, 7, "perator", TOKEN_OPERATOR);
     case 'p':
         if (scanner.current - scanner.start > 4)
         {
@@ -364,7 +352,11 @@ Token scanToken()
     case ':':
         return makeToken(TOKEN_COLON);
     case '|':
-        return makeToken(TOKEN_VBAR);
+        return makeToken(match('|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
+    case '&':
+        if (match('&'))
+            return makeToken(TOKEN_LOGICAL_AND);
+        break;
     case '!':
         return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=':

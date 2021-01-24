@@ -864,7 +864,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, binary, PREC_FACTOR},     // TOKEN_STAR
     {NULL, NULL, PREC_NONE},         // TOKEN_COLON
     {NULL, NULL, PREC_NONE},         // TOKEN_EOL
-    {lambda, NULL, PREC_NONE},         // TOKEN_VBAR
+    {lambda, NULL, PREC_NONE},       // TOKEN_VBAR
     {unary, NULL, PREC_NONE},        // TOKEN_BANG
     {NULL, binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_EQUAL
@@ -873,10 +873,11 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, binary, PREC_COMPARISON}, // TOKEN_GREATER_EQUAL
     {NULL, binary, PREC_COMPARISON}, // TOKEN_LESS
     {NULL, binary, PREC_COMPARISON}, // TOKEN_LESS_EQUAL
+    {NULL, or_, PREC_OR},            // TOKEN_LOGICAL_OR
+    {NULL, and_, PREC_AND},          // TOKEN_LOGICAL_AND
     {variable, NULL, PREC_NONE},     // TOKEN_IDENTIFIER
     {string, NULL, PREC_NONE},       // TOKEN_STRING
     {number, NULL, PREC_NONE},       // TOKEN_NUMBER
-    {NULL, and_, PREC_AND},          // TOKEN_AND
     {NULL, NULL, PREC_NONE},         // TOKEN_CLASS
     {NULL, NULL, PREC_NONE},         // TOKEN_ELSE
     {NULL, NULL, PREC_NONE},         // TOKEN_ENUM
@@ -888,7 +889,6 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, binary, PREC_INSTANCEOF}, // TOKEN_INSTANCEOF
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
     {NULL, NULL, PREC_NONE},         // TOKEN_OPERATOR
-    {NULL, or_, PREC_OR},            // TOKEN_OR
     {NULL, NULL, PREC_NONE},         // TOKEN_RETURN
     {self, NULL, PREC_NONE},         // TOKEN_SELF
     {super_, NULL, PREC_NONE},       // TOKEN_SUPER

@@ -1,0 +1,43 @@
+class Exception_a : Exception {}
+
+class Exception_b : Exception {}
+
+
+function function_a()
+{
+    try
+    {
+        function_b()
+    }
+    catch (Exception_a)
+    {
+        print("Exception a handler")
+    }
+    finally
+    {
+        print("a finally")
+    }
+}
+
+function function_a()
+{
+    try
+    {
+        function_c()
+    }
+    catch (Exception_b)
+    {
+        print("Exception b handler")
+    }
+    finally
+    {
+        print("b finally")
+    }
+}
+
+function function_c()
+{
+    throw Exception_a()
+}
+
+function_a()

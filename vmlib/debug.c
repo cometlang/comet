@@ -189,6 +189,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return exceptionHandlerInstruction("OP_PUSH_EXCEPTION_HANDLER", chunk, offset);
     case OP_POP_EXCEPTION_HANDLER:
         return simpleInstruction("OP_POP_EXCEPTION_HANDLER", offset);
+    case OP_PROPAGATE_EXCEPTION:
+        return simpleInstruction("OP_PROPAGATE_EXCEPTION", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

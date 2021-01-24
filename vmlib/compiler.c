@@ -1292,10 +1292,15 @@ static void tryStatement()
     emitByte(0xff);
     int handlerAddress = currentChunk()->count;
     emitBytes(0xff, 0xff);
+    int finallyAddress = currentChunk()->count;
+    emitBytes(0xff, 0xff);
+
     statement();
+
     emitByte(OP_POP_EXCEPTION_HANDLER);
     int successJump = emitJump(OP_JUMP);
     match(TOKEN_EOL);
+
     if (match(TOKEN_CATCH))
     {
         consume(TOKEN_LEFT_PAREN, "Expect '(' after catch");
@@ -1306,15 +1311,25 @@ static void tryStatement()
         patchAddress(handlerAddress);
         emitByte(OP_POP_EXCEPTION_HANDLER);
         statement();
+        match(TOKEN_EOL);
     }
-
-    // How to do "finally" blocks?
-    /**
-     * At the end of the block, I can add an OP_JUMP_IF_FALSE over an OP_RETURN or special variety
-     * of "return to the stack pop process" instruction.
-     */
-
     patchJump(successJump);
+
+    if (match(TOKEN_FINALLY))
+    {
+        // If we arrive here from either the try or handler blocks, then we don't
+        // want to continue propagating the exception
+        emitByte(OP_FALSE);
+
+        patchJump(finallyAddress);
+        statement();
+
+        int continueExecution = emitJump(OP_JUMP_IF_FALSE);
+        emitByte(OP_POP);
+        emitByte(OP_PROPAGATE_EXCEPTION);
+        patchJump(continueExecution);
+        emitByte(OP_POP);
+    }
 }
 
 static void throwStatement()

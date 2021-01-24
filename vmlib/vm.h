@@ -14,7 +14,8 @@
 #define enum_str(x) str(x)
 
 typedef struct {
-    uint16_t address;
+    uint16_t handlerAddress;
+    uint16_t finallyAddress;
     Value klass;
 } ExceptionHandler;
 

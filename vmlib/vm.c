@@ -10,6 +10,8 @@
 
 #include "comet.h"
 
+#define PLACEHOLDER_ADDRESS 0xffff
+
 static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
 
@@ -118,7 +120,13 @@ static bool propagateException(VM *vm)
             ExceptionHandler handler = frame->handlerStack[numHandlers - 1];
             if (instanceof(exception, handler.klass))
             {
-                frame->ip = &frame->closure->function->chunk.code[handler.address];
+                frame->ip = &frame->closure->function->chunk.code[handler.handlerAddress];
+                return true;
+            }
+            else if (handler.handlerAddress != PLACEHOLDER_ADDRESS)
+            {
+                push(vm, TRUE_VAL); // continue propagating once the finally block completes
+                frame->ip = &frame->closure->function->chunk.code[handler.finallyAddress];
                 return true;
             }
         }
@@ -503,10 +511,11 @@ void defineOperator(VM *vm, OPERATOR operator)
     pop(vm);
 }
 
-static void pushExceptionHandler(VM *vm, Value type, uint16_t address)
+static void pushExceptionHandler(VM *vm, Value type, uint16_t handlerAddress, uint16_t finallyAddress)
 {
     CallFrame *frame = currentFrame(vm);
-    frame->handlerStack[frame->handlerCount].address = address;
+    frame->handlerStack[frame->handlerCount].handlerAddress = handlerAddress;
+    frame->handlerStack[frame->handlerCount].finallyAddress = finallyAddress;
     frame->handlerStack[frame->handlerCount].klass = type;
     frame->handlerCount++;
 }
@@ -886,18 +895,26 @@ static InterpretResult run(VM *vm)
         {
             VALUE type = READ_CONSTANT();
             uint16_t handlerAddress = READ_SHORT();
+            uint16_t finallyAddress = READ_SHORT();
             Value value;
             if (!findGlobal(vm, type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
             {
                 runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
                 return INTERPRET_RUNTIME_ERROR;
             }
-            pushExceptionHandler(vm, value, handlerAddress);
+            pushExceptionHandler(vm, value, handlerAddress, finallyAddress);
             break;
         }
         case OP_POP_EXCEPTION_HANDLER:
             frame->handlerCount--;
             break;
+        case OP_PROPAGATE_EXCEPTION:
+            if (propagateException(vm))
+            {
+                frame = updateFrame(vm);
+                break;
+            }
+            return INTERPRET_RUNTIME_ERROR;
         }
     }
 

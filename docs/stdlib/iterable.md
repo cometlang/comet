@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Iterable
 inherits [Object](object.md)
 

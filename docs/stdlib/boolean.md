@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Boolean
 inherits [Object](object.md)
 

@@ -1,3 +1,5 @@
+[up](../index.md)
+
 # Classes
 
 - [Object](object.md)

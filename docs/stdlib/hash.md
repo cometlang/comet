@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Hash
 inherits [Iterable](iterable.md)
 

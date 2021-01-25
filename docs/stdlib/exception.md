@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Exception
 inherits [Object](object.md)
 

@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Nil
 inherits [Object](object.md)
 

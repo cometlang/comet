@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## String
 inherits [Object](object.md)
 

@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Number
 inherits [Object](object.md)
 

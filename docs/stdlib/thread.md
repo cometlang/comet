@@ -1,3 +1,5 @@
+[up](index.md)
+
 ## Thread
 inherits [Object](object.md)
 

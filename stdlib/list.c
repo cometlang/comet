@@ -59,9 +59,13 @@ VALUE list_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
 
 VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    int index = (int)number_get_value(arguments[0]);
-    return data->entries[index].item;
+    if (arg_count == 1)
+    {
+        ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+        int index = (int)number_get_value(arguments[0]);
+        return data->entries[index].item;
+    }
+    return NIL_VAL;
 }
 
 VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)

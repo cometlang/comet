@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "cometlib.h"
@@ -71,7 +72,11 @@ VALUE create_number(VM *vm, double number)
 
 double number_get_value(VALUE self)
 {
-    return GET_NATIVE_INSTANCE_DATA(NumberData, self)->num;
+    if (instanceof(self, number_class) == TRUE_VAL)
+    {
+        return GET_NATIVE_INSTANCE_DATA(NumberData, self)->num;
+    }
+    return NAN;
 }
 
 void bootstrap_number(VM *vm)

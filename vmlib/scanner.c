@@ -295,6 +295,8 @@ static Token string(char terminator)
     {
         if (peek() == '\n')
             scanner.line++;
+        if (peek() == '\\' && peekNext() == terminator)
+            advance(); // extra advance
         advance();
     }
 

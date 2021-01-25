@@ -153,8 +153,17 @@ VALUE string_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UN
     return FALSE_VAL;
 }
 
-VALUE string_concatenate(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
+    if (arg_count == 1)
+    {
+        StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+        StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+        char *new_string = ALLOCATE(char, (lhs->length + rhs->length) + 1);
+        memcpy(new_string, lhs->chars, lhs->length);
+        memcpy(&new_string[lhs->length], rhs->chars, rhs->length);
+        return takeString(vm, new_string, strlen(new_string));
+    }
     return NIL_VAL;
 }
 

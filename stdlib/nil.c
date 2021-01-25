@@ -10,7 +10,7 @@ VALUE nil_nil_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALU
 
 VALUE nil_to_string(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString(vm, "nil", 3);
+    return copyString(vm, "", 0);
 }
 
 VALUE nil_iterable_empty_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -31,9 +31,10 @@ VALUE nil_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg
 void init_nil(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Nil", NULL, NULL, "Object");
-    defineNativeMethod(vm, klass, nil_nil_q, "nil?", false);
-    defineNativeMethod(vm, klass, nil_to_string, "to_string", false);
-    defineNativeMethod(vm, klass, nil_iterable_contains_q, "contains?", false);
+    defineNativeMethod(vm, klass, &nil_nil_q, "nil?", false);
+    defineNativeMethod(vm, klass, &nil_to_string, "to_string", false);
+    defineNativeMethod(vm, klass, &nil_iterable_contains_q, "contains?", false);
+    defineNativeMethod(vm, klass, &nil_iterable_iterator, "iterator", false);
     nil_instance.instance.obj.type = OBJ_NATIVE_INSTANCE;
     nil_instance.instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
     nil_instance.data = NULL;

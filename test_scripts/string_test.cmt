@@ -1,2 +1,9 @@
-print('This is a string')
+var normal_string = 'This is a string'
+print(normal_string)
+print(normal_string.length())
+
+var utf8_string = "This is ä ütf-8 string Encyclöpædiä"
+print(utf8_string)
+print(utf8_string.length())
+
 print("this is" + " a string")

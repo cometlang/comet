@@ -5,6 +5,8 @@
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
+#include "utf8proc.h"
+
 typedef struct StringData
 {
     size_t length;
@@ -153,6 +155,26 @@ VALUE string_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UN
     return FALSE_VAL;
 }
 
+VALUE string_length(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_int32_t current_codepoint;
+    utf8proc_ssize_t remaining = data->length;
+    size_t offset = 0;
+    size_t length = 0;
+    while (offset < data->length)
+    {
+        utf8proc_ssize_t bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *) &data->chars[offset], remaining, &current_codepoint);
+        if (bytes_read == -1)
+            break;
+        offset += bytes_read;
+        remaining -= bytes_read;
+        length++;
+    }
+    return create_number(vm, (double) length);
+}
+
 VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
@@ -185,6 +207,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, klass, &string_to_lower, "to_lower", false);
     defineNativeMethod(vm, klass, &string_to_upper, "to_upper", false);
     defineNativeMethod(vm, klass, &string_to_string, "to_string", false);
+    defineNativeMethod(vm, klass, &string_length, "length", false);
     defineNativeOperator(vm, klass, &string_concatenate, OPERATOR_PLUS);
     defineNativeOperator(vm, klass, &string_equals, OPERATOR_EQUALS);
 }

@@ -347,7 +347,7 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
     if (IS_NIL(method))
     {
-        runtimeError(vm, "'%s' has no static method called '%s'.", klass->name, string_get_cstr(name));
+        runtimeError(vm, "'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 

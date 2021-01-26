@@ -22,6 +22,11 @@ void exception_set_stacktrace(VM *vm, VALUE self, VALUE stacktrace)
     setNativeProperty(vm, self, "stacktrace", stacktrace);
 }
 
+VALUE excpetion_get_stacktrace(VM *vm, VALUE self)
+{
+    return getNativeProperty(vm, self, "stacktrace");
+}
+
 void init_exception(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL);

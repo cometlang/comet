@@ -18,6 +18,7 @@ VALUE string_hash(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 uint32_t string_hash_cstr(const char *string, int length);
 
 void exception_set_stacktrace(VM *vm, VALUE self, VALUE stacktrace);
+VALUE excpetion_get_stacktrace(VM *vm, VALUE self);
 VALUE instanceof(VALUE self, VALUE klass);
 
 bool bool_is_falsey(Value value);

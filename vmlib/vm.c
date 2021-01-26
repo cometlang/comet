@@ -133,6 +133,9 @@ static bool propagateException(VM *vm)
         vm->frameCount--;
     }
     printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
+    Value stacktrace = excpetion_get_stacktrace(vm, exception);
+    printf("%s", string_get_cstr(stacktrace));
+    fflush(stdout);
     return false;
 }
 

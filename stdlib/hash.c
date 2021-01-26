@@ -6,6 +6,8 @@
 
 #define TABLE_MAX_LOAD 0.75
 
+static VALUE hash_iterator_class;
+
 typedef struct hash_entry
 {
     VALUE key;
@@ -20,37 +22,64 @@ typedef struct
 } HashTable;
 
 typedef struct {
-    HashEntry **entries;
-    int count;
-} HashTableIterator;
+    HashTable *table;
+    int index;
+    int values_returned;
+} HashIterator;
+
+void *hash_iterator_constructor(void)
+{
+    HashIterator *iter = ALLOCATE(HashIterator, 1);
+    iter->table = NULL;
+    iter->index = 0;
+    iter->values_returned = 0;
+    return iter;
+}
+
+void hash_iterator_destructor(void *iter)
+{
+    FREE(HashIterator, iter);
+}
+
+VALUE hash_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    HashIterator *iter = GET_NATIVE_INSTANCE_DATA(HashIterator, self);
+    if (iter->values_returned < iter->table->count)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
+VALUE hash_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    HashIterator *iter = GET_NATIVE_INSTANCE_DATA(HashIterator, self);
+    while (IS_NIL(iter->table->entries[iter->index].key))
+        iter->index++;
+
+    VALUE result = iter->table->entries[iter->index].key;
+    iter->index++;
+    iter->values_returned++;
+    return result;
+}
 
 VALUE hash_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return NIL_VAL;
 }
 
-VALUE hash_iterable_empty_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (data->count == 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
 }
 
-VALUE hash_iterable_iterator(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    // This needs to be a HashIterator class and return an instance of that.
-    // Ideally this would be done as a generator method, instead of always
-    // gathering all the values, but I don't have generator methods and don't
-    // know how to implement them.
-    HashTable *data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
-    HashTableIterator *iterator = ALLOCATE(HashTableIterator, 1);
-    iterator->entries = ALLOCATE(HashEntry*, data->count);
-    for (size_t i = 0; i < data->capacity; i++)
-    {
-        if (data->entries[i].key != NIL_VAL)
-        {
-            HashEntry UNUSED(*current) = &data->entries[i];
-        }
-    }
-    return OBJ_VAL(iterator);
+    VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(hash_iterator_class)));
+    HashIterator *iter = GET_NATIVE_INSTANCE_DATA(HashIterator, instance);
+    iter->table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    return instance;
 }
 
 void *hash_constructor(void)
@@ -231,7 +260,7 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", hash_constructor, hash_destructor, NULL);
+    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL);
     defineNativeMethod(vm, klass, &hash_add, "add", false);
     defineNativeMethod(vm, klass, &hash_remove, "remove", false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", false);

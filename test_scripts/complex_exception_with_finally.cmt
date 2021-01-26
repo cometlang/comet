@@ -9,7 +9,7 @@ function function_a()
     {
         function_b()
     }
-    catch (Exception_a)
+    catch (Exception_a as ex)
     {
         print("Exception a handler")
     }

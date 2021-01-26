@@ -878,6 +878,7 @@ ParseRule rules[NUM_TOKENS] = {
     {variable, NULL, PREC_NONE},     // TOKEN_IDENTIFIER
     {string, NULL, PREC_NONE},       // TOKEN_STRING
     {number, NULL, PREC_NONE},       // TOKEN_NUMBER
+    {NULL, NULL, PREC_NONE},         // TOKEN_AS
     {NULL, NULL, PREC_NONE},         // TOKEN_CLASS
     {NULL, NULL, PREC_NONE},         // TOKEN_ELSE
     {NULL, NULL, PREC_NONE},         // TOKEN_ENUM
@@ -1308,8 +1309,18 @@ static void tryStatement()
         consume(TOKEN_IDENTIFIER, "Expect type name to catch");
         uint8_t name = identifierConstant(&parser.previous);
         currentChunk()->code[exceptionType] = name;
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after type statement in catch");
-        patchAddress(handlerAddress);
+        bool handler_patched = false;
+        if (match(TOKEN_AS))
+        {
+            patchAddress(handlerAddress);
+            handler_patched = true;
+            uint8_t exception_var = parseVariable("Expect variable name.");
+            defineVariable(exception_var);
+            emitBytes(OP_SET_LOCAL, exception_var);
+        }
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after catch details");
+        if (!handler_patched)
+            patchAddress(handlerAddress);
         emitByte(OP_POP_EXCEPTION_HANDLER);
         statement();
         match(TOKEN_EOL);

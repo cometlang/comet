@@ -135,6 +135,8 @@ static TokenType identifierType()
 {
     switch (scanner.start[0])
     {
+    case 'a':
+        return checkKeyword(1, 1, "s", TOKEN_AS);
     case 'c':
         if (scanner.current - scanner.start > 1)
         {

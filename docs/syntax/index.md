@@ -10,12 +10,12 @@ Comments use the `#` character and go to the end of the line.  There are no bloc
 
 ## Keywords
 
-`catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `function`, `if`, `in`, `instanceof`, `nil`, `operator`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
+`as`, `catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `function`, `if`, `in`, `instanceof`, `nil`, `operator`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
 
 ## Literals
 
 ### Strings
-Literal strings can be defined using either single `'` or double `"` quotes.  There isn't an interpolated string, yet, nor are there escape sequences.
+Literal strings can be defined using either single `'` or double `"` quotes.  There isn't an interpolated string, yet.  String literals are UTF-8 encoded.
 
 ### Numbers
 Currently all numbers are 64bit signed floating point values.
@@ -302,3 +302,4 @@ It is only possible to catch a single type of exception and it's only possible t
 
 ## Native Enhancements
 
+It's totally possible to implement classes as native libraries (see the stdlib).  It's not possible to do exception handling in native code, however.

@@ -137,14 +137,42 @@ VALUE string_ends_with_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
     return NIL_VAL;
 }
 
-VALUE string_to_lower(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static utf8proc_int32_t to_lower_func(utf8proc_int32_t c, void UNUSED(*data))
 {
-    return NIL_VAL;
+    return utf8proc_tolower(c);
+}
+
+VALUE string_to_lower(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    char *dest_string;
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_ssize_t new_len = utf8proc_map_custom(
+        (const utf8proc_uint8_t *)data->chars,
+        data->length,
+        (utf8proc_uint8_t **) &dest_string,
+        UTF8PROC_NULLTERM,
+        &to_lower_func,
+        NULL);
+    return takeString(vm, dest_string, new_len);
+}
+
+static utf8proc_int32_t to_upper_func(utf8proc_int32_t c, void UNUSED(*data))
+{
+    return utf8proc_toupper(c);
 }
 
 VALUE string_to_upper(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    char *dest_string;
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_ssize_t new_len = utf8proc_map_custom(
+        (const utf8proc_uint8_t *)data->chars,
+        data->length,
+        (utf8proc_uint8_t **) &dest_string,
+        UTF8PROC_NULLTERM,
+        &to_upper_func,
+        NULL);
+    return takeString(vm, dest_string, new_len);
 }
 
 VALUE string_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

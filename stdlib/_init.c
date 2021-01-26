@@ -7,12 +7,12 @@ void init_stdlib(VM *vm)
     bootstrap_number(vm);
     init_string(vm, obj_klass);
     complete_number(vm);
+    init_iterable(vm);
     init_nil(vm);
     init_boolean(vm);
     init_exception(vm);
     init_file(vm);
     init_functions(vm);
-    init_iterable(vm);
     init_list(vm);
     init_hash(vm);
     init_socket(vm);

@@ -30,7 +30,7 @@ VALUE nil_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg
 
 void init_nil(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Nil", NULL, NULL, "Object");
+    VALUE klass = defineNativeClass(vm, "Nil", NULL, NULL, "Iterable");
     defineNativeMethod(vm, klass, &nil_nil_q, "nil?", false);
     defineNativeMethod(vm, klass, &nil_to_string, "to_string", false);
     defineNativeMethod(vm, klass, &nil_iterable_contains_q, "contains?", false);

@@ -2,6 +2,17 @@
 #include "comet.h"
 
 ObjNativeInstance nil_instance;
+VALUE nil_iterator_class;
+
+VALUE nil_iterator_has_next_p(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return FALSE_VAL;
+}
+
+VALUE nil_iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
 
 VALUE nil_nil_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
@@ -43,4 +54,8 @@ void init_nil(VM *vm)
     push(vm, copyString(vm, "nil", 3));
     addGlobal(vm, peek(vm, 0), NIL_VAL);
     pop(vm);
+
+    nil_iterator_class = defineNativeClass(vm, "NilIterator", NULL, NULL, "Iterator");
+    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_has_next_p, "has_next?", false);
+    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_get_next, "get_next", false);
 }

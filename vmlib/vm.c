@@ -360,19 +360,29 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
     if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
     {
         ObjInstance *instance = AS_INSTANCE(receiver);
-        if (IS_NIL(instance->klass->operators[operator]))
+        Value operator_callable = instance->klass->operators[operator];
+        if (IS_NIL(operator_callable))
         {
             runtimeError(vm, "Operator '%s' is not defined for class '%s'.",
                 getOperatorString(operator), instance->klass->name);
             return false;
         }
-        if (IS_NATIVE_METHOD(instance->klass->operators[operator]))
+        else if (IS_NATIVE_METHOD(operator_callable))
         {
-            return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(instance->klass->operators[operator]), argCount);
+            return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(operator_callable), argCount);
+        }
+        else if (IS_CLOSURE(operator_callable))
+        {
+            return call(vm, AS_CLOSURE(operator_callable), argCount);
         }
         else
         {
-            return call(vm, AS_CLOSURE(instance->klass->operators[operator]), argCount);
+            runtimeError(vm, "Could not call operator '%s' with '%s' (%d) on a %s instance\n",
+                         getOperatorString(operator),
+                         objTypeName(operator_callable),
+                         AS_OBJ(operator_callable)->type,
+                         instance->klass->name);
+            return false;
         }
     }
     runtimeError(vm, "Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
@@ -537,7 +547,7 @@ static InterpretResult run(VM *vm)
 #define BINARY_OP(operator)                          \
     do                                               \
     {                                                \
-        if (!callBinaryOperator(vm, operator))  \
+        if (!callBinaryOperator(vm, operator))       \
         {                                            \
             return INTERPRET_RUNTIME_ERROR;          \
         }                                            \

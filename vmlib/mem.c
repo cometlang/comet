@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include "common.h"
 #include "mem.h"
 #include "compiler.h"
@@ -17,14 +18,14 @@ size_t _next_GC = 1024 * 1024;
 static void collectGarbage(VM *vm);
 
 static VM **threads;
-static size_t num_threads = 0;
-static size_t thread_capacity = 0;
+static int num_threads = 0;
+static int thread_capacity = 0;
 
 void register_thread(VM *vm)
 {
     if (thread_capacity <= num_threads)
     {
-        size_t new_capacity = GROW_CAPACITY(thread_capacity);
+        int new_capacity = GROW_CAPACITY(thread_capacity);
         threads = GROW_ARRAY(threads, VM*, thread_capacity, new_capacity);
         thread_capacity = new_capacity;
     }
@@ -33,7 +34,7 @@ void register_thread(VM *vm)
 
 void deregister_thread(VM *vm)
 {
-    size_t index = 0;
+    int index = 0;
     for (; index < num_threads; index++)
     {
         if (threads[index] == vm)
@@ -41,6 +42,7 @@ void deregister_thread(VM *vm)
             threads[index] = NULL;
         }
     }
+
     for (; index < (num_threads - 1); index++)
     {
         threads[index] = threads[index + 1];
@@ -53,7 +55,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        for (size_t i = 0; i < num_threads; i++)
+        for (int i = 0; i < num_threads; i++)
         {
             collectGarbage(threads[i]);
         }

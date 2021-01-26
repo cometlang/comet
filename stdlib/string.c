@@ -209,10 +209,12 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     {
         StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
         StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
-        char *new_string = ALLOCATE(char, (lhs->length + rhs->length) + 1);
+        int new_len = (lhs->length + rhs->length) + 1;
+        char *new_string = ALLOCATE(char, new_len);
         memcpy(new_string, lhs->chars, lhs->length);
         memcpy(&new_string[lhs->length], rhs->chars, rhs->length);
-        return takeString(vm, new_string, strlen(new_string));
+        new_string[new_len - 1] = 0;
+        return takeString(vm, new_string, new_len);
     }
     return NIL_VAL;
 }

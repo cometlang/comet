@@ -137,6 +137,10 @@ static void blackenObject(VM *vm, Obj *object)
         ObjClass *klass = (ObjClass *)object;
         markTable(vm, &klass->methods);
         markTable(vm, &klass->staticMethods);
+        for (int i = 0; i < NUM_OPERATORS; i++)
+        {
+            markValue(vm, klass->operators[i]);
+        }
         break;
     }
     case OBJ_NATIVE_CLASS:
@@ -144,6 +148,10 @@ static void blackenObject(VM *vm, Obj *object)
         ObjNativeClass *klass = (ObjNativeClass *)object;
         markTable(vm, &klass->klass.methods);
         markTable(vm, &klass->klass.staticMethods);
+        for (int i = 0; i < NUM_OPERATORS; i++)
+        {
+            markValue(vm, klass->klass.operators[i]);
+        }
         break;
     }
     case OBJ_CLOSURE:

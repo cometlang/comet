@@ -942,24 +942,20 @@ static InterpretResult run(VM *vm)
 #undef READ_BYTE
 }
 
-VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments)
+VM *call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments, VALUE *ref_result)
 {
-    VM frame;
-    initVM(&frame);
-    Value result = NIL_VAL;
-    push(&frame, receiver);
+    VM *frame = ALLOCATE(VM, 1);
+    initVM(frame);
+    push(frame, receiver);
     for (int i = 0; i < arg_count; i++)
     {
-        push(&frame, arguments[i]);
+        push(frame, arguments[i]);
     }
-    if (invoke(&frame, method_name, arg_count))
+    if (invoke(frame, method_name, arg_count))
     {
-        // This works if it's a String or Global, but not so much if it's a regular object
-        // A regular object would be free'd with the VM.  Should clone() them.
-        result = pop(&frame);
+        *ref_result = pop(frame);
     }
-    freeVM(&frame);
-    return result;
+    return frame;
 }
 
 InterpretResult interpret(VM *vm, const SourceFile *source)

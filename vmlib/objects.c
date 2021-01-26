@@ -160,22 +160,9 @@ static Value allocateString(VM *vm, char *chars, int length)
     return string_obj;
 }
 
-static uint32_t hash_string(const char *key, int length)
-{
-    uint32_t hash = 2166136261u;
-
-    for (int i = 0; i < length; i++)
-    {
-        hash ^= key[i];
-        hash *= 16777619;
-    }
-
-    return hash;
-}
-
 Value takeString(VM *vm, char *chars, int length)
 {
-    uint32_t hash = hash_string(chars, length);
+    uint32_t hash = string_hash_cstr(chars, length);
     Value interned = findInternedString(vm, chars, hash);
     if (interned != NIL_VAL)
     {
@@ -187,7 +174,7 @@ Value takeString(VM *vm, char *chars, int length)
 
 Value copyString(VM *vm, const char *chars, int length)
 {
-    uint32_t hash = hash_string(chars, length);
+    uint32_t hash = string_hash_cstr(chars, length);
     Value interned = findInternedString(vm, chars, hash);
     if (interned != NIL_VAL)
         return interned;

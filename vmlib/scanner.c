@@ -24,6 +24,7 @@ static bool isAlpha(char c)
 {
     return (c >= 'a' && c <= 'z') ||
            (c >= 'A' && c <= 'Z') ||
+           ((unsigned char)c >= 0xC0) ||
            c == '_';
 }
 

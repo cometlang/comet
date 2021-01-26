@@ -885,6 +885,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_FOR
     {NULL, NULL, PREC_NONE},         // TOKEN_FUN
     {NULL, NULL, PREC_NONE},         // TOKEN_IF
+    {NULL, NULL, PREC_NONE},         // TOKEN_IMPORT
     {NULL, NULL, PREC_NONE},         // TOKEN_IN
     {NULL, binary, PREC_INSTANCEOF}, // TOKEN_INSTANCEOF
     {literal, NULL, PREC_NONE},      // TOKEN_NIL
@@ -1340,6 +1341,12 @@ static void throwStatement()
     emitByte(OP_THROW);
 }
 
+static void importStatement()
+{
+    // import comet.list
+    // import ..stdlib.list
+}
+
 static void synchronize()
 {
     parser.panicMode = false;
@@ -1361,6 +1368,8 @@ static void synchronize()
         case TOKEN_THROW:
         case TOKEN_RETURN:
         case TOKEN_STATIC:
+        case TOKEN_TRY:
+        case TOKEN_IMPORT:
             return;
 
         default:
@@ -1439,6 +1448,10 @@ static void statement()
         beginScope();
         block();
         endScope();
+    }
+    else if (match(TOKEN_IMPORT))
+    {
+        importStatement();
     }
     else
     {

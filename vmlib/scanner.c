@@ -181,6 +181,8 @@ static TokenType identifierType()
             {
                 case 'f':
                     return checkKeyword(1, 1, "f", TOKEN_IF);
+                case 'm':
+                    return checkKeyword(1, 4, "port", TOKEN_IMPORT);
                 case 'n':
                 {
                     if (scanner.current - scanner.start > 2)

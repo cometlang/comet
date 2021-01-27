@@ -23,11 +23,12 @@ void freeTable(Table *table)
     initTable(table);
 }
 
-static Entry *findEntry(VM *vm, Entry *entries, int capacity,
+static Entry *findEntry(VM UNUSED(*vm), Entry *entries, int capacity,
                         Value key)
 {
-    Value hash_value = string_hash(vm, key, 0, NULL);
-    uint32_t hash = (uint32_t) number_get_value(hash_value);
+    const char *key_string = string_get_cstr(key);
+    int key_str_len = strlen(key_string);
+    uint32_t hash = (uint32_t) string_hash_cstr(key_string, key_str_len);
     uint32_t index = hash & capacity;
     Entry *tombstone = NULL;
 
@@ -49,7 +50,7 @@ static Entry *findEntry(VM *vm, Entry *entries, int capacity,
                     tombstone = entry;
             }
         }
-        else if (strcmp(string_get_cstr(entry->key), string_get_cstr(key)) == 0)
+        else if (strcmp(string_get_cstr(entry->key), key_string) == 0)
         {
             // We found the key.
             return entry;

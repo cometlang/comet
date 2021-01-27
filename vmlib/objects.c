@@ -155,7 +155,7 @@ static Value allocateString(VM *vm, char *chars, int length)
     Value string_obj = OBJ_VAL(string);
     string->data = string_set_cstr(string, chars, length);
     push(vm, string_obj);
-    internString(vm, string_obj);
+    internString(string_obj);
     pop(vm);
     return string_obj;
 }
@@ -163,7 +163,7 @@ static Value allocateString(VM *vm, char *chars, int length)
 Value takeString(VM *vm, char *chars, int length)
 {
     uint32_t hash = string_hash_cstr(chars, length);
-    Value interned = findInternedString(vm, chars, hash);
+    Value interned = findInternedString(chars, hash);
     if (interned != NIL_VAL)
     {
         FREE_ARRAY(char, chars, length + 1);
@@ -175,7 +175,7 @@ Value takeString(VM *vm, char *chars, int length)
 Value copyString(VM *vm, const char *chars, int length)
 {
     uint32_t hash = string_hash_cstr(chars, length);
-    Value interned = findInternedString(vm, chars, hash);
+    Value interned = findInternedString(chars, hash);
     if (interned != NIL_VAL)
         return interned;
 

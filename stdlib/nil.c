@@ -52,7 +52,7 @@ void init_nil(VM *vm)
     nil_instance.instance.klass = AS_CLASS(klass);
     initTable(&nil_instance.instance.fields);
     push(vm, copyString(vm, "nil", 3));
-    addGlobal(vm, peek(vm, 0), NIL_VAL);
+    addGlobal(peek(vm, 0), NIL_VAL);
     pop(vm);
 
     nil_iterator_class = defineNativeClass(vm, "NilIterator", NULL, NULL, "Iterator");

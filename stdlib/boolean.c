@@ -43,7 +43,7 @@ static void init_instance(VM *vm, ObjNativeInstance *instance, ObjClass *klass, 
         push(vm, copyString(vm, "true", 4));
     else
         push(vm, copyString(vm, "false", 5));
-    addGlobal(vm, peek(vm, 0), OBJ_VAL(instance));
+    addGlobal(peek(vm, 0), OBJ_VAL(instance));
     pop(vm);
 }
 

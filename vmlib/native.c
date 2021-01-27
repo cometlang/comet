@@ -9,7 +9,7 @@ void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 {
     push(vm, OBJ_VAL(newNativeFunction(vm, function)));
     push(vm, copyString(vm, name, (int)strlen(name)));
-    addGlobal(vm, peek(vm, 0), peek(vm, 1));
+    addGlobal(peek(vm, 0), peek(vm, 1));
     pop(vm);
     pop(vm);
 }
@@ -31,7 +31,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         {
             super_name = "Object";
         }
-        if (!findGlobal(vm, copyString(vm, super_name, strlen(super_name)), &parent))
+        if (!findGlobal(copyString(vm, super_name, strlen(super_name)), &parent))
         {
             runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
@@ -43,7 +43,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
         klass->super_ = AS_CLASS(parent);
     }
-    if (addGlobal(vm, name_string, OBJ_VAL(klass)))
+    if (addGlobal(name_string, OBJ_VAL(klass)))
     {
         pop(vm);
         pop(vm);

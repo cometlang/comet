@@ -48,27 +48,27 @@ void markGlobals(void)
     markValue(FALSE_VAL);
 }
 
-void removeWhiteStrings()
+void removeWhiteStrings(void)
 {
     tableRemoveWhite(&strings);
 }
 
-Value findInternedString(VM UNUSED(*vm), const char *chars, uint32_t hash)
+Value findInternedString(const char *chars, uint32_t hash)
 {
     return tableFindString(&strings, chars, hash);
 }
 
-bool internString(VM UNUSED(*vm), Value string)
+bool internString(Value string)
 {
     return tableSet(&strings, string, NIL_VAL);
 }
 
-bool findGlobal(VM UNUSED(*vm), Value name, Value *value)
+bool findGlobal(Value name, Value *value)
 {
     return tableGet(&globals, name, value);
 }
 
-bool addGlobal(VM UNUSED(*vm), Value name, Value value)
+bool addGlobal(Value name, Value value)
 {
     return tableSet(&globals, name, value);
 }
@@ -173,7 +173,7 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
 {
     Value type_name = copyString(vm, exception_type_name, strlen(exception_type_name));
     Value exception_type = NIL_VAL;
-    if (findGlobal(vm, type_name, &exception_type))
+    if (findGlobal(type_name, &exception_type))
     {
         va_list args;
         va_start(args, message_format);
@@ -314,7 +314,7 @@ static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, in
     return true;
 }
 
-static Value findMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
+static Value findMethod(ObjClass *klass, Value name)
 {
     Value result;
     if (tableGet(&klass->methods, name, &result))
@@ -324,7 +324,7 @@ static Value findMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
     return NIL_VAL;
 }
 
-static Value findStaticMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
+static Value findStaticMethod(ObjClass *klass, Value name)
 {
     Value result;
     if (tableGet(&klass->staticMethods, name, &result))
@@ -337,7 +337,7 @@ static Value findStaticMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
 static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
                             int argCount)
 {
-    Value method = findStaticMethod(vm, klass, name);
+    Value method = findStaticMethod(klass, name);
     if (IS_NATIVE_METHOD(method) && AS_NATIVE_METHOD(method)->isStatic)
     {
         return callNativeMethod(vm, OBJ_VAL(klass), AS_NATIVE_METHOD(method), argCount);
@@ -431,7 +431,7 @@ static bool invoke(VM *vm, Value name, int argCount)
             return callValue(vm, value, argCount);
         }
 
-        Value method = findMethod(vm, instance->klass, name);
+        Value method = findMethod(instance->klass, name);
         if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
         {
             return call(vm, AS_CLOSURE(method), argCount);
@@ -916,7 +916,7 @@ static InterpretResult run(VM *vm)
             uint16_t handlerAddress = READ_SHORT();
             uint16_t finallyAddress = READ_SHORT();
             Value value;
-            if (!findGlobal(vm, type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
+            if (!findGlobal(type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
             {
                 runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
                 return INTERPRET_RUNTIME_ERROR;

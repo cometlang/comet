@@ -59,14 +59,14 @@ void freeGlobals(void);
 void initVM(VM *vm);
 void freeVM(VM *vm);
 
-Value findInternedString(VM *vm, const char *chars, uint32_t hash);
+Value findInternedString(const char *chars, uint32_t hash);
 
-bool internString(VM *vm, Value string);
+bool internString(Value string);
 void markGlobals(void);
-void removeWhiteStrings();
+void removeWhiteStrings(void);
 
-bool addGlobal(VM *vm, Value name, Value value);
-bool findGlobal(VM *vm, Value name, Value *value);
+bool addGlobal(Value name, Value value);
+bool findGlobal(Value name, Value *value);
 
 VM *call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments, VALUE *ref_result);
 

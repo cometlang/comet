@@ -308,6 +308,8 @@ const char *getOperatorString(OPERATOR operator)
             return "[]";
         case OPERATOR_INDEX_ASSIGN:
             return "[]=";
+        case OPERATOR_MODULO:
+            return "%";
         case NUM_OPERATORS:
             return "unknown";
         case OPERATOR_UNKNOWN:
@@ -338,6 +340,8 @@ OPERATOR getOperatorFromToken(TokenType token)
         return OPERATOR_EQUALS;
     else if (token == TOKEN_LEFT_SQ_BRACKET)
         return OPERATOR_INDEX;
+    else if (token == TOKEN_PERCENT)
+        return OPERATOR_MODULO;
 
     return OPERATOR_UNKNOWN;
 }

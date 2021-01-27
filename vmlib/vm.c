@@ -663,6 +663,9 @@ static InterpretResult run(VM *vm)
         case OP_DIVIDE:
             BINARY_OP(OPERATOR_DIVISION);
             break;
+        case OP_MODULO:
+            BINARY_OP(OPERATOR_MODULO);
+            break;
         case OP_NOT:
         {
             Value result = FALSE_VAL;

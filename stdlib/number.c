@@ -67,6 +67,13 @@ VALUE number_operator_multiply(VM *vm, VALUE self, int UNUSED(arg_count), VALUE 
     return create_number(vm, lhs->num * rhs->num);
 }
 
+VALUE number_operator_modulo(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
+    return create_number(vm, (int64_t) lhs->num % (int64_t) rhs->num);
+}
+
 VALUE create_number(VM *vm, double number)
 {
     VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
@@ -98,4 +105,5 @@ void complete_number(VM *vm)
     defineNativeOperator(vm, number_class, &number_operator_minus, OPERATOR_MINUS);
     defineNativeOperator(vm, number_class, &number_operator_divide, OPERATOR_DIVISION);
     defineNativeOperator(vm, number_class, &number_operator_multiply, OPERATOR_MULTIPLICATION);
+    defineNativeOperator(vm, number_class, &number_operator_modulo, OPERATOR_MODULO);
 }

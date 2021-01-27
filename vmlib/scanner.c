@@ -360,6 +360,8 @@ Token scanToken()
         return makeToken(TOKEN_STAR);
     case ':':
         return makeToken(TOKEN_COLON);
+    case '%':
+        return makeToken(TOKEN_PERCENT);
     case '|':
         return makeToken(match('|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
     case '&':

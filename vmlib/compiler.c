@@ -36,7 +36,7 @@ typedef enum
     PREC_EQUALITY,   // == !=
     PREC_COMPARISON, // < > <= >=
     PREC_TERM,       // + -
-    PREC_FACTOR,     // * /
+    PREC_FACTOR,     // * / %
     PREC_UNARY,      // ! -
     PREC_INSTANCEOF, // instanceof
     PREC_CALL,       // . () []
@@ -563,6 +563,9 @@ static void binary(bool UNUSED(canAssign))
     case TOKEN_INSTANCEOF:
         emitByte(OP_INSTANCEOF);
         break;
+    case TOKEN_PERCENT:
+        emitByte(OP_MODULO);
+        break;
     default:
         return; // Unreachable.
     }
@@ -865,6 +868,7 @@ ParseRule rules[NUM_TOKENS] = {
     {NULL, NULL, PREC_NONE},         // TOKEN_COLON
     {NULL, NULL, PREC_NONE},         // TOKEN_EOL
     {lambda, NULL, PREC_NONE},       // TOKEN_VBAR
+    {NULL, binary, PREC_FACTOR},     // TOKEN_PERCENT
     {unary, NULL, PREC_NONE},        // TOKEN_BANG
     {NULL, binary, PREC_EQUALITY},   // TOKEN_BANG_EQUAL
     {NULL, NULL, PREC_NONE},         // TOKEN_EQUAL

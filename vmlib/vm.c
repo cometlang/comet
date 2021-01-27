@@ -43,6 +43,9 @@ void markGlobals(VM *vm)
     {
         markValue(vm, common_strings[i]);
     }
+    markValue(vm, NIL_VAL);
+    markValue(vm, TRUE_VAL);
+    markValue(vm, FALSE_VAL);
 }
 
 void removeWhiteStrings(VM *vm)
@@ -200,9 +203,6 @@ void initVM(VM *vm)
 {
     resetStack(vm);
     vm->objects = NULL;
-    vm->grayCount = 0;
-    vm->grayCapacity = 0;
-    vm->grayStack = NULL;
 
     register_thread(vm);
 }

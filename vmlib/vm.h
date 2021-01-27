@@ -36,9 +36,6 @@ struct _vm
     Value *stackTop;
     ObjUpvalue *openUpvalues;
     Obj *objects;
-    int grayCount;
-    int grayCapacity;
-    Obj **grayStack;
 };
 
 typedef enum

@@ -95,6 +95,7 @@ int main(int argc, const char **argv)
     }
 
     freeVM(&virtualMachine);
+    finalizeGarbageCollection();
     freeGlobals();
     return 0;
 }

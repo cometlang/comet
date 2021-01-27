@@ -15,11 +15,17 @@
 size_t _bytes_allocated = 0;
 size_t _next_GC = 1024 * 1024;
 
-static void collectGarbage(VM *vm);
+static void collectGarbage(void);
 
 static VM **threads;
 static int num_threads = 0;
 static int thread_capacity = 0;
+
+static Obj **grey_stack;
+static int grey_capacity = 0;
+static int grey_count = 0;
+
+#define MAIN_THREAD threads[0]
 
 void register_thread(VM *vm)
 {
@@ -55,17 +61,14 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
-        for (int i = 0; i < num_threads; i++)
-        {
-            collectGarbage(threads[i]);
-        }
+        collectGarbage();
     }
 #if DEBUG_STRESS_GC
     if (_bytes_allocated > _next_GC)
     {
         for (int i = 0; i < num_threads; i++)
         {
-            collectGarbage(threads[i]);
+            collectGarbage();
         }
     }
 #endif
@@ -78,7 +81,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     return realloc(previous, newSize);
 }
 
-void markObject(VM *vm, Obj *object)
+void markObject(VM UNUSED(*vm), Obj *object)
 {
     if (object == NULL)
         return;
@@ -93,14 +96,13 @@ void markObject(VM *vm, Obj *object)
 
     object->isMarked = true;
 
-    if (vm->grayCapacity < vm->grayCount + 1)
+    if (grey_capacity < grey_count + 1)
     {
-        vm->grayCapacity = GROW_CAPACITY(vm->grayCapacity);
-        vm->grayStack = realloc(vm->grayStack,
-                               sizeof(Obj *) * vm->grayCapacity);
+        grey_capacity = GROW_CAPACITY(grey_capacity);
+        grey_stack = realloc(grey_stack, sizeof(Obj *) * grey_capacity);
     }
 
-    vm->grayStack[vm->grayCount++] = object;
+    grey_stack[grey_count++] = object;
 }
 
 void markValue(VM *vm, Value value)
@@ -174,17 +176,11 @@ static void blackenObject(VM *vm, Obj *object)
         break;
     }
     case OBJ_INSTANCE:
+    case OBJ_NATIVE_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
         markObject(vm, (Obj *)instance->klass);
         markTable(vm, &instance->fields);
-        break;
-    }
-    case OBJ_NATIVE_INSTANCE:
-    {
-        ObjNativeInstance *instance = (ObjNativeInstance *)object;
-        markObject(vm, (Obj *)instance->instance.klass);
-        markTable(vm, &instance->instance.fields);
         break;
     }
     case OBJ_UPVALUE:
@@ -287,16 +283,13 @@ static void markRoots(VM *vm)
     {
         markObject(vm, (Obj *)upvalue);
     }
-
-    markGlobals(vm);
-    markCompilerRoots(vm);
 }
 
 static void traceReferences(VM *vm)
 {
-    while (vm->grayCount > 0)
+    while (grey_count > 0)
     {
-        Obj *object = vm->grayStack[--vm->grayCount];
+        Obj *object = grey_stack[--grey_count];
         blackenObject(vm, object);
     }
 }
@@ -332,17 +325,28 @@ static void sweep(VM *vm)
     }
 }
 
-static void collectGarbage(VM *vm)
+static void collectGarbage()
 {
 #if DEBUG_LOG_GC
     printf("-- gc begin\n");
     size_t before = _bytes_allocated;
 #endif
 
-    markRoots(vm);
-    traceReferences(vm);
-    removeWhiteStrings(vm);
-    sweep(vm);
+    for (int i = 0; i < num_threads; i++)
+    {
+        markRoots(threads[i]);
+    }
+    markGlobals(MAIN_THREAD);
+    markCompilerRoots(MAIN_THREAD);
+    for (int i = 0; i < num_threads; i++)
+    {
+        traceReferences(threads[i]);
+    }
+    removeWhiteStrings(MAIN_THREAD);
+    for (int i = 0; i < num_threads; i++)
+    {
+        sweep(threads[i]);
+    }
 
     _next_GC = _bytes_allocated * GC_HEAP_GROW_FACTOR;
 #if DEBUG_LOG_GC
@@ -362,6 +366,12 @@ void freeObjects(VM *vm)
         freeObject(object);
         object = next;
     }
+}
 
-    free(vm->grayStack);
+void finalizeGarbageCollection(void)
+{
+    free(grey_stack);
+    grey_stack = NULL;
+    grey_count = 0;
+    grey_capacity = 0;
 }

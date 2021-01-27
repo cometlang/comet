@@ -23,7 +23,7 @@ void freeTable(Table *table)
     initTable(table);
 }
 
-static Entry *findEntry(VM UNUSED(*vm), Entry *entries, int capacity,
+static Entry *findEntry(Entry *entries, int capacity,
                         Value key)
 {
     const char *key_string = string_get_cstr(key);
@@ -60,12 +60,12 @@ static Entry *findEntry(VM UNUSED(*vm), Entry *entries, int capacity,
     }
 }
 
-bool tableGet(VM *vm, Table *table, Value key, Value *result)
+bool tableGet(Table *table, Value key, Value *result)
 {
     if (table->count == 0)
         return false;
 
-    Entry *entry = findEntry(vm, table->entries, table->capacity, key);
+    Entry *entry = findEntry(table->entries, table->capacity, key);
     if (entry->key == NIL_VAL)
         return false;
 
@@ -73,7 +73,7 @@ bool tableGet(VM *vm, Table *table, Value key, Value *result)
     return true;
 }
 
-static void adjustCapacity(VM *vm, Table *table, int capacity)
+static void adjustCapacity(Table *table, int capacity)
 {
     Entry *entries = ALLOCATE(Entry, capacity + 1);
     for (int i = 0; i <= capacity; i++)
@@ -89,7 +89,7 @@ static void adjustCapacity(VM *vm, Table *table, int capacity)
         if (entry == NULL || entry->key == NIL_VAL)
             continue;
 
-        Entry *dest = findEntry(vm, entries, capacity, entry->key);
+        Entry *dest = findEntry(entries, capacity, entry->key);
         dest->key = entry->key;
         dest->value = entry->value;
         table->count++;
@@ -100,16 +100,16 @@ static void adjustCapacity(VM *vm, Table *table, int capacity)
     table->capacity = capacity;
 }
 
-bool tableSet(VM *vm, Table *table, Value key, Value value)
+bool tableSet(Table *table, Value key, Value value)
 {
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
         // Figure out the new table size.
         int capacity = GROW_CAPACITY(table->capacity + 1) - 1;
-        adjustCapacity(vm, table, capacity);
+        adjustCapacity(table, capacity);
     }
 
-    Entry *entry = findEntry(vm, table->entries, table->capacity, key);
+    Entry *entry = findEntry(table->entries, table->capacity, key);
 
     bool isNewKey = entry->key == NIL_VAL;
     if (isNewKey && IS_NIL(entry->value))
@@ -120,13 +120,13 @@ bool tableSet(VM *vm, Table *table, Value key, Value value)
     return isNewKey;
 }
 
-bool tableDelete(VM *vm, Table *table, Value key)
+bool tableDelete(Table *table, Value key)
 {
     if (table->count == 0)
         return false;
 
     // Find the entry.
-    Entry *entry = findEntry(vm, table->entries, table->capacity, key);
+    Entry *entry = findEntry(table->entries, table->capacity, key);
     if (entry != NULL && entry->key == NIL_VAL)
         return false;
 
@@ -137,19 +137,19 @@ bool tableDelete(VM *vm, Table *table, Value key)
     return true;
 }
 
-void tableAddAll(VM *vm, Table *from, Table *to)
+void tableAddAll(Table *from, Table *to)
 {
     for (int i = 0; i <= from->capacity; i++)
     {
         Entry *entry = &from->entries[i];
         if (entry != NULL && entry->key != NIL_VAL)
         {
-            tableSet(vm, to, entry->key, entry->value);
+            tableSet(to, entry->key, entry->value);
         }
     }
 }
 
-Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash)
+Value tableFindString(Table *table, const char *chars, uint32_t hash)
 {
     if (table->count == 0)
         return NIL_VAL;
@@ -168,7 +168,9 @@ Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash)
         }
         else
         {
-            uint32_t entry_hash = (uint32_t) number_get_value(string_hash(vm, entry->key, 0, NULL));
+            const char *key_string = string_get_cstr(entry->key);
+            int key_str_len = strlen(key_string);
+            uint32_t entry_hash = (uint32_t) string_hash_cstr(key_string, key_str_len);
             if (entry_hash == hash &&
                 string_compare_to_cstr(entry->key, chars) == 0)
             {
@@ -195,24 +197,24 @@ void tablePrintKeys(Table *table)
 }
 
 
-void tableRemoveWhite(VM *vm, Table *table)
+void tableRemoveWhite(Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
         if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
         {
-            tableDelete(vm, table, entry->key);
+            tableDelete(table, entry->key);
         }
     }
 }
 
-void markTable(VM *vm, Table *table)
+void markTable(Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)
     {
         Entry *entry = &table->entries[i];
-        markValue(vm, entry->key);
-        markValue(vm, entry->value);
+        markValue(entry->key);
+        markValue(entry->value);
     }
 }

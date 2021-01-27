@@ -39,8 +39,8 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
 
         ObjClass *parent_class = AS_CLASS(parent);
 
-        tableAddAll(vm, &parent_class->methods, &klass->methods);
-        tableAddAll(vm, &parent_class->staticMethods, &klass->staticMethods);
+        tableAddAll(&parent_class->methods, &klass->methods);
+        tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
         klass->super_ = AS_CLASS(parent);
     }
     if (addGlobal(vm, name_string, OBJ_VAL(klass)))
@@ -87,7 +87,7 @@ void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE valu
     push(vm, value);
     Value name_string = copyString(vm, property_name, strlen(property_name));
     push(vm, name_string);
-    tableSet(vm, &AS_INSTANCE(self)->fields, name_string, value);
+    tableSet(&AS_INSTANCE(self)->fields, name_string, value);
     pop(vm);
     pop(vm);
     pop(vm);
@@ -97,7 +97,7 @@ VALUE getNativeProperty(VM *vm, VALUE self, const char *property_name)
 {
     Value value;
     Value name_string = copyString(vm, property_name, strlen(property_name));
-    if (tableGet(vm, &AS_INSTANCE(self)->fields, name_string, &value))
+    if (tableGet(&AS_INSTANCE(self)->fields, name_string, &value))
     {
         return value;
     }

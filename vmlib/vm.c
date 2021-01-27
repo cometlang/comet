@@ -35,42 +35,42 @@ void freeGlobals(void)
     }
 }
 
-void markGlobals(VM *vm)
+void markGlobals(void)
 {
-    markTable(vm, &globals);
-    markTable(vm, &strings);
+    markTable(&globals);
+    markTable(&strings);
     for (int i = 0; i < NUM_COMMON_STRINGS; i++)
     {
-        markValue(vm, common_strings[i]);
+        markValue(common_strings[i]);
     }
-    markValue(vm, NIL_VAL);
-    markValue(vm, TRUE_VAL);
-    markValue(vm, FALSE_VAL);
+    markValue(NIL_VAL);
+    markValue(TRUE_VAL);
+    markValue(FALSE_VAL);
 }
 
-void removeWhiteStrings(VM *vm)
+void removeWhiteStrings()
 {
-    tableRemoveWhite(vm, &strings);
+    tableRemoveWhite(&strings);
 }
 
-Value findInternedString(VM *vm, const char *chars, uint32_t hash)
+Value findInternedString(VM UNUSED(*vm), const char *chars, uint32_t hash)
 {
-    return tableFindString(vm, &strings, chars, hash);
+    return tableFindString(&strings, chars, hash);
 }
 
-bool internString(VM *vm, Value string)
+bool internString(VM UNUSED(*vm), Value string)
 {
-    return tableSet(vm, &strings, string, NIL_VAL);
+    return tableSet(&strings, string, NIL_VAL);
 }
 
-bool findGlobal(VM *vm, Value name, Value *value)
+bool findGlobal(VM UNUSED(*vm), Value name, Value *value)
 {
-    return tableGet(vm, &globals, name, value);
+    return tableGet(&globals, name, value);
 }
 
-bool addGlobal(VM *vm, Value name, Value value)
+bool addGlobal(VM UNUSED(*vm), Value name, Value value)
 {
-    return tableSet(vm, &globals, name, value);
+    return tableSet(&globals, name, value);
 }
 
 static bool create_instance(VM *vm, ObjClass *klass, int argCount)
@@ -79,7 +79,7 @@ static bool create_instance(VM *vm, ObjClass *klass, int argCount)
     vm->stackTop[-argCount - 1] = instance;
     // Call the initializer, if there is one.
     Value initializer;
-    if (tableGet(vm, &klass->methods, common_strings[STRING_INIT], &initializer))
+    if (tableGet(&klass->methods, common_strings[STRING_INIT], &initializer))
     {
         if (IS_NATIVE_METHOD(initializer))
         {
@@ -314,20 +314,20 @@ static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, in
     return true;
 }
 
-static Value findMethod(VM *vm, ObjClass *klass, Value name)
+static Value findMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
 {
     Value result;
-    if (tableGet(vm, &klass->methods, name, &result))
+    if (tableGet(&klass->methods, name, &result))
     {
         return result;
     }
     return NIL_VAL;
 }
 
-static Value findStaticMethod(VM *vm, ObjClass *klass, Value name)
+static Value findStaticMethod(VM UNUSED(*vm), ObjClass *klass, Value name)
 {
     Value result;
-    if (tableGet(vm, &klass->staticMethods, name, &result))
+    if (tableGet(&klass->staticMethods, name, &result))
     {
         return result;
     }
@@ -423,7 +423,7 @@ static bool invoke(VM *vm, Value name, int argCount)
 
         // First look for a field which may shadow a method.
         Value value;
-        if (tableGet(vm, &instance->fields, name, &value))
+        if (tableGet(&instance->fields, name, &value))
         {
             // Load the field onto the stack in place of the receiver.
             vm->stackTop[-argCount - 1] = value;
@@ -450,7 +450,7 @@ static bool invoke(VM *vm, Value name, int argCount)
 static bool bindMethod(VM *vm, ObjClass *klass, Value name)
 {
     Value method;
-    if (!tableGet(vm, &klass->methods, name, &method))
+    if (!tableGet(&klass->methods, name, &method))
     {
         runtimeError(vm, "Undefined method '%s'.", string_get_cstr(name));
         return false;
@@ -507,11 +507,11 @@ void defineMethod(VM *vm, Value name, bool isStatic)
     ObjClass *klass = AS_CLASS(peek(vm, 1));
     if (isStatic)
     {
-        tableSet(vm, &klass->staticMethods, name, method);
+        tableSet(&klass->staticMethods, name, method);
     }
     else
     {
-        tableSet(vm, &klass->methods, name, method);
+        tableSet(&klass->methods, name, method);
     }
     pop(vm);
 }
@@ -596,7 +596,7 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             Value value;
-            if (!tableGet(vm, &globals, name, &value))
+            if (!tableGet(&globals, name, &value))
             {
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
@@ -607,7 +607,7 @@ static InterpretResult run(VM *vm)
         case OP_DEFINE_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            tableSet(vm, &globals, name, peek(vm, 0));
+            tableSet(&globals, name, peek(vm, 0));
             pop(vm);
             break;
         }
@@ -626,9 +626,9 @@ static InterpretResult run(VM *vm)
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            if (tableSet(vm, &globals, name, peek(vm, 0)))
+            if (tableSet(&globals, name, peek(vm, 0)))
             {
-                tableDelete(vm, &globals, name);
+                tableDelete(&globals, name);
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }
@@ -657,7 +657,7 @@ static InterpretResult run(VM *vm)
             Value name = READ_CONSTANT();
 
             Value value;
-            if (tableGet(vm, &instance->fields, name, &value))
+            if (tableGet(&instance->fields, name, &value))
             {
                 pop(vm); // Instance.
                 push(vm, value);
@@ -678,7 +678,7 @@ static InterpretResult run(VM *vm)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-            tableSet(vm, &instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
+            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
 
             Value value = pop(vm);
             pop(vm);
@@ -841,8 +841,8 @@ static InterpretResult run(VM *vm)
 
             ObjClass *subclass = AS_CLASS(peek(vm, 0));
             ObjClass *superclass = AS_CLASS(super_);
-            tableAddAll(vm, &superclass->methods, &subclass->methods);
-            tableAddAll(vm, &superclass->staticMethods, &subclass->staticMethods);
+            tableAddAll(&superclass->methods, &subclass->methods);
+            tableAddAll(&superclass->staticMethods, &subclass->staticMethods);
             for (int i = 0; i < NUM_OPERATORS; i++)
             {
                 subclass->operators[i] = superclass->operators[i];

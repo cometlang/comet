@@ -3,6 +3,7 @@
 #include "common.h"
 #include "mem.h"
 #include "compiler.h"
+#include "comet.h"
 
 #if DEBUG_LOG_GC
 #include <stdio.h>
@@ -24,8 +25,6 @@ static int thread_capacity = 0;
 static Obj **grey_stack;
 static int grey_capacity = 0;
 static int grey_count = 0;
-
-#define MAIN_THREAD threads[0]
 
 void register_thread(VM *vm)
 {
@@ -81,7 +80,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     return realloc(previous, newSize);
 }
 
-void markObject(VM UNUSED(*vm), Obj *object)
+void markObject(Obj *object)
 {
     if (object == NULL)
         return;
@@ -105,22 +104,22 @@ void markObject(VM UNUSED(*vm), Obj *object)
     grey_stack[grey_count++] = object;
 }
 
-void markValue(VM *vm, Value value)
+void markValue(Value value)
 {
     if (!IS_OBJ(value))
         return;
-    markObject(vm, AS_OBJ(value));
+    markObject(AS_OBJ(value));
 }
 
-static void markArray(VM *vm, ValueArray *array)
+static void markArray(ValueArray *array)
 {
     for (int i = 0; i < array->count; i++)
     {
-        markValue(vm, array->values[i]);
+        markValue(array->values[i]);
     }
 }
 
-static void blackenObject(VM *vm, Obj *object)
+static void blackenObject(Obj *object)
 {
 #if DEBUG_LOG_GC
     printf("%p blacken ", (void *)object);
@@ -132,59 +131,49 @@ static void blackenObject(VM *vm, Obj *object)
     case OBJ_BOUND_METHOD:
     {
         ObjBoundMethod *bound = (ObjBoundMethod *)object;
-        markValue(vm, bound->receiver);
-        markObject(vm, (Obj *)bound->method);
+        markValue(bound->receiver);
+        markObject((Obj *)bound->method);
         break;
     }
     case OBJ_CLASS:
-    {
-        ObjClass *klass = (ObjClass *)object;
-        markTable(vm, &klass->methods);
-        markTable(vm, &klass->staticMethods);
-        for (int i = 0; i < NUM_OPERATORS; i++)
-        {
-            markValue(vm, klass->operators[i]);
-        }
-        break;
-    }
     case OBJ_NATIVE_CLASS:
     {
-        ObjNativeClass *klass = (ObjNativeClass *)object;
-        markTable(vm, &klass->klass.methods);
-        markTable(vm, &klass->klass.staticMethods);
+        ObjClass *klass = (ObjClass *)object;
+        markTable(&klass->methods);
+        markTable(&klass->staticMethods);
         for (int i = 0; i < NUM_OPERATORS; i++)
         {
-            markValue(vm, klass->klass.operators[i]);
+            markValue(klass->operators[i]);
         }
         break;
     }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
-        markObject(vm, (Obj *)closure->function);
+        markObject((Obj *)closure->function);
         for (int i = 0; i < closure->upvalueCount; i++)
         {
-            markObject(vm, (Obj *)closure->upvalues[i]);
+            markObject((Obj *)closure->upvalues[i]);
         }
         break;
     }
     case OBJ_FUNCTION:
     {
         ObjFunction *function = (ObjFunction *)object;
-        markValue(vm, function->name);
-        markArray(vm, &function->chunk.constants);
+        markValue(function->name);
+        markArray(&function->chunk.constants);
         break;
     }
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
-        markObject(vm, (Obj *)instance->klass);
-        markTable(vm, &instance->fields);
+        markObject((Obj *)instance->klass);
+        markTable(&instance->fields);
         break;
     }
     case OBJ_UPVALUE:
-        markValue(vm, ((ObjUpvalue *)object)->closed);
+        markValue(((ObjUpvalue *)object)->closed);
         break;
     case OBJ_NATIVE_METHOD:
     case OBJ_NATIVE:
@@ -195,7 +184,18 @@ static void blackenObject(VM *vm, Obj *object)
 static void freeObject(Obj *object)
 {
 #if DEBUG_LOG_GC
-    printf("%p free %s\n", (void *)object, objTypeName(object->type));
+    if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) && strcmp(((ObjInstance *)object)->klass->name, "String") == 0)
+    {
+        printf("%p free String: \"%s\"\n", (void *)object, string_get_cstr(OBJ_VAL(object)));
+    }
+    else if (IS_INSTANCE(OBJ_VAL(object)) || IS_NATIVE_INSTANCE(OBJ_VAL(object)))
+    {
+        printf("%p free %s (%s)\n", (void *)object, objTypeName(object->type), ((ObjInstance *)object)->klass->name);
+    }
+    else
+    {
+        printf("%p free %s\n", (void *)object, objTypeName(object->type));
+    }
 #endif
     switch (object->type)
     {
@@ -269,28 +269,28 @@ static void markRoots(VM *vm)
 {
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
-        markValue(vm, *slot);
+        markValue(*slot);
     }
 
     for (int i = 0; i < vm->frameCount; i++)
     {
-        markObject(vm, (Obj *)vm->frames[i].closure);
+        markObject((Obj *)vm->frames[i].closure);
     }
 
     for (ObjUpvalue *upvalue = vm->openUpvalues;
          upvalue != NULL;
          upvalue = upvalue->next)
     {
-        markObject(vm, (Obj *)upvalue);
+        markObject((Obj *)upvalue);
     }
 }
 
-static void traceReferences(VM *vm)
+static void traceReferences()
 {
     while (grey_count > 0)
     {
         Obj *object = grey_stack[--grey_count];
-        blackenObject(vm, object);
+        blackenObject(object);
     }
 }
 
@@ -336,13 +336,10 @@ static void collectGarbage()
     {
         markRoots(threads[i]);
     }
-    markGlobals(MAIN_THREAD);
-    markCompilerRoots(MAIN_THREAD);
-    for (int i = 0; i < num_threads; i++)
-    {
-        traceReferences(threads[i]);
-    }
-    removeWhiteStrings(MAIN_THREAD);
+    markGlobals();
+    markCompilerRoots();
+    traceReferences();
+    removeWhiteStrings();
     for (int i = 0; i < num_threads; i++)
     {
         sweep(threads[i]);

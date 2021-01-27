@@ -1492,12 +1492,12 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
     return parser.hadError ? NULL : function;
 }
 
-void markCompilerRoots(VM *vm)
+void markCompilerRoots(void)
 {
     Compiler *compiler = current;
     while (compiler != NULL)
     {
-        markObject(vm, (Obj *)compiler->function);
+        markObject((Obj *)compiler->function);
         compiler = compiler->enclosing;
     }
 }

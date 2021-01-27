@@ -19,13 +19,13 @@ typedef struct
 
 void initTable(Table *table);
 void freeTable(Table *table);
-bool tableGet(VM *vm, Table *table, Value key, Value *result);
-bool tableSet(VM *vm, Table *table, Value key, Value value);
-bool tableDelete(VM *vm, Table *table, Value key);
-void tableAddAll(VM *vm, Table *from, Table *to);
-Value tableFindString(VM *vm, Table *table, const char *chars, uint32_t hash);
-void tableRemoveWhite(VM *vm, Table *table);
-void markTable(VM *vm, Table *table);
+bool tableGet(Table *table, Value key, Value *result);
+bool tableSet(Table *table, Value key, Value value);
+bool tableDelete(Table *table, Value key);
+void tableAddAll(Table *from, Table *to);
+Value tableFindString(Table *table, const char *chars, uint32_t hash);
+void tableRemoveWhite(Table *table);
+void markTable(Table *table);
 
 void tablePrintKeys(Table *table);
 

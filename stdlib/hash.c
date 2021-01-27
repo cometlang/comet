@@ -243,13 +243,13 @@ void table_remove_white(VM *vm, HashTable *table)
     }
 }
 
-void mark_table(VM *vm, HashTable *table)
+void mark_table(HashTable *table)
 {
     for (size_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
-        markValue(vm, entry->key);
-        markValue(vm, entry->value);
+        markValue(entry->key);
+        markValue(entry->value);
     }
 }
 

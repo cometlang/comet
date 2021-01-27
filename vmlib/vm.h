@@ -62,8 +62,8 @@ void freeVM(VM *vm);
 Value findInternedString(VM *vm, const char *chars, uint32_t hash);
 
 bool internString(VM *vm, Value string);
-void markGlobals(VM *vm);
-void removeWhiteStrings(VM *vm);
+void markGlobals(void);
+void removeWhiteStrings();
 
 bool addGlobal(VM *vm, Value name, Value value);
 bool findGlobal(VM *vm, Value name, Value *value);

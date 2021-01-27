@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -33,16 +34,16 @@ void *string_constructor(void)
     data->length = 0;
     data->chars = NULL;
     data->hash = 0;
-    return (void *) data;
+    return (void *)data;
 }
 
 void *string_set_cstr(ObjNativeInstance *instance, char *string, int length)
 {
-    StringData *data = (StringData *) instance->data;
+    StringData *data = (StringData *)instance->data;
     data->chars = string;
     data->length = length;
     data->hash = string_hash_cstr(data->chars, length);
-    return (void *) data;
+    return (void *)data;
 }
 
 const char *string_get_cstr(VALUE self)
@@ -63,7 +64,7 @@ int string_compare_to_cstr(VALUE self, const char *cstr)
 
 void string_destructor(void *data)
 {
-    StringData *string_data = (StringData *) data;
+    StringData *string_data = (StringData *)data;
     if (string_data->chars != NULL)
     {
         FREE_ARRAY(char, string_data->chars, string_data->length + 1);
@@ -89,7 +90,7 @@ VALUE string_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
 VALUE string_hash(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    return create_number(vm, (double) data->hash);
+    return create_number(vm, (double)data->hash);
 }
 
 VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -102,9 +103,36 @@ VALUE string_trim(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-VALUE string_trim_left(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_int32_t intermediate[data->length + 1];
+    utf8proc_ssize_t intermediate_length = utf8proc_decompose(
+        (const utf8proc_uint8_t *)data->chars, data->length,
+        intermediate, data->length,
+        UTF8PROC_NULLTERM);
+    if (intermediate_length < 0)
+    {
+        printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+    }
+    char output[data->length + 1];
+    bool found_non_whitespace = false;
+    int output_offset = 0;
+
+    for (int i = 0; i < intermediate_length; i++)
+    {
+        if (!found_non_whitespace)
+        {
+            const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
+            if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
+                found_non_whitespace = true;
+        }
+        if (found_non_whitespace)
+        {
+            output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *) &output[output_offset]);
+        }
+    }
+    return copyString(vm, (const char *)output, output_offset);
 }
 
 VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -149,7 +177,7 @@ VALUE string_to_lower(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE U
     utf8proc_ssize_t new_len = utf8proc_map_custom(
         (const utf8proc_uint8_t *)data->chars,
         data->length,
-        (utf8proc_uint8_t **) &dest_string,
+        (utf8proc_uint8_t **)&dest_string,
         UTF8PROC_NULLTERM,
         &to_lower_func,
         NULL);
@@ -168,7 +196,7 @@ VALUE string_to_upper(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count),
     utf8proc_ssize_t new_len = utf8proc_map_custom(
         (const utf8proc_uint8_t *)data->chars,
         data->length,
-        (utf8proc_uint8_t **) &dest_string,
+        (utf8proc_uint8_t **)&dest_string,
         UTF8PROC_NULLTERM,
         &to_upper_func,
         NULL);
@@ -193,14 +221,14 @@ VALUE string_length(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
     while (offset < data->length)
     {
         utf8proc_ssize_t bytes_read = utf8proc_iterate(
-            (const utf8proc_uint8_t *) &data->chars[offset], remaining, &current_codepoint);
+            (const utf8proc_uint8_t *)&data->chars[offset], remaining, &current_codepoint);
         if (bytes_read == -1)
             break;
         offset += bytes_read;
         remaining -= bytes_read;
         length++;
     }
-    return create_number(vm, (double) length);
+    return create_number(vm, (double)length);
 }
 
 VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)

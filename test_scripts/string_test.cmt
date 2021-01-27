@@ -10,3 +10,7 @@ print("Upper: ", utf8_upper)
 print("Lower: ", utf8_upper.to_lower())
 
 print("this is" + " a string")
+
+print("   'left trimmed'".left_trim())
+print("'right trimmed'   ".right_trim())
+print("   'trimmed'   ".right_trim())

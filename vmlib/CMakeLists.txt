@@ -33,6 +33,7 @@ table.c
 table.h
 value.c
 value.h
+vm_globals.c
 vm.c
 vm.h
 )

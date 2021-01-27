@@ -15,64 +15,6 @@
 static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
 
-static Table globals;
-static Table strings;
-Value common_strings[NUM_COMMON_STRINGS];
-
-void initGlobals(void)
-{
-    initTable(&globals);
-    initTable(&strings);
-}
-
-void freeGlobals(void)
-{
-    freeTable(&globals);
-    freeTable(&strings);
-    for (int i = 0; i < NUM_COMMON_STRINGS; i++)
-    {
-        common_strings[i] = NIL_VAL;
-    }
-}
-
-void markGlobals(void)
-{
-    markTable(&globals);
-    markTable(&strings);
-    for (int i = 0; i < NUM_COMMON_STRINGS; i++)
-    {
-        markValue(common_strings[i]);
-    }
-    markValue(NIL_VAL);
-    markValue(TRUE_VAL);
-    markValue(FALSE_VAL);
-}
-
-void removeWhiteStrings(void)
-{
-    tableRemoveWhite(&strings);
-}
-
-Value findInternedString(const char *chars, uint32_t hash)
-{
-    return tableFindString(&strings, chars, hash);
-}
-
-bool internString(Value string)
-{
-    return tableSet(&strings, string, NIL_VAL);
-}
-
-bool findGlobal(Value name, Value *value)
-{
-    return tableGet(&globals, name, value);
-}
-
-bool addGlobal(Value name, Value value)
-{
-    return tableSet(&globals, name, value);
-}
-
 static bool create_instance(VM *vm, ObjClass *klass, int argCount)
 {
     Value instance = OBJ_VAL(newInstance(vm, klass));
@@ -596,7 +538,7 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             Value value;
-            if (!tableGet(&globals, name, &value))
+            if (!findGlobal(name, &value))
             {
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
@@ -607,7 +549,7 @@ static InterpretResult run(VM *vm)
         case OP_DEFINE_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            tableSet(&globals, name, peek(vm, 0));
+            addGlobal(name, peek(vm, 0));
             pop(vm);
             break;
         }
@@ -626,9 +568,8 @@ static InterpretResult run(VM *vm)
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            if (tableSet(&globals, name, peek(vm, 0)))
+            if (addGlobal(name, peek(vm, 0)))
             {
-                tableDelete(&globals, name);
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
             }

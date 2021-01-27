@@ -356,6 +356,19 @@ static void collectGarbage()
 #endif
 }
 
+void incorporateObjects(VM *vm)
+{
+    VM *main_thread = threads[0];
+    Obj *object = vm->objects;
+    while (object != NULL)
+    {
+        Obj *next = object->next;
+        object->next = main_thread->objects;
+        main_thread->objects = object;
+        object = next;
+    }
+}
+
 void freeObjects(VM *vm)
 {
     Obj *object = vm->objects;
@@ -369,8 +382,13 @@ void freeObjects(VM *vm)
 
 void finalizeGarbageCollection(void)
 {
-    free(grey_stack);
+    FREE_ARRAY(Obj*, grey_stack, grey_capacity);
     grey_stack = NULL;
     grey_count = 0;
     grey_capacity = 0;
+
+    FREE_ARRAY(VM *, threads, thread_capacity);
+    threads = NULL;
+    thread_capacity = 0;
+    num_threads = 0;
 }

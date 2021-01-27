@@ -64,6 +64,7 @@ static void runFile(const char *path)
 {
     SourceFile *source = readFile(path);
     InterpretResult result = interpret(&virtualMachine, source);
+    free(source->path);
     free(source->source);
     free(source);
 

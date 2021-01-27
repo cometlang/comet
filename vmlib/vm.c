@@ -960,6 +960,7 @@ VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arg
         result = pop(&frame);
     }
     deregister_thread(&frame);
+    incorporateObjects(&frame);
     return result;
 }
 

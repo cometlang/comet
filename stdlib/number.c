@@ -34,6 +34,11 @@ VALUE number_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
 #undef TEMP_STRING_MAX_LEN
 }
 
+VALUE number_parse(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return create_number(vm, 0);
+}
+
 VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
@@ -88,6 +93,7 @@ void complete_number(VM *vm)
 {
     completeNativeClassDefinition(vm, number_class, NULL);
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", false);
+    defineNativeMethod(vm, number_class, &number_parse, "parse", true);
     defineNativeOperator(vm, number_class, &number_operator_plus, OPERATOR_PLUS);
     defineNativeOperator(vm, number_class, &number_operator_minus, OPERATOR_MINUS);
     defineNativeOperator(vm, number_class, &number_operator_divide, OPERATOR_DIVISION);

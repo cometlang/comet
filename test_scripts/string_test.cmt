@@ -5,5 +5,8 @@ print(normal_string.length())
 var utf8_string = "This is ä ütf-8 string Encyclöpædiä"
 print(utf8_string)
 print(utf8_string.length())
+var utf8_upper = utf8_string.to_upper()
+print("Upper: ", utf8_upper)
+print("Lower: ", utf8_upper.to_lower())
 
 print("this is" + " a string")

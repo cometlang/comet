@@ -68,7 +68,7 @@ void removeWhiteStrings(void);
 bool addGlobal(Value name, Value value);
 bool findGlobal(Value name, Value *value);
 
-VM *call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments, VALUE *ref_result);
+VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
 
 InterpretResult interpret(VM *vm, const SourceFile *source);
 void runtimeError(VM *vm, const char *format, ...);

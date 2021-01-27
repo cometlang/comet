@@ -205,6 +205,7 @@ static void freeObject(Obj *object)
     case OBJ_CLASS:
     {
         ObjClass *klass = (ObjClass *)object;
+        FREE_ARRAY(char, klass->name, strlen(klass->name));
         freeTable(&klass->methods);
         freeTable(&klass->staticMethods);
         FREE(ObjClass, object);
@@ -213,6 +214,7 @@ static void freeObject(Obj *object)
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeClass *klass = (ObjNativeClass *)object;
+        FREE_ARRAY(char, klass->klass.name, strlen(klass->klass.name));
         freeTable(&klass->klass.methods);
         freeTable(&klass->klass.staticMethods);
         FREE(ObjNativeClass, object);

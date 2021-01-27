@@ -13,11 +13,8 @@ static VALUE printNative(VM UNUSED(*vm), int arg_count, VALUE *args)
 {
     for (int i = 0; i < arg_count; i++)
     {
-        VALUE string;
-        VM *func_vm = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL, &string);
+        VALUE string = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL);
         printf("%s", string_get_cstr(string));
-        freeVM(func_vm);
-        FREE(VM, func_vm);
     }
     printf("\n");
     return NIL_VAL;

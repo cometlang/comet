@@ -945,20 +945,22 @@ static InterpretResult run(VM *vm)
 #undef READ_BYTE
 }
 
-VM *call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments, VALUE *ref_result)
+VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments)
 {
-    VM *frame = ALLOCATE(VM, 1);
-    initVM(frame);
-    push(frame, receiver);
+    VM frame;
+    initVM(&frame);
+    push(&frame, receiver);
+    VALUE result = NIL_VAL;
     for (int i = 0; i < arg_count; i++)
     {
-        push(frame, arguments[i]);
+        push(&frame, arguments[i]);
     }
-    if (invoke(frame, method_name, arg_count))
+    if (invoke(&frame, method_name, arg_count))
     {
-        *ref_result = pop(frame);
+        result = pop(&frame);
     }
-    return frame;
+    deregister_thread(&frame);
+    return result;
 }
 
 InterpretResult interpret(VM *vm, const SourceFile *source)

@@ -4,6 +4,7 @@
 
 #include "common.h"
 #include "compiler.h"
+#include "import.h"
 #include "mem.h"
 #include "scanner.h"
 #include "comet.h"
@@ -1358,8 +1359,8 @@ static void throwStatement()
 
 static void importStatement()
 {
-    // import comet.list
-    // import ..stdlib.list
+    consume(TOKEN_STRING, "Import needs a module to import");
+    import_path(parser.previous.start, parser.previous.length);
 }
 
 static void synchronize()

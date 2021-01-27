@@ -65,10 +65,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
 #if DEBUG_STRESS_GC
     if (_bytes_allocated > _next_GC)
     {
-        for (int i = 0; i < num_threads; i++)
-        {
-            collectGarbage();
-        }
+        collectGarbage();
     }
 #endif
     if (newSize == 0)

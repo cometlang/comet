@@ -21,6 +21,8 @@ compiler.c
 compiler.h
 debug.c
 debug.h
+import.c
+import.h
 mem.c
 mem.h
 native.c

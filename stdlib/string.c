@@ -98,11 +98,6 @@ VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
     return self;
 }
 
-VALUE string_trim(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    return NIL_VAL;
-}
-
 VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
@@ -162,6 +157,16 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
         output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *) &output[output_offset]);
     }
     return copyString(vm, (const char *)output, output_offset);
+}
+
+VALUE string_trim(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    if (arg_count == 0)
+    {
+        VALUE str = string_trim_left(vm, self, 0, NULL);
+        return string_trim_right(vm, str, 0, NULL);
+    }
+    return NIL_VAL;
 }
 
 VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -137,7 +137,34 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
 
 VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_int32_t intermediate[data->length + 1];
+    utf8proc_ssize_t intermediate_length = utf8proc_decompose(
+        (const utf8proc_uint8_t *)data->chars, data->length,
+        intermediate, data->length,
+        UTF8PROC_NULLTERM);
+    if (intermediate_length < 0)
+    {
+        printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+    }
+    char output[data->length + 1];
+    bool found_non_whitespace = false;
+    int output_offset = 0;
+
+    for (int i = intermediate_length; i >= 0; i--)
+    {
+        if (!found_non_whitespace)
+        {
+            const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
+            if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
+                found_non_whitespace = true;
+        }
+        if (found_non_whitespace)
+        {
+            output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *) &output[output_offset]);
+        }
+    }
+    return copyString(vm, (const char *)output, output_offset);
 }
 
 VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -256,6 +283,7 @@ void init_string(VM *vm, VALUE obj_klass)
     completeNativeClassDefinition(vm, klass, NULL);
     defineNativeMethod(vm, klass, &string_trim_left, "left_trim", false);
     defineNativeMethod(vm, klass, &string_trim_right, "right_trim", false);
+    defineNativeMethod(vm, klass, &string_trim, "trim", false);
     defineNativeMethod(vm, klass, &string_find, "find", false);
     defineNativeMethod(vm, klass, &string_split, "split", false);
     defineNativeMethod(vm, klass, &string_replace, "replace", false);

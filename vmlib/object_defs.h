@@ -124,6 +124,7 @@ typedef struct sNativeMethod
 {
     Obj obj;
     NativeMethod function;
+    uint8_t arity;
     bool isStatic;
 } ObjNativeMethod;
 

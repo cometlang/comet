@@ -250,6 +250,10 @@ static bool callValue(VM *vm, Value callee, int argCount)
 
 static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, int argCount)
 {
+    if (method->arity != argCount)
+    {
+        runtimeError(vm, "%s expects %u arguments, but was given %d\n", "<native fn>", method->arity, argCount);
+    }
     Value result = method->function(vm, receiver, argCount, vm->stackTop - argCount);
     popMany(vm, argCount + 1);
     push(vm, result);

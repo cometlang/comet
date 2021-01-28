@@ -141,10 +141,11 @@ ObjNative *newNativeFunction(VM *vm, NativeFn function)
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, bool isStatic)
+ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic)
 {
     ObjNativeMethod *method = ALLOCATE_OBJ(vm, ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->function = function;
+    method->arity = arity;
     method->isStatic = isStatic;
     return method;
 }

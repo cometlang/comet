@@ -62,21 +62,21 @@ VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor,
     return completeNativeClassDefinition(vm, klass, super_name);
 }
 
-void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, bool isStatic)
+void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, uint8_t arity, bool isStatic)
 {
     Value name_string = copyString(vm, name, strlen(name));
     push(vm, name_string);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, isStatic)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, isStatic)));
     defineMethod(vm, name_string, isStatic);
     pop(vm);
     pop(vm);
 }
 
-void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, OPERATOR operator)
+void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, uint8_t arity, OPERATOR operator)
 {
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, false)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, false)));
     defineOperator(vm, operator);
     pop(vm);
 }

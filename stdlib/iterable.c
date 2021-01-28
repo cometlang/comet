@@ -29,12 +29,12 @@ VALUE iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
 void init_iterable(VM *vm)
 {
     VALUE iterable_klass = defineNativeClass(vm, "Iterable", NULL, NULL, NULL);
-    defineNativeMethod(vm, iterable_klass, &iterable_contains_q, "contains?", false);
-    defineNativeMethod(vm, iterable_klass, &iterable_empty_q, "empty?", false);
-    defineNativeMethod(vm, iterable_klass, &iterable_iterator, "iterator", false);
+    defineNativeMethod(vm, iterable_klass, &iterable_contains_q, "contains?", 1, false);
+    defineNativeMethod(vm, iterable_klass, &iterable_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, iterable_klass, &iterable_iterator, "iterator", 0, false);
 
     VALUE iterator_klass = defineNativeClass(vm, "Iterator", NULL, NULL, NULL);
-    defineNativeMethod(vm, iterator_klass, &iterator_has_next_q, "has_next?", false);
-    defineNativeMethod(vm, iterator_klass, &iterator_get_next, "get_next", false);
+    defineNativeMethod(vm, iterator_klass, &iterator_has_next_q, "has_next?", 0, false);
+    defineNativeMethod(vm, iterator_klass, &iterator_get_next, "get_next", 0, false);
 }
  

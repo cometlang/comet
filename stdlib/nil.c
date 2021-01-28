@@ -42,10 +42,10 @@ VALUE nil_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg
 void init_nil(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Nil", NULL, NULL, "Iterable");
-    defineNativeMethod(vm, klass, &nil_nil_q, "nil?", false);
-    defineNativeMethod(vm, klass, &nil_to_string, "to_string", false);
-    defineNativeMethod(vm, klass, &nil_iterable_contains_q, "contains?", false);
-    defineNativeMethod(vm, klass, &nil_iterable_iterator, "iterator", false);
+    defineNativeMethod(vm, klass, &nil_nil_q, "nil?", 0, false);
+    defineNativeMethod(vm, klass, &nil_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, klass, &nil_iterable_contains_q, "contains?", 1, false);
+    defineNativeMethod(vm, klass, &nil_iterable_iterator, "iterator", 0, false);
     nil_instance.instance.obj.type = OBJ_NATIVE_INSTANCE;
     nil_instance.instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
     nil_instance.data = NULL;
@@ -56,6 +56,6 @@ void init_nil(VM *vm)
     pop(vm);
 
     nil_iterator_class = defineNativeClass(vm, "NilIterator", NULL, NULL, "Iterator");
-    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_has_next_p, "has_next?", false);
-    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_get_next, "get_next", false);
+    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_has_next_p, "has_next?", 0, false);
+    defineNativeMethod(vm, nil_iterator_class, &nil_iterator_get_next, "get_next", 0, false);
 }

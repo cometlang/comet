@@ -11,7 +11,7 @@
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
 ObjClass *newClass(VM *vm, const char *name);
 ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor);
-ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, bool isStatic);
+ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic);
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 ObjFunction *newFunction();
 Obj *newInstance(VM *vm, ObjClass *klass);

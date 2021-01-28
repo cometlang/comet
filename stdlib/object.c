@@ -62,8 +62,8 @@ VALUE obj_nil_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE
 
 void init_object(VM *vm, VALUE klass)
 {
-    defineNativeMethod(vm, klass, &obj_hash, "hash", false);
-    defineNativeMethod(vm, klass, &obj_to_string, "to_string", false);
-    defineNativeMethod(vm, klass, &obj_nil_q, "nil?", false);
-    defineNativeOperator(vm, klass, &obj_equals, OPERATOR_EQUALS);
+    defineNativeMethod(vm, klass, &obj_hash, "hash", 0, false);
+    defineNativeMethod(vm, klass, &obj_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
+    defineNativeOperator(vm, klass, &obj_equals, 1, OPERATOR_EQUALS);
 }

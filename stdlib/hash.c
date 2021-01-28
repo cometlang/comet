@@ -258,12 +258,12 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 void init_hash(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL);
-    defineNativeMethod(vm, klass, &hash_add, "add", false);
-    defineNativeMethod(vm, klass, &hash_remove, "remove", false);
-    defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", false);
-    defineNativeMethod(vm, klass, &hash_iterable_empty_q, "empty?", false);
-    defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", false);
-    defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", false);
-    defineNativeOperator(vm, klass, &hash_get, OPERATOR_INDEX);
-    defineNativeOperator(vm, klass, &hash_add, OPERATOR_INDEX_ASSIGN);
+    defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
+    defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
+    defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);
+    defineNativeMethod(vm, klass, &hash_iterable_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", 0, false);
+    defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", 0, false);
+    defineNativeOperator(vm, klass, &hash_get, 1, OPERATOR_INDEX);
+    defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 }

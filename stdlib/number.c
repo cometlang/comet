@@ -99,11 +99,11 @@ void bootstrap_number(VM *vm)
 void complete_number(VM *vm)
 {
     completeNativeClassDefinition(vm, number_class, NULL);
-    defineNativeMethod(vm, number_class, &number_to_string, "to_string", false);
-    defineNativeMethod(vm, number_class, &number_parse, "parse", true);
-    defineNativeOperator(vm, number_class, &number_operator_plus, OPERATOR_PLUS);
-    defineNativeOperator(vm, number_class, &number_operator_minus, OPERATOR_MINUS);
-    defineNativeOperator(vm, number_class, &number_operator_divide, OPERATOR_DIVISION);
-    defineNativeOperator(vm, number_class, &number_operator_multiply, OPERATOR_MULTIPLICATION);
-    defineNativeOperator(vm, number_class, &number_operator_modulo, OPERATOR_MODULO);
+    defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
+    defineNativeOperator(vm, number_class, &number_operator_plus, 1, OPERATOR_PLUS);
+    defineNativeOperator(vm, number_class, &number_operator_minus, 1, OPERATOR_MINUS);
+    defineNativeOperator(vm, number_class, &number_operator_divide, 1, OPERATOR_DIVISION);
+    defineNativeOperator(vm, number_class, &number_operator_multiply, 1, OPERATOR_MULTIPLICATION);
+    defineNativeOperator(vm, number_class, &number_operator_modulo, 1, OPERATOR_MODULO);
 }

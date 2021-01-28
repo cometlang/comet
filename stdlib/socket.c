@@ -29,5 +29,5 @@ VALUE socket_read(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
 void init_socket(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Socket", NULL, NULL, NULL);
-    defineNativeMethod(vm, klass, &socket_init, "init", false);
+    defineNativeMethod(vm, klass, &socket_init, "init", 0, false);
 }

@@ -141,12 +141,13 @@ ObjNative *newNativeFunction(VM *vm, NativeFn function)
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic)
+ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic, Value name)
 {
     ObjNativeMethod *method = ALLOCATE_OBJ(vm, ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->function = function;
     method->arity = arity;
     method->isStatic = isStatic;
+    method->name = name;
     return method;
 }
 
@@ -219,7 +220,7 @@ void printObject(Value value)
         printf("%s Class", AS_CLASS(value)->name);
         break;
     case OBJ_NATIVE_METHOD:
-        printf("<native method>");
+        printf("<fn %s>", string_get_cstr(AS_NATIVE_METHOD(value)->name));
         break;
     case OBJ_BOUND_METHOD:
         printFunction(AS_BOUND_METHOD(value)->method->function);

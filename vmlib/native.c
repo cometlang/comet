@@ -67,7 +67,7 @@ void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *
     Value name_string = copyString(vm, name, strlen(name));
     push(vm, name_string);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, isStatic)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, isStatic, name_string)));
     defineMethod(vm, name_string, isStatic);
     pop(vm);
     pop(vm);
@@ -75,9 +75,13 @@ void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *
 
 void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, uint8_t arity, OPERATOR operator)
 {
+    const char *op_method_chars = getOperatorString(operator);
+    Value op_method_name = copyString(vm, op_method_chars, strlen(op_method_chars));
+    push(vm, op_method_name);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, false)));
+    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, false, op_method_name)));
     defineOperator(vm, operator);
+    pop(vm);
     pop(vm);
 }
 

@@ -14,3 +14,9 @@ print("this is" + " a string")
 print("   'left trimmed'".left_trim())
 print("'right trimmed'   ".right_trim())
 print("   'trimmed'   ".trim())
+
+print("this is a string...".ends_with?('ing...'))
+print("this is a string...".ends_with?('not this'))
+
+print("this is a string...".starts_with?('this'))
+print("this is a string...".starts_with?('not this'))

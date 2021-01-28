@@ -148,21 +148,18 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
         printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
     }
     char output[data->length + 1];
-    bool found_non_whitespace = false;
-    int output_offset = 0;
 
-    for (int i = intermediate_length; i >= 0; i--)
+    int i = intermediate_length - 1;
+    for (; i >= 0; i--)
     {
-        if (!found_non_whitespace)
-        {
-            const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
-            if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
-                found_non_whitespace = true;
-        }
-        if (found_non_whitespace)
-        {
-            output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *) &output[output_offset]);
-        }
+        const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
+        if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
+            break;
+    }
+    int output_offset = 0;
+    for (int j = 0; j <= i; j++)
+    {
+        output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *) &output[output_offset]);
     }
     return copyString(vm, (const char *)output, output_offset);
 }
@@ -182,14 +179,38 @@ VALUE string_replace(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), 
     return NIL_VAL;
 }
 
-VALUE string_starts_with_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_starts_with_q(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
-    return NIL_VAL;
+    if (arg_count == 1)
+    {
+        StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+        StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+        if (rhs->length > lhs->length)
+            return FALSE_VAL;
+
+        if (memcmp(lhs->chars, rhs->chars, rhs->length) == 0)
+        {
+            return TRUE_VAL;
+        }
+    }
+    return FALSE_VAL;
 }
 
-VALUE string_ends_with_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_ends_with_q(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
-    return NIL_VAL;
+    if (arg_count == 1)
+    {
+        StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+        StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+        if (rhs->length > lhs->length)
+            return FALSE_VAL;
+
+        if (memcmp(&lhs->chars[lhs->length - rhs->length], rhs->chars, rhs->length) == 0)
+        {
+            return TRUE_VAL;
+        }
+    }
+    return FALSE_VAL;
 }
 
 static utf8proc_int32_t to_lower_func(utf8proc_int32_t c, void UNUSED(*data))

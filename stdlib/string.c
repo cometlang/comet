@@ -8,12 +8,20 @@
 
 #include "utf8proc.h"
 
-typedef struct StringData
+typedef struct
 {
     size_t length;
     char *chars;
     uint32_t hash;
 } StringData;
+
+typedef struct
+{
+    StringData *string;
+    utf8proc_int32_t current_codepoint;
+    utf8proc_ssize_t remaining;
+    size_t offset;
+} StringIterator;
 
 uint32_t string_hash_cstr(const char *string, int length)
 {
@@ -174,9 +182,11 @@ VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-VALUE string_split(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    VALUE list = create_list(vm);
+    StringData UNUSED(*data) = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    return list;
 }
 
 VALUE string_replace(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

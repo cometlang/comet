@@ -21,6 +21,7 @@ typedef struct {
     int index;
 } ListIteratorData;
 
+static VALUE list_class;
 static VALUE list_iterator_class;
 
 static void *list_iterator_constructor(void)
@@ -172,22 +173,27 @@ VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
+VALUE create_list(VM *vm)
+{
+    return OBJ_VAL(newInstance(vm, AS_CLASS(list_class)));
+}
+
 void init_list(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable");
-    defineNativeMethod(vm, klass, &list_init, "init", 1, false);
-    defineNativeMethod(vm, klass, &list_add, "add", 1, false);
-    defineNativeMethod(vm, klass, &list_add, "push", 1, false);
-    defineNativeMethod(vm, klass, &list_pop, "pop", 0, false);
-    defineNativeMethod(vm, klass, &list_iterable_contains_q, "contains?", 1, false);
-    defineNativeMethod(vm, klass, &list_iterable_empty_q, "empty?", 0, false);
-    defineNativeMethod(vm, klass, &list_iterable_iterator, "iterator", 0, false);
-    defineNativeMethod(vm, klass, &list_get_at, "get_at", 1, false);
-    defineNativeMethod(vm, klass, &list_obj_to_string, "to_string", 0, false);
-    defineNativeMethod(vm, klass, &list_length, "size", 0, false);
-    defineNativeMethod(vm, klass, &list_length, "length", 0, false);
-    defineNativeOperator(vm, klass, &list_get_at, 1, OPERATOR_INDEX);
-    defineNativeOperator(vm, klass, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
+    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable");
+    defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
+    defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
+    defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
+    defineNativeMethod(vm, list_class, &list_pop, "pop", 0, false);
+    defineNativeMethod(vm, list_class, &list_iterable_contains_q, "contains?", 1, false);
+    defineNativeMethod(vm, list_class, &list_iterable_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, list_class, &list_iterable_iterator, "iterator", 0, false);
+    defineNativeMethod(vm, list_class, &list_get_at, "get_at", 1, false);
+    defineNativeMethod(vm, list_class, &list_obj_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, list_class, &list_length, "size", 0, false);
+    defineNativeMethod(vm, list_class, &list_length, "length", 0, false);
+    defineNativeOperator(vm, list_class, &list_get_at, 1, OPERATOR_INDEX);
+    defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
 
     list_iterator_class = defineNativeClass(
         vm, "ListIterator", &list_iterator_constructor, &list_iterator_destructor, "Iterator");

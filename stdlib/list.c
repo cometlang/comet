@@ -3,6 +3,7 @@
 #include "comet_stdlib.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct list_node
 {
@@ -80,7 +81,7 @@ VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
             }
             data->capacity = new_capacity;
         }
-        data->entries[data->count].item = arguments[i];
+        data->entries[data->count++].item = arguments[i];
     }
     return NIL_VAL;
 }

@@ -20,3 +20,5 @@ print("this is a string...".ends_with?('not this'))
 
 print("this is a string...".starts_with?('this'))
 print("this is a string...".starts_with?('not this'))
+
+print("this;is;a;string;that;should;be;split".split(';'))

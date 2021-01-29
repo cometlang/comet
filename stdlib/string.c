@@ -167,7 +167,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     return copyString(vm, (const char *)output, output_offset);
 }
 
-VALUE string_trim(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_trim(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     if (arg_count == 0)
     {
@@ -182,10 +182,25 @@ VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     VALUE list = create_list(vm);
-    StringData UNUSED(*data) = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    StringData *separator = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+    const char *previous = data->chars;
+    const char *string = strstr(data->chars, separator->chars);
+    int offset = 0;
+    while (string != NULL)
+    {
+        int length = string - previous;
+        VALUE part = copyString(vm, previous, length);
+        list_add(vm, list, 1, &part);
+        offset += length + separator->length;
+        previous = string + separator->length;
+        string = strstr(&data->chars[offset], separator->chars);
+    }
+    VALUE part = copyString(vm, previous, data->length - offset);
+    list_add(vm, list, 1, &part);
     return list;
 }
 

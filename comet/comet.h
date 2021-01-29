@@ -27,5 +27,6 @@ VALUE create_number(VM *vm, double number);
 double number_get_value(VALUE self);
 
 VALUE create_list(VM *vm);
+VALUE list_add(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
 #endif

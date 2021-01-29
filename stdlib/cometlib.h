@@ -15,6 +15,7 @@ void init_nil(VM *vm);
 void init_boolean(VM *vm);
 void init_socket(VM *vm);
 void init_thread(VM *vm);
+void init_enum(VM *vm);
 void bootstrap_number(VM *vm);
 void complete_number(VM *vm);
 

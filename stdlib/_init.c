@@ -9,6 +9,7 @@ void init_stdlib(VM *vm)
     complete_number(vm);
     init_iterable(vm);
     init_nil(vm);
+    init_enum(vm);
     init_boolean(vm);
     init_exception(vm);
     init_file(vm);

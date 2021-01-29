@@ -12,6 +12,7 @@ set(SOURCE
   _init.c
   boolean.c
   # datetime.c
+  enum.c
   exception.c
   file.c
   functions.c

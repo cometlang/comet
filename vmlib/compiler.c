@@ -26,6 +26,7 @@ typedef struct
     bool hadError;
     bool panicMode;
     const char *filename;
+    Scanner *scanner;
 } Parser;
 
 typedef enum
@@ -147,7 +148,7 @@ static void advance()
 
     for (;;)
     {
-        parser.current = scanToken();
+        parser.current = scanToken(parser.scanner);
         if (parser.current.type != TOKEN_ERROR)
             break;
 
@@ -1477,12 +1478,14 @@ static void statement()
 
 ObjFunction *compile(const SourceFile *source, VM *thread)
 {
-    initScanner(source);
+    Scanner scanner;
+    initScanner(&scanner, source);
     main_thread = thread;
 
     parser.filename = source->path;
     parser.hadError = false;
     parser.panicMode = false;
+    parser.scanner = &scanner;
 
     Compiler compiler;
     initCompiler(&compiler, TYPE_SCRIPT);

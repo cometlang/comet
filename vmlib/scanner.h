@@ -45,7 +45,14 @@ typedef struct {
     int line;
 } Token;
 
-void initScanner(const SourceFile *source);
-Token scanToken();
+typedef struct
+{
+    const char *start;
+    const char *current;
+    int line;
+} Scanner;
+
+void initScanner(Scanner *scanner, const SourceFile *source);
+Token scanToken(Scanner *scanner);
 
 #endif

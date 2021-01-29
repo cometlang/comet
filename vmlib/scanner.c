@@ -4,20 +4,11 @@
 #include "common.h"
 #include "scanner.h"
 
-typedef struct
+void initScanner(Scanner *scanner, const SourceFile *source)
 {
-    const char *start;
-    const char *current;
-    int line;
-} Scanner;
-
-static Scanner scanner;
-
-void initScanner(const SourceFile *source)
-{
-    scanner.start = source->source;
-    scanner.current = source->source;
-    scanner.line = 1;
+    scanner->start = source->source;
+    scanner->current = source->source;
+    scanner->line = 1;
 }
 
 static bool isAlpha(char c)
@@ -33,84 +24,84 @@ static bool isDigit(char c)
     return c >= '0' && c <= '9';
 }
 
-static bool isAtEnd()
+static bool isAtEnd(Scanner *scanner)
 {
-    return *scanner.current == '\0';
+    return *scanner->current == '\0';
 }
 
-static char advance(void)
+static char advance(Scanner *scanner)
 {
-    scanner.current++;
-    return scanner.current[-1];
+    scanner->current++;
+    return scanner->current[-1];
 }
 
-static char peek(void)
+static char peek(Scanner *scanner)
 {
-    return *scanner.current;
+    return *scanner->current;
 }
 
-static char peekNext()
+static char peekNext(Scanner *scanner)
 {
-    if (isAtEnd())
+    if (isAtEnd(scanner))
         return '\0';
-    return scanner.current[1];
+    return scanner->current[1];
 }
 
-static bool match(char expected)
+static bool match(Scanner *scanner, char expected)
 {
-    if (isAtEnd())
+    if (isAtEnd(scanner))
         return false;
-    if (*scanner.current != expected)
+    if (*scanner->current != expected)
         return false;
 
-    scanner.current++;
+    scanner->current++;
     return true;
 }
 
-static Token makeToken(TokenType type)
+static Token makeToken(Scanner *scanner, TokenType type)
 {
     Token token;
     token.type = type;
-    token.start = scanner.start;
-    token.length = (int)(scanner.current - scanner.start);
-    token.line = scanner.line;
+    token.start = scanner->start;
+    token.length = (int)(scanner->current - scanner->start);
+    token.line = scanner->line;
 
     return token;
 }
 
-static Token errorToken(const char *message)
+static Token errorToken(Scanner *scanner, const char *message)
 {
     Token token;
     token.type = TOKEN_ERROR;
     token.start = message;
     token.length = (int)strlen(message);
-    token.line = scanner.line;
+    token.line = scanner->line;
 
     return token;
 }
 
-static void skipWhitespace()
+static void skipWhitespace(Scanner *scanner)
 {
     for (;;)
     {
-        char c = peek();
+        char c = peek(scanner);
         switch (c)
         {
         case ' ':
         case '\r':
         case '\t':
-            advance();
+            advance(scanner);
             break;
 
         case '\n':
-            scanner.line++;
+            scanner->line++;
             // Don't advance(), so we can detect line-ends for tokens
             return;
 
         case '#':
             // A comment goes until the end of the line.
-            while (peek() != '\n' && !isAtEnd())
-                advance();
+            while (peek(scanner) != '\n' && !isAtEnd(scanner))
+                advance(scanner);
             break;
 
         default:
@@ -119,11 +110,11 @@ static void skipWhitespace()
     }
 }
 
-static TokenType checkKeyword(int start, int length,
+static TokenType checkKeyword(Scanner *scanner, int start, int length,
                               const char *rest, TokenType type)
 {
-    if (scanner.current - scanner.start == start + length &&
-        memcmp(scanner.start + start, rest, length) == 0)
+    if (scanner->current - scanner->start == start + length &&
+        memcmp(scanner->start + start, rest, length) == 0)
     {
         return type;
     }
@@ -131,255 +122,255 @@ static TokenType checkKeyword(int start, int length,
     return TOKEN_IDENTIFIER;
 }
 
-static TokenType identifierType()
+static TokenType identifierType(Scanner *scanner)
 {
-    switch (scanner.start[0])
+    switch (scanner->start[0])
     {
     case 'a':
-        return checkKeyword(1, 1, "s", TOKEN_AS);
+        return checkKeyword(scanner, 1, 1, "s", TOKEN_AS);
     case 'c':
-        if (scanner.current - scanner.start > 1)
+        if (scanner->current - scanner->start > 1)
         {
-            switch (scanner.start[1])
+            switch (scanner->start[1])
             {
             case 'a':
-                return checkKeyword(2, 3, "tch", TOKEN_CATCH);
+                return checkKeyword(scanner, 2, 3, "tch", TOKEN_CATCH);
             case 'l':
-                return checkKeyword(2, 3, "ass", TOKEN_CLASS);
+                return checkKeyword(scanner, 2, 3, "ass", TOKEN_CLASS);
             }
         }
         break;
     case 'e':
-        if (scanner.current - scanner.start > 1)
+        if (scanner->current - scanner->start > 1)
         {
-            switch (scanner.start[1])
+            switch (scanner->start[1])
             {
                 case 'l':
-                    return checkKeyword(2, 2, "se", TOKEN_ELSE);
+                    return checkKeyword(scanner, 2, 2, "se", TOKEN_ELSE);
                 case 'n':
-                    return checkKeyword(2, 2, "um", TOKEN_ENUM);
+                    return checkKeyword(scanner, 2, 2, "um", TOKEN_ENUM);
             }
         }
         break;
     case 'f':
-        if (scanner.current - scanner.start > 1)
+        if (scanner->current - scanner->start > 1)
         {
-            switch (scanner.start[1])
+            switch (scanner->start[1])
             {
             case 'a':
-                return checkKeyword(2, 3, "lse", TOKEN_FALSE);
+                return checkKeyword(scanner, 2, 3, "lse", TOKEN_FALSE);
             case 'i':
-                return checkKeyword(2, 5, "nally", TOKEN_FINALLY);
+                return checkKeyword(scanner, 2, 5, "nally", TOKEN_FINALLY);
             case 'o':
-                return checkKeyword(2, 1, "r", TOKEN_FOR);
+                return checkKeyword(scanner, 2, 1, "r", TOKEN_FOR);
             case 'u':
-                return checkKeyword(2, 6, "nction", TOKEN_FUN);
+                return checkKeyword(scanner, 2, 6, "nction", TOKEN_FUN);
             }
         }
         break;
     case 'i':
-        if (scanner.current - scanner.start > 1)
+        if (scanner->current - scanner->start > 1)
         {
-            switch (scanner.start[1])
+            switch (scanner->start[1])
             {
                 case 'f':
-                    return checkKeyword(1, 1, "f", TOKEN_IF);
+                    return checkKeyword(scanner, 1, 1, "f", TOKEN_IF);
                 case 'm':
-                    return checkKeyword(1, 4, "port", TOKEN_IMPORT);
+                    return checkKeyword(scanner, 1, 4, "port", TOKEN_IMPORT);
                 case 'n':
                 {
-                    if (scanner.current - scanner.start > 2)
+                    if (scanner->current - scanner->start > 2)
                     {
-                        return checkKeyword(2, 8, "stanceof", TOKEN_INSTANCEOF);
+                        return checkKeyword(scanner, 2, 8, "stanceof", TOKEN_INSTANCEOF);
                     }
-                    return checkKeyword(1, 1, "n", TOKEN_IN);
+                    return checkKeyword(scanner, 1, 1, "n", TOKEN_IN);
                 }
             }
         }
         break;
     case 'n':
-        return checkKeyword(1, 2, "il", TOKEN_NIL);
+        return checkKeyword(scanner, 1, 2, "il", TOKEN_NIL);
     case 'o':
-        return checkKeyword(1, 7, "perator", TOKEN_OPERATOR);
+        return checkKeyword(scanner, 1, 7, "perator", TOKEN_OPERATOR);
     case 'p':
-        if (scanner.current - scanner.start > 4)
+        if (scanner->current - scanner->start > 4)
         {
-            if (scanner.start[1] == 'r')
+            if (scanner->start[1] == 'r')
             {
-                switch (scanner.start[2])
+                switch (scanner->start[2])
                 {
                     case 'i':
                     {
-                        switch (scanner.start[3])
+                        switch (scanner->start[3])
                         {
                             case 'v':
-                                return checkKeyword(4, 3, "ate", TOKEN_PRIVATE);
+                                return checkKeyword(scanner, 4, 3, "ate", TOKEN_PRIVATE);
                         }
                         break;
                     }
                     case 'o':
-                        return checkKeyword(3, 6, "tected", TOKEN_PROTECTED);
+                        return checkKeyword(scanner, 3, 6, "tected", TOKEN_PROTECTED);
                     case 'u':
-                       return checkKeyword(3, 4, "blic", TOKEN_PUBLIC);
+                       return checkKeyword(scanner, 3, 4, "blic", TOKEN_PUBLIC);
                 }
             }
         }
         break;
     case 'r':
-        return checkKeyword(1, 5, "eturn", TOKEN_RETURN);
+        return checkKeyword(scanner, 1, 5, "eturn", TOKEN_RETURN);
     case 's':
-        if (scanner.current - scanner.start > 1)
+        if (scanner->current - scanner->start > 1)
         {
-            switch (scanner.start[1])
+            switch (scanner->start[1])
             {
                 case 'e':
-                    return checkKeyword(2, 2, "lf", TOKEN_SELF);
+                    return checkKeyword(scanner, 2, 2, "lf", TOKEN_SELF);
                 case 'u':
-                    return checkKeyword(2, 3, "per", TOKEN_SUPER);
+                    return checkKeyword(scanner, 2, 3, "per", TOKEN_SUPER);
                 case 't':
-                    return checkKeyword(2, 4, "atic", TOKEN_STATIC);
+                    return checkKeyword(scanner, 2, 4, "atic", TOKEN_STATIC);
             }
         }
         break;
     case 't':
-        if (scanner.current - scanner.start > 2 && scanner.start[1] == 'r')
+        if (scanner->current - scanner->start > 2 && scanner->start[1] == 'r')
         {
-            switch (scanner.start[2])
+            switch (scanner->start[2])
             {
                 case 'u':
-                    return checkKeyword(2, 2, "ue", TOKEN_TRUE);
+                    return checkKeyword(scanner, 2, 2, "ue", TOKEN_TRUE);
                 case 'y':
-                    return checkKeyword(2, 1, "y", TOKEN_TRY);
+                    return checkKeyword(scanner, 2, 1, "y", TOKEN_TRY);
             }
         }
-        else if (scanner.current - scanner.start > 1)
+        else if (scanner->current - scanner->start > 1)
         {
-            return checkKeyword(1, 4, "hrow", TOKEN_THROW);
+            return checkKeyword(scanner, 1, 4, "hrow", TOKEN_THROW);
         }
         break;
     case 'v':
-        return checkKeyword(1, 2, "ar", TOKEN_VAR);
+        return checkKeyword(scanner, 1, 2, "ar", TOKEN_VAR);
     case 'w':
-        return checkKeyword(1, 4, "hile", TOKEN_WHILE);
+        return checkKeyword(scanner, 1, 4, "hile", TOKEN_WHILE);
     }
     return TOKEN_IDENTIFIER;
 }
 
-static Token identifier()
+static Token identifier(Scanner *scanner)
 {
-    while (isAlpha(peek()) || isDigit(peek()))
-        advance();
+    while (isAlpha(peek(scanner)) || isDigit(peek(scanner)))
+        advance(scanner);
 
-    if (peek() == '!' || peek() == '?')
-        advance();
+    if (peek(scanner) == '!' || peek(scanner) == '?')
+        advance(scanner);
 
-    return makeToken(identifierType());
+    return makeToken(scanner, identifierType(scanner));
 }
 
-static Token number()
+static Token number(Scanner *scanner)
 {
-    while (isDigit(peek()))
-        advance();
+    while (isDigit(peek(scanner)))
+        advance(scanner);
 
     // Look for a fractional part.
-    if (peek() == '.' && isDigit(peekNext()))
+    if (peek(scanner) == '.' && isDigit(peekNext(scanner)))
     {
         // Consume the ".".
-        advance();
+        advance(scanner);
 
-        while (isDigit(peek()))
-            advance();
+        while (isDigit(peek(scanner)))
+            advance(scanner);
     }
 
-    return makeToken(TOKEN_NUMBER);
+    return makeToken(scanner, TOKEN_NUMBER);
 }
 
-static Token string(char terminator)
+static Token string(Scanner *scanner, char terminator)
 {
-    while (peek() != terminator && !isAtEnd())
+    while (peek(scanner) != terminator && !isAtEnd(scanner))
     {
-        if (peek() == '\n')
-            scanner.line++;
-        if (peek() == '\\' && peekNext() == terminator)
-            advance(); // extra advance
-        advance();
+        if (peek(scanner) == '\n')
+            scanner->line++;
+        if (peek(scanner) == '\\' && peekNext(scanner) == terminator)
+            advance(scanner); // extra advance
+        advance(scanner);
     }
 
-    if (isAtEnd())
-        return errorToken("Unterminated string.");
+    if (isAtEnd(scanner))
+        return errorToken(scanner, "Unterminated string.");
 
     // The terminator.
-    advance();
-    return makeToken(TOKEN_STRING);
+    advance(scanner);
+    return makeToken(scanner, TOKEN_STRING);
 }
 
-Token scanToken()
+Token scanToken(Scanner *scanner)
 {
-    skipWhitespace();
+    skipWhitespace(scanner);
 
-    scanner.start = scanner.current;
+    scanner->start = scanner->current;
 
-    if (isAtEnd())
-        return makeToken(TOKEN_EOF);
+    if (isAtEnd(scanner))
+        return makeToken(scanner, TOKEN_EOF);
 
-    char c = advance();
+    char c = advance(scanner);
     if (isAlpha(c))
-        return identifier();
+        return identifier(scanner);
     if (isDigit(c))
-        return number();
+        return number(scanner);
 
     switch (c)
     {
     case '(':
-        return makeToken(TOKEN_LEFT_PAREN);
+        return makeToken(scanner, TOKEN_LEFT_PAREN);
     case ')':
-        return makeToken(TOKEN_RIGHT_PAREN);
+        return makeToken(scanner, TOKEN_RIGHT_PAREN);
     case '{':
-        return makeToken(TOKEN_LEFT_BRACE);
+        return makeToken(scanner, TOKEN_LEFT_BRACE);
     case '}':
-        return makeToken(TOKEN_RIGHT_BRACE);
+        return makeToken(scanner, TOKEN_RIGHT_BRACE);
     case '[':
-        return makeToken(TOKEN_LEFT_SQ_BRACKET);
+        return makeToken(scanner, TOKEN_LEFT_SQ_BRACKET);
     case ']':
-        return makeToken(TOKEN_RIGHT_SQ_BRACKET);
+        return makeToken(scanner, TOKEN_RIGHT_SQ_BRACKET);
     case '\n':
-        return makeToken(TOKEN_EOL);
+        return makeToken(scanner, TOKEN_EOL);
     case ';':
-        return makeToken(TOKEN_SEMI_COLON);
+        return makeToken(scanner, TOKEN_SEMI_COLON);
     case ',':
-        return makeToken(TOKEN_COMMA);
+        return makeToken(scanner, TOKEN_COMMA);
     case '.':
-        return makeToken(TOKEN_DOT);
+        return makeToken(scanner, TOKEN_DOT);
     case '-':
-        return makeToken(TOKEN_MINUS);
+        return makeToken(scanner, TOKEN_MINUS);
     case '+':
-        return makeToken(TOKEN_PLUS);
+        return makeToken(scanner, TOKEN_PLUS);
     case '/':
-        return makeToken(TOKEN_SLASH);
+        return makeToken(scanner, TOKEN_SLASH);
     case '*':
-        return makeToken(TOKEN_STAR);
+        return makeToken(scanner, TOKEN_STAR);
     case ':':
-        return makeToken(TOKEN_COLON);
+        return makeToken(scanner, TOKEN_COLON);
     case '%':
-        return makeToken(TOKEN_PERCENT);
+        return makeToken(scanner, TOKEN_PERCENT);
     case '|':
-        return makeToken(match('|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
+        return makeToken(scanner, match(scanner, '|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
     case '&':
-        if (match('&'))
-            return makeToken(TOKEN_LOGICAL_AND);
+        if (match(scanner, '&'))
+            return makeToken(scanner, TOKEN_LOGICAL_AND);
         break;
     case '!':
-        return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
+        return makeToken(scanner, match(scanner, '=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=':
-        return makeToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
+        return makeToken(scanner, match(scanner, '=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
     case '<':
-        return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+        return makeToken(scanner, match(scanner, '=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
     case '>':
-        return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+        return makeToken(scanner, match(scanner, '=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"':
     case '\'':
-        return string(c);
+        return string(scanner, c);
     }
 
-    return errorToken("Unexpected character.");
+    return errorToken(scanner, "Unexpected character.");
 }

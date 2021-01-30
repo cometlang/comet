@@ -12,5 +12,6 @@ inherits [Object](object.md)
 - `+` performs the mathmatical addition operation
 - `*` performs the mathmatical multiplication operation
 - `/` performs the mathmatical division operation (floating point)
+- `%` performs the mathmatical remainder operation (casts both operands to uint64_t)
 
-Whoops - don't have `%`, bitwise or comparison operators...
+Whoops - don't have bitwise or comparison operators...

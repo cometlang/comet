@@ -4,27 +4,21 @@
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
-typedef union {
-  uint64_t bits64;
-  uint32_t bits32[2];
-  double num;
-} NumberData;
-
 static VALUE number_class;
 
 void *number_constructor()
 {
-    NumberData *data = (NumberData *) malloc(sizeof(NumberData));
-    data->bits64 = 0;
+    NumberData *data = (NumberData *) ALLOCATE(NumberData, 1);
+    data->num = 0;
     return data;
 }
 
 void number_destructor(void *data)
 {
-    free(data);
+    FREE(NumberData, data);
 }
 
-VALUE number_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
 #define TEMP_STRING_MAX_LEN 64

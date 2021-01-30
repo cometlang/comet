@@ -426,17 +426,19 @@ static int resolveUpvalue(Compiler *compiler, Token *name)
     return UNRESOLVED_VARIABLE_INDEX;
 }
 
-static void addLocal(Token name)
+static uint8_t addLocal(Token name)
 {
     if (current->localCount == MAX_VAR_COUNT)
     {
         error("Too many local variables in function.");
-        return;
+        return UINT8_MAX;
     }
     Local *local = &current->locals[current->localCount++];
     local->name = name;
     local->depth = UNINITIALIZED_LOCAL_SCOPE;
     local->isCaptured = false;
+
+    return current->localCount - 1;
 }
 
 static void declareVariable()
@@ -1347,18 +1349,15 @@ static void tryStatement()
         consume(TOKEN_IDENTIFIER, "Expect type name to catch");
         uint8_t name = identifierConstant(&parser.previous);
         currentChunk()->code[exceptionType] = name;
-        bool handler_patched = false;
+        patchAddress(handlerAddress);
         if (match(TOKEN_AS))
         {
-            patchAddress(handlerAddress);
-            handler_patched = true;
-            uint8_t exception_var = parseVariable("Expect variable name.");
-            emitByte(OP_DUP_TOP);
-            defineVariable(exception_var);
+            consume(TOKEN_IDENTIFIER, "Expect identifier for exception instance");
+            uint8_t ex_var = addLocal(parser.previous);
+            markInitialized();
+            emitBytes(OP_SET_LOCAL, ex_var);
         }
-        consume(TOKEN_RIGHT_PAREN, "Expect ')' after catch details");
-        if (!handler_patched)
-            patchAddress(handlerAddress);
+        consume(TOKEN_RIGHT_PAREN, "Expect ')' after catch statement");
         emitByte(OP_POP_EXCEPTION_HANDLER);
         statement();
         match(TOKEN_EOL);

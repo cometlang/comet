@@ -5,7 +5,6 @@ VALUE enum_class;
 VALUE enum_value_class;
 
 typedef struct {
-    uint64_t current_value;
     int count;
     int capacity;
     VALUE *entries;
@@ -19,7 +18,6 @@ typedef struct {
 static void *enum_constructor(void)
 {
     EnumData *data = ALLOCATE(EnumData, 1);
-    data->current_value = 0;
     data->count = 0;
     data->capacity = 0;
     data->entries = NULL;
@@ -44,6 +42,7 @@ static VALUE enum_parse(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
 
 static VALUE enum_add(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    setNativeProperty(vm, self, string_get_cstr(arguments[0]), arguments[1]);
     return NIL_VAL;
 }
 
@@ -90,7 +89,7 @@ void init_enum(VM *vm)
 {
     enum_class = defineNativeClass(vm, "Enum", &enum_constructor, &enum_destructor, "Iterable");
     defineNativeMethod(vm, enum_class, &enum_parse, "parse", 1, true);
-    defineNativeMethod(vm, enum_class, &enum_add, "add", 1, false);
+    defineNativeMethod(vm, enum_class, &enum_add, "add", 2, false);
     defineNativeMethod(vm, enum_class, &enum_iterator, "iterator", 0, false);
     defineNativeMethod(vm, enum_class, &enum_contains_q, "contains?", 1, false);
     defineNativeMethod(vm, enum_class, &enum_empty_q, "empty?", 0, false);

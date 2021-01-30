@@ -1,0 +1,14 @@
+enum MY_ENUM {
+    zero,
+    one,
+    two = 2,
+    four = 4,
+    five,
+}
+
+print(MY_ENUM.zero)
+print(MY_ENUM.one)
+print(MY_ENUM.two)
+print("Three is deliberately missing")
+print(MY_ENUM.four)
+print(MY_ENUM.five)

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1134,20 +1135,51 @@ static void funDeclaration()
 
 static void enumDeclaration()
 {
-    consume(TOKEN_IDENTIFIER, "Expect enum name.");
-    uint8_t enumName = identifierConstant(&parser.previous);
-    declareVariable();
-
-    emitBytes(OP_ENUM, enumName);
+    uint8_t enumName = parseVariable("Expect enum name");
+    markInitialized();
+    namedVariable(syntheticToken("Enum"), false);
+    emitBytes(OP_CALL, 0);
+    emitByte(OP_DUP_TOP); // Duplicate the enum instance, so the pop leaves it for the return value of assignment
     defineVariable(enumName);
 
-    match(TOKEN_EOL); // optional end of line.
-    consume(TOKEN_LEFT_BRACE, "Expect '{' before enum body.");
+    consume(TOKEN_LEFT_BRACE, "Expect '{' after enum declaration");
+    int64_t current_value = -1;
     while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF))
     {
-        advance();
+        match(TOKEN_EOL); // optional end of line.
+        if (match(TOKEN_IDENTIFIER))
+        {
+            emitByte(OP_DUP_TOP);
+            emitBytes(OP_CONSTANT, identifierConstant(&parser.previous));
+
+            if (match(TOKEN_EQUAL))
+            {
+                current_value = strtol(parser.current.start, NULL, 10);
+                if (errno == ERANGE)
+                    error("Expect an integer for the enum value");
+                advance();
+            }
+            else
+            {
+                current_value++;
+            }
+            emitConstant(create_number(main_thread, current_value));
+
+            Token addToken = syntheticToken("add");
+            uint8_t name = identifierConstant(&addToken);
+            emitBytes(OP_INVOKE, name);
+            emitByte(2); // argCount
+            emitByte(OP_POP);
+
+            if (!match(TOKEN_COMMA) && !check(TOKEN_RIGHT_BRACE))
+            {
+                error("Expect ',' between enum values");
+                break;
+            }
+        }
     }
     consume(TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
+    emitByte(OP_POP);
 }
 
 static void varDeclaration()
@@ -1321,8 +1353,8 @@ static void tryStatement()
             patchAddress(handlerAddress);
             handler_patched = true;
             uint8_t exception_var = parseVariable("Expect variable name.");
+            emitByte(OP_DUP_TOP);
             defineVariable(exception_var);
-            emitBytes(OP_SET_LOCAL, exception_var);
         }
         consume(TOKEN_RIGHT_PAREN, "Expect ')' after catch details");
         if (!handler_patched)
@@ -1387,6 +1419,7 @@ static void synchronize()
         case TOKEN_STATIC:
         case TOKEN_TRY:
         case TOKEN_IMPORT:
+        case TOKEN_ENUM:
             return;
 
         default:

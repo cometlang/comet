@@ -5,9 +5,9 @@ void init_stdlib(VM *vm)
 {
     VALUE obj_klass = bootstrapNativeClass(vm, "Object", NULL, NULL);
     bootstrap_number(vm);
+    bootstrap_iterable(vm);
     init_string(vm, obj_klass);
     complete_number(vm);
-    init_iterable(vm);
     init_nil(vm);
     init_enum(vm);
     init_boolean(vm);

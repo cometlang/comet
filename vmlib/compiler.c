@@ -802,10 +802,13 @@ static void literal_list(Parser *parser, bool canAssign)
     emitBytes(parser, OP_CALL, 0); // Create a list using the default constructor
     emitByte(parser, OP_DUP_TOP); // Duplicate the list instance, so the pop leaves it for the return value of assignment
     uint8_t argCount = argumentList(parser, TOKEN_RIGHT_SQ_BRACKET);
-    Token addToken = syntheticToken("add");
-    uint8_t name = identifierConstant(parser, &addToken);
-    emitBytes(parser, OP_INVOKE, name);
-    emitByte(parser, argCount);
+    if (argCount > 0)
+    {
+        Token addToken = syntheticToken("add");
+        uint8_t name = identifierConstant(parser, &addToken);
+        emitBytes(parser, OP_INVOKE, name);
+        emitByte(parser, argCount);
+    }
     emitByte(parser, OP_POP);
 }
 

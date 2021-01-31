@@ -22,7 +22,7 @@ typedef struct
     StringData *string;
     utf8proc_int32_t current_codepoint;
     utf8proc_ssize_t remaining;
-    size_t offset;
+    utf8proc_ssize_t offset;
 } StringIterator;
 
 
@@ -41,14 +41,27 @@ void string_iterator_destructor(void *iter)
     FREE(StringIterator, iter);
 }
 
-static VALUE string_iterator_has_next_p(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE string_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    StringIterator *data = GET_NATIVE_INSTANCE_DATA(StringIterator, self);
+    if (data->remaining > 0)
+        return TRUE_VAL;
     return FALSE_VAL;
 }
 
 static VALUE string_iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    StringIterator *data = GET_NATIVE_INSTANCE_DATA(StringIterator, self);
+    utf8proc_ssize_t bytes_read = utf8proc_iterate(
+        (const utf8proc_uint8_t *)&data->string->chars[data->offset], data->remaining, &data->current_codepoint);
+    if (bytes_read == -1)
+        return NIL_VAL;
+    data->offset += bytes_read;
+    data->remaining -= bytes_read;
+
+    utf8proc_uint8_t character[4];
+    utf8proc_ssize_t char_len = utf8proc_encode_char(data->current_codepoint, character);
+    return copyString(vm, (const char *) character, (int)char_len);
 }
 
 
@@ -118,6 +131,7 @@ VALUE string_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*a
     VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(string_iterator_class)));
     StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, instance);
     iter->string = data;
+    iter->remaining = data->length;
     return instance;
 }
 
@@ -384,6 +398,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, klass, &string_to_upper, "to_upper", 0, false);
     defineNativeMethod(vm, klass, &string_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &string_length, "length", 0, false);
+    defineNativeMethod(vm, klass, &string_iterator, "iterator", 0, false);
     defineNativeOperator(vm, klass, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, klass, &string_equals, 1, OPERATOR_EQUALS);
 

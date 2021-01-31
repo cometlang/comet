@@ -22,3 +22,11 @@ print("this is a string...".starts_with?('this'))
 print("this is a string...".starts_with?('not this'))
 
 print("this;is;a;string;that;should;be;split".split(';'))
+
+print("Iteration start")
+var iter = utf8_string.iterator()
+while (iter.has_next?())
+{
+    print(iter.get_next())
+}
+print("Iteration complete")

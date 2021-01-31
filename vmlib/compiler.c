@@ -20,6 +20,14 @@
 
 static void block();
 
+typedef struct ClassCompiler
+{
+    struct ClassCompiler *enclosing;
+
+    Token name;
+    bool hasSuperclass;
+} ClassCompiler;
+
 typedef struct
 {
     Token current;
@@ -28,6 +36,7 @@ typedef struct
     bool panicMode;
     const char *filename;
     Scanner *scanner;
+    ClassCompiler *currentClass;
 } Parser;
 
 typedef enum
@@ -88,17 +97,7 @@ struct Compiler
     int scopeDepth;
 };
 
-typedef struct ClassCompiler
-{
-    struct ClassCompiler *enclosing;
-
-    Token name;
-    bool hasSuperclass;
-} ClassCompiler;
-
 static Compiler *current = NULL;
-
-ClassCompiler *currentClass = NULL;
 
 static VM *main_thread = NULL;
 
@@ -697,18 +696,18 @@ static Token syntheticToken(const char *text)
 
 static void pushSuperclass(Parser *parser)
 {
-    if (currentClass == NULL)
+    if (parser->currentClass == NULL)
         return;
     namedVariable(parser, syntheticToken("super"), false);
 }
 
 static void super_(Parser *parser, bool UNUSED(canAssign))
 {
-    if (currentClass == NULL)
+    if (parser->currentClass == NULL)
     {
         error(parser, "Cannot use 'super' outside of a class.");
     }
-    else if (!currentClass->hasSuperclass)
+    else if (!parser->currentClass->hasSuperclass)
     {
         error(parser, "Cannot use 'super' in a class with no superclass.");
     }
@@ -737,7 +736,7 @@ static void super_(Parser *parser, bool UNUSED(canAssign))
 
 static void self(Parser *parser, bool UNUSED(canAssign))
 {
-    if (currentClass == NULL)
+    if (parser->currentClass == NULL)
     {
         error(parser, "Cannot use 'self' outside of a class.");
     }
@@ -1066,8 +1065,8 @@ static void classDeclaration(Parser *parser)
     ClassCompiler classCompiler;
     classCompiler.name = parser->previous;
     classCompiler.hasSuperclass = false;
-    classCompiler.enclosing = currentClass;
-    currentClass = &classCompiler;
+    classCompiler.enclosing = parser->currentClass;
+    parser->currentClass = &classCompiler;
 
     if (match(parser, TOKEN_COLON))
     {
@@ -1122,7 +1121,7 @@ static void classDeclaration(Parser *parser)
         endScope(parser);
     }
 
-    currentClass = currentClass->enclosing;
+    parser->currentClass = parser->currentClass->enclosing;
 }
 
 static void funDeclaration(Parser *parser)
@@ -1512,6 +1511,7 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename)
     parser->hadError = false;
     parser->panicMode = false;
     parser->scanner = scanner;
+    parser->currentClass = NULL;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)

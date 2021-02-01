@@ -627,7 +627,16 @@ static void grouping(Parser *parser, bool UNUSED(canAssign))
 
 static void number(Parser *parser, bool UNUSED(canAssign))
 {
-    double value = strtod(parser->previous.start, NULL);
+    char number_chars[parser->previous.length + 1];
+    int offset = 0;
+    for (int i = 0; i < parser->previous.length; i++)
+    {
+        if (parser->previous.start[i] != '_')
+            number_chars[offset++] = parser->previous.start[i];
+    }
+    number_chars[offset] = '\0';
+
+    double value = strtod(number_chars, NULL);
     emitConstant(parser, create_number(main_thread, value));
 }
 

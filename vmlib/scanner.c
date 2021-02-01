@@ -269,7 +269,7 @@ static Token identifier(Scanner *scanner)
 
 static Token number(Scanner *scanner)
 {
-    while (isDigit(peek(scanner)))
+    while (isDigit(peek(scanner)) || peek(scanner) == '_')
         advance(scanner);
 
     // Look for a fractional part.
@@ -278,7 +278,7 @@ static Token number(Scanner *scanner)
         // Consume the ".".
         advance(scanner);
 
-        while (isDigit(peek(scanner)))
+        while (isDigit(peek(scanner)) || peek(scanner) == '_')
             advance(scanner);
     }
 

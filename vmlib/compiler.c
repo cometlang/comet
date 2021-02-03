@@ -423,19 +423,17 @@ static int resolveUpvalue(Compiler *compiler, Parser *parser, Token *name)
     return UNRESOLVED_VARIABLE_INDEX;
 }
 
-static uint8_t addLocal(Parser *parser, Token name)
+static void addLocal(Parser *parser, Token name)
 {
     if (current->localCount == MAX_VAR_COUNT)
     {
         error(parser, "Too many local variables in function.");
-        return UINT8_MAX;
+        return;
     }
     Local *local = &current->locals[current->localCount++];
     local->name = name;
     local->depth = UNINITIALIZED_LOCAL_SCOPE;
     local->isCaptured = false;
-
-    return current->localCount - 1;
 }
 
 static void declareVariable(Parser *parser)
@@ -1362,8 +1360,9 @@ static void tryStatement(Parser *parser)
         if (match(parser, TOKEN_AS))
         {
             consume(parser, TOKEN_IDENTIFIER, "Expect identifier for exception instance");
-            uint8_t ex_var = addLocal(parser, parser->previous);
+            addLocal(parser, parser->previous);
             markInitialized();
+            uint8_t ex_var = resolveLocal(parser, current, &parser->previous);
             emitBytes(parser, OP_SET_LOCAL, ex_var);
         }
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after catch statement");

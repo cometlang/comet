@@ -87,7 +87,8 @@ static bool propagateException(VM *vm)
 Value getStackTrace(VM *vm)
 {
 #define MAX_LINE_LENGTH 1024
-    char *stacktrace = ALLOCATE(char, vm->frameCount * MAX_LINE_LENGTH);
+    int maxStacktraceLength = vm->frameCount * MAX_LINE_LENGTH;
+    char *stacktrace = ALLOCATE(char, maxStacktraceLength);
     uint16_t index = 0;
     for (int i = vm->frameCount - 1; i >= 0; i--)
     {
@@ -105,9 +106,8 @@ Value getStackTrace(VM *vm)
             lineno,
             function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
-    Value result = copyString(vm, stacktrace, index);
-    FREE_ARRAY(char, stacktrace, vm->frameCount * MAX_LINE_LENGTH);
-    return result;
+    stacktrace = GROW_ARRAY(stacktrace, char, maxStacktraceLength, index);
+    return takeString(vm, stacktrace, index);
 #undef MAX_LINE_LENGTH
 }
 

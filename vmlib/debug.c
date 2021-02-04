@@ -175,8 +175,6 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_INHERIT", offset);
     case OP_METHOD:
         return constantInstruction("OP_METHOD", chunk, offset);
-    case OP_ENUM:
-        return constantInstruction("OP_ENUM", chunk, offset);
     case OP_INDEX:
         return byteInstruction("OP_INDEX", chunk, offset);
     case OP_INDEX_ASSIGN:

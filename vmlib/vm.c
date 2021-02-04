@@ -805,11 +805,6 @@ static InterpretResult run(VM *vm)
         case OP_STATIC_METHOD:
             defineMethod(vm, READ_CONSTANT(), true);
             break;
-        case OP_ENUM:
-            // An enum is a class that inherits from Enum and has a bunch of static properties
-            // That are instances of said class.
-            // push(OBJ_VAL(newEnum(READ_STRING())));
-            break;
         case OP_INDEX:
         {
             int argCount = READ_BYTE();

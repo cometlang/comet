@@ -1,0 +1,6 @@
+{
+    var str2 = "This"
+    foreach (var char2 in str2) {
+        print(char2)
+    }
+}

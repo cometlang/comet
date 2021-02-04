@@ -1145,7 +1145,7 @@ static void funDeclaration(Parser *parser)
 static void enumDeclaration(Parser *parser)
 {
     uint8_t enumName = parseVariable(parser, "Expect enum name");
-    markInitialized();
+    defineVariable(parser, enumName);
     namedVariable(parser, syntheticToken("Enum"), false);
     emitBytes(parser, OP_CALL, 0);
     emitByte(parser, OP_DUP_TOP); // Duplicate the enum instance, so the pop leaves it for the return value of assignment
@@ -1203,8 +1203,6 @@ static void varDeclaration(Parser *parser)
     {
         emitByte(parser, OP_NIL);
     }
-    if (!check(parser, TOKEN_EOF))
-        consume(parser, TOKEN_EOL, "Only one statement per line allowed");
 
     defineVariable(parser, global);
 }
@@ -1223,7 +1221,7 @@ static void forStatement(Parser *parser)
 {
     beginScope();
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
-    if (match(parser, TOKEN_SEMI_COLON))
+    if (check(parser, TOKEN_SEMI_COLON))
     {
         // No initializer.
     }
@@ -1235,6 +1233,7 @@ static void forStatement(Parser *parser)
     {
         expressionStatement(parser);
     }
+    consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
 
     int loopStart = currentChunk(current)->count;
 
@@ -1271,6 +1270,60 @@ static void forStatement(Parser *parser)
         patchJump(parser, exitJump);
         emitByte(parser, OP_POP); // Condition.
     }
+
+    endScope(parser);
+}
+
+static void syntheticMethodCall(Parser *parser, const char *method_name)
+{
+    Token methodNameToken = syntheticToken(method_name);
+    uint8_t constant = identifierConstant(parser, &methodNameToken);
+    emitBytes(parser, OP_INVOKE, constant);
+    emitByte(parser, 0);
+}
+
+static void foreachStatement(Parser *parser)
+{
+    beginScope();
+    consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'foreach'.");
+    consume(parser, TOKEN_VAR, "Expect 'var' to declare foreach loop variable");
+    Token loop_var_name = parser->current;
+    uint8_t loop_var = parseVariable(parser, "Expect a variable name in the foreach loop");
+    emitByte(parser, OP_NIL);
+    defineVariable(parser, loop_var);
+
+    consume(parser, TOKEN_IN, "Expect 'in' keyword in foreach loop");
+
+    expression(parser);
+    consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after 'foreach' condition.");
+
+    Token iter_var_name = syntheticToken("");
+    addLocal(parser, iter_var_name);
+    markInitialized();
+    uint8_t ex_var = resolveLocal(parser, current, &iter_var_name);
+
+    syntheticMethodCall(parser, "iterator");
+    defineVariable(parser, ex_var);
+
+    int exitJump = -1;
+    int loopStart = currentChunk(current)->count;
+
+    emitBytes(parser, OP_GET_LOCAL, ex_var);
+    syntheticMethodCall(parser, "has_next?");
+    exitJump = emitJump(parser, OP_JUMP_IF_FALSE);
+    emitByte(parser, OP_POP);
+
+    emitBytes(parser, OP_GET_LOCAL, ex_var);
+    syntheticMethodCall(parser, "get_next");
+    int variable = resolveLocal(parser, current, &loop_var_name);
+    emitBytes(parser, OP_SET_LOCAL, (uint8_t) variable);
+
+    statement(parser);
+    emitByte(parser, OP_POP);
+
+    emitLoop(parser, loopStart);
+
+    patchJump(parser, exitJump);
 
     endScope(parser);
 }
@@ -1419,6 +1472,7 @@ static void synchronize(Parser *parser)
         case TOKEN_VAR:
         case TOKEN_OPERATOR:
         case TOKEN_FOR:
+        case TOKEN_FOREACH:
         case TOKEN_IF:
         case TOKEN_WHILE:
         case TOKEN_THROW:
@@ -1455,6 +1509,8 @@ static void declaration(Parser *parser)
     else if (match(parser, TOKEN_VAR))
     {
         varDeclaration(parser);
+        if (!check(parser, TOKEN_EOF))
+            consume(parser, TOKEN_EOL, "Only one statement per line allowed");
     }
     else if (match(parser, TOKEN_EOL))
     {
@@ -1479,6 +1535,10 @@ static void statement(Parser *parser)
     if (match(parser, TOKEN_FOR))
     {
         forStatement(parser);
+    }
+    else if (match(parser, TOKEN_FOREACH))
+    {
+        foreachStatement(parser);
     }
     else if (match(parser, TOKEN_IF))
     {

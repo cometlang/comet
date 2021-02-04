@@ -162,7 +162,11 @@ static TokenType identifierType(Scanner *scanner)
             case 'i':
                 return checkKeyword(scanner, 2, 5, "nally", TOKEN_FINALLY);
             case 'o':
+            {
+                if (scanner->current - scanner->start > 3)
+                    return checkKeyword(scanner, 2, 5, "reach", TOKEN_FOREACH);
                 return checkKeyword(scanner, 2, 1, "r", TOKEN_FOR);
+            }
             case 'u':
                 return checkKeyword(scanner, 2, 6, "nction", TOKEN_FUN);
             }

@@ -11,7 +11,7 @@ void init_stdlib(VM *vm);
 
 VALUE obj_hash(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
-void *string_set_cstr(ObjNativeInstance *instance, char *string, int length);
+VALUE string_create(VM *vm, char *chars, int length);
 int string_compare_to_cstr(VALUE self, const char *cstr);
 const char *string_get_cstr(VALUE self);
 VALUE string_hash(VM *vm, VALUE self, int arg_count, VALUE *arguments);

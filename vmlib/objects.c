@@ -153,9 +153,7 @@ ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, b
 
 static Value allocateString(VM *vm, char *chars, int length)
 {
-    ObjNativeInstance *string = (ObjNativeInstance *) newInstance(vm, _string_class);
-    Value string_obj = OBJ_VAL(string);
-    string->data = string_set_cstr(string, chars, length);
+    VALUE string_obj = string_create(vm, chars, length);
     push(vm, string_obj);
     internString(string_obj);
     pop(vm);

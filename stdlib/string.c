@@ -25,6 +25,7 @@ typedef struct
     utf8proc_ssize_t offset;
 } StringIterator;
 
+static VALUE string_class;
 
 void *string_iterator_constructor()
 {
@@ -87,13 +88,15 @@ void *string_constructor(void)
     return (void *)data;
 }
 
-void *string_set_cstr(ObjNativeInstance *instance, char *string, int length)
+VALUE string_create(VM *vm, char *chars, int length)
 {
-    StringData *data = (StringData *)instance->data;
-    data->chars = string;
+    VALUE string = OBJ_VAL(newInstance(vm, AS_CLASS(string_class)));
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, string);
+    data->chars = chars;
     data->length = length;
     data->hash = string_hash_cstr(data->chars, length);
-    return (void *)data;
+
+    return string;
 }
 
 const char *string_get_cstr(VALUE self)
@@ -379,28 +382,27 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 
 void init_string(VM *vm, VALUE obj_klass)
 {
-    VALUE klass = bootstrapNativeClass(vm, "String", string_constructor, string_destructor);
-    registerStringClass(klass);
+    string_class = bootstrapNativeClass(vm, "String", string_constructor, string_destructor);
     init_object(vm, obj_klass);
     completeNativeClassDefinition(vm, obj_klass, NULL);
     complete_iterable(vm);
-    completeNativeClassDefinition(vm, klass, "Iterable");
-    defineNativeMethod(vm, klass, &string_trim_left, "left_trim", 0, false);
-    defineNativeMethod(vm, klass, &string_trim_right, "right_trim", 0, false);
-    defineNativeMethod(vm, klass, &string_trim, "trim", 0, false);
-    defineNativeMethod(vm, klass, &string_find, "find", 1, false);
-    defineNativeMethod(vm, klass, &string_split, "split", 1, false);
-    defineNativeMethod(vm, klass, &string_replace, "replace", 2, false);
-    defineNativeMethod(vm, klass, &string_starts_with_q, "starts_with?", 1, false);
-    defineNativeMethod(vm, klass, &string_ends_with_q, "ends_with?", 1, false);
-    defineNativeMethod(vm, klass, &string_empty_q, "empty?", 0, false);
-    defineNativeMethod(vm, klass, &string_to_lower, "to_lower", 0, false);
-    defineNativeMethod(vm, klass, &string_to_upper, "to_upper", 0, false);
-    defineNativeMethod(vm, klass, &string_to_string, "to_string", 0, false);
-    defineNativeMethod(vm, klass, &string_length, "length", 0, false);
-    defineNativeMethod(vm, klass, &string_iterator, "iterator", 0, false);
-    defineNativeOperator(vm, klass, &string_concatenate, 1, OPERATOR_PLUS);
-    defineNativeOperator(vm, klass, &string_equals, 1, OPERATOR_EQUALS);
+    completeNativeClassDefinition(vm, string_class, "Iterable");
+    defineNativeMethod(vm, string_class, &string_trim_left, "left_trim", 0, false);
+    defineNativeMethod(vm, string_class, &string_trim_right, "right_trim", 0, false);
+    defineNativeMethod(vm, string_class, &string_trim, "trim", 0, false);
+    defineNativeMethod(vm, string_class, &string_find, "find", 1, false);
+    defineNativeMethod(vm, string_class, &string_split, "split", 1, false);
+    defineNativeMethod(vm, string_class, &string_replace, "replace", 2, false);
+    defineNativeMethod(vm, string_class, &string_starts_with_q, "starts_with?", 1, false);
+    defineNativeMethod(vm, string_class, &string_ends_with_q, "ends_with?", 1, false);
+    defineNativeMethod(vm, string_class, &string_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, string_class, &string_to_lower, "to_lower", 0, false);
+    defineNativeMethod(vm, string_class, &string_to_upper, "to_upper", 0, false);
+    defineNativeMethod(vm, string_class, &string_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
+    defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
+    defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
+    defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
 
     string_iterator_class = defineNativeClass(
         vm, "StringIterator", &string_iterator_constructor, &string_iterator_destructor, "Iterator");

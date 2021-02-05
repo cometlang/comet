@@ -25,11 +25,19 @@ VALUE instanceof(VALUE self, VALUE klass)
     return FALSE_VAL;
 }
 
-VALUE obj_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE obj_compare_to(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     if (self == arguments[0])
-        return TRUE_VAL;
-    return FALSE_VAL;
+        return create_number(vm, 0);
+    return NIL_VAL;
+}
+
+VALUE obj_equals(VM *vm, VALUE self, int arg_count, VALUE *arguments)
+{
+    VALUE result = obj_compare_to(vm, self, arg_count, arguments);
+    if (result == NIL_VAL)
+        return FALSE_VAL;
+    return TRUE_VAL;
 }
 
 VALUE obj_hash(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -65,5 +73,6 @@ void init_object(VM *vm, VALUE klass)
     defineNativeMethod(vm, klass, &obj_hash, "hash", 0, false);
     defineNativeMethod(vm, klass, &obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
+    defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
     defineNativeOperator(vm, klass, &obj_equals, 1, OPERATOR_EQUALS);
 }

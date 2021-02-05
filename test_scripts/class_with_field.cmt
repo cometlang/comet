@@ -18,4 +18,4 @@ class TestClass
 
 var test = TestClass()
 test.print_object()
-print(test.get_item())
+assert(test.get_item() == "initializer")

@@ -11,29 +11,9 @@ class ChildClass : ParentClass
 var parent = ParentClass()
 var child = ChildClass()
 
-print("expecting 1-6")
-if (parent instanceof ParentClass)
-{
-    print("1. Parent was instanceof ParentClass")
-}
-if (child instanceof ParentClass)
-{
-    print("2. Child was instanceof ParentClass")
-}
-if (child instanceof ChildClass)
-{
-    print("3. Child was instanceof ChildClass")
-}
-if (child instanceof Object)
-{
-    print("4. Child was instanceof Object")
-}
-if (!(child instanceof Exception))
-{
-    print("5. Child was not an instanceof Exception")
-}
-if ("this is a string" instanceof Object)
-{
-    print("6. A literal string is an instanceof Object")
-}
-print("complete")
+assert(parent instanceof ParentClass, "Expect parent to be instanceof ParentClass")
+assert(child instanceof ParentClass, "Expect child to be instanceof ParentClass")
+assert(child instanceof ChildClass, "Expect child to be instanceof ChildClass")
+assert(child instanceof Object, "Expect child to be instanceof Object")
+assert(!child instanceof Exception, "Expect child not to be instanceof Exception")
+assert("this is a string" instanceof Object, "Expect a literal string to be instanceof Object")

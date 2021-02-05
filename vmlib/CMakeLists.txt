@@ -25,6 +25,8 @@ import.c
 import.h
 mem.c
 mem.h
+messages.c
+messages.h
 native.c
 native.h
 objects.c

@@ -174,6 +174,7 @@ static void blackenObject(Obj *object)
         break;
     case OBJ_NATIVE_METHOD:
     case OBJ_NATIVE:
+    case OBJ_MODULE:
         break;
     }
 }
@@ -260,6 +261,9 @@ static void freeObject(Obj *object)
         break;
     case OBJ_UPVALUE:
         FREE(ObjUpvalue, object);
+        break;
+    case OBJ_MODULE:
+        FREE(ObjModule, object);
         break;
     }
 }

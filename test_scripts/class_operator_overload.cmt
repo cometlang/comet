@@ -20,3 +20,4 @@ var test = TestClass()
 test.append("hello")
 
 print(test[0])
+assert(test[0] == "hello")

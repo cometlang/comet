@@ -1,6 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+
 #include "cometlib.h"
 #include "comet_stdlib.h"
 

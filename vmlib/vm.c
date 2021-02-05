@@ -7,6 +7,7 @@
 #include "compiler.h"
 #include "debug.h"
 #include "mem.h"
+#include "messages.h"
 
 #include "comet.h"
 
@@ -119,6 +120,8 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
     {
         va_list args;
         va_start(args, message_format);
+        char *message = make_message(message_format, args);
+        push(vm, string_create(vm, message, strlen(message)));
         create_instance(vm, AS_CLASS(exception_type), 1);
         va_end(args);
         exception_set_stacktrace(vm, peek(vm, 0), getStackTrace(vm));
@@ -850,7 +853,9 @@ static InterpretResult run(VM *vm)
         }
         case OP_INSTANCEOF:
         {
-            push(vm, instanceof(peek(vm, 1), peek(vm, 0)));
+            VALUE rhs = pop(vm);
+            VALUE lhs = pop(vm);
+            push(vm, instanceof(lhs, rhs));
             break;
         }
         case OP_PUSH_EXCEPTION_HANDLER:

@@ -270,6 +270,8 @@ const char *objTypeName(ObjType type)
         return "native function";
     case OBJ_UPVALUE:
         return "upvalue";
+    case OBJ_MODULE:
+        return "module";
     }
 
     return "unknown";

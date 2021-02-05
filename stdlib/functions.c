@@ -24,7 +24,10 @@ static VALUE assertNative(VM *vm, int UNUSED(arg_count), VALUE *args)
 {
     if (bool_is_falsey(args[0]))
     {
-        throw_exception_native(vm, "AssertionException", "assert failed");
+        const char *message = "assert failed";
+        if (arg_count == 2)
+            message = string_get_cstr(args[1]);
+        throw_exception_native(vm, "AssertionException", message);
     }
     return NIL_VAL;
 }

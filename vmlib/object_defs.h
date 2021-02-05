@@ -16,6 +16,7 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE_INSTANCE(value) isObjType(value, OBJ_NATIVE_INSTANCE)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
+#define IS_MODULE(value) isObjType(value, OBJ_MODULE)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod *)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
@@ -26,6 +27,7 @@
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
 #define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
+#define AS_MODULE(value) (((ObjModule *)AS_OBJ(value)))
 
 typedef enum
 {
@@ -39,6 +41,7 @@ typedef enum
     OBJ_NATIVE_INSTANCE,
     OBJ_NATIVE,
     OBJ_UPVALUE,
+    OBJ_MODULE,
 } ObjType;
 
 typedef enum
@@ -149,6 +152,13 @@ typedef struct
     ObjClosure *method;
 } ObjBoundMethod;
 
+typedef struct Compiler Compiler;
+
+typedef struct
+{
+    Obj obj;
+    Compiler *compiler;
+} ObjModule;
 
 extern ObjNativeInstance nil_instance;
 extern ObjNativeInstance boolean_true;

@@ -8,4 +8,4 @@ var inherits = instance instanceof Object
 print(inherits)
 print(instance.hash())
 print(instance.to_string())
-print(instance.nil?())
+assert(instance.nil?() == false)

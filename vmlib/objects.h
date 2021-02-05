@@ -24,8 +24,6 @@ const char *objTypeName(ObjType type);
 const char *getOperatorString(OPERATOR operator);
 OPERATOR getOperatorFromToken(TokenType token);
 
-void registerStringClass(Value klass);
-
 static inline bool isObjType(Value value, ObjType type)
 {
     return IS_OBJ(value) && AS_OBJ(value)->type == type;

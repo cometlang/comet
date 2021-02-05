@@ -7,8 +7,6 @@
 #include "scanner.h"
 #include "comet.h"
 
-static ObjClass *_string_class;
-
 #define ALLOCATE_OBJ(vm, type, objectType) \
     (type *)allocateObject(vm, sizeof(type), objectType)
 
@@ -192,11 +190,6 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot)
     upvalue->location = slot;
     upvalue->next = NULL;
     return upvalue;
-}
-
-void registerStringClass(Value klass)
-{
-    _string_class = AS_CLASS(klass);
 }
 
 static void printFunction(ObjFunction *function)

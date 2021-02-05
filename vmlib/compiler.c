@@ -1405,6 +1405,7 @@ static void tryStatement(Parser *parser)
 
     if (match(parser, TOKEN_CATCH))
     {
+        beginScope();
         consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after catch");
         consume(parser, TOKEN_IDENTIFIER, "Expect type name to catch");
         uint8_t name = identifierConstant(parser, &parser->previous);
@@ -1422,6 +1423,7 @@ static void tryStatement(Parser *parser)
         emitByte(parser, OP_POP_EXCEPTION_HANDLER);
         statement(parser);
         match(parser, TOKEN_EOL);
+        endScope(parser);
     }
     patchJump(parser, successJump);
 

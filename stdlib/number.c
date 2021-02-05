@@ -30,9 +30,23 @@ VALUE number_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
 #undef TEMP_STRING_MAX_LEN
 }
 
-VALUE number_parse(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
-    return create_number(vm, 0);
+    if (arg_count == 1)
+    {
+        VALUE arg = arguments[0];
+        if (instanceof(arg, number_class) == TRUE_VAL)
+        {
+            return arg;
+        }
+
+        const char *string = string_get_cstr(arg);
+        char *failed;
+        double value = strtod(string, &failed);
+        if (failed != string)
+            return create_number(vm, value);
+    }
+    return NIL_VAL;
 }
 
 VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

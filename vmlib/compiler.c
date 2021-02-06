@@ -33,6 +33,7 @@ typedef struct LoopCompiler
     struct LoopCompiler *enclosing;
     int startAddress;
     int exitAddress;
+    int loopScopeDepth;
 } LoopCompiler;
 
 typedef struct
@@ -918,6 +919,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_IMPORT]           = {NULL,         NULL,      PREC_NONE},
     [TOKEN_IN]               = {NULL,         NULL,      PREC_NONE},
     [TOKEN_INSTANCEOF]       = {NULL,         binary,    PREC_INSTANCEOF},
+    [TOKEN_NEXT]             = {NULL,         NULL,      PREC_NONE},
     [TOKEN_NIL]              = {literal,      NULL,      PREC_NONE},
     [TOKEN_OPERATOR]         = {NULL,         NULL,      PREC_NONE},
     [TOKEN_RETURN]           = {NULL,         NULL,      PREC_NONE},
@@ -1252,6 +1254,7 @@ static void forStatement(Parser *parser)
     loop.startAddress = currentChunk(current)->count;
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
+    loop.loopScopeDepth = current->scopeDepth;
     parser->currentLoop = &loop;
 
     if (!match(parser, TOKEN_SEMI_COLON))
@@ -1326,6 +1329,7 @@ static void foreachStatement(Parser *parser)
     loop.startAddress = currentChunk(current)->count;
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
+    loop.loopScopeDepth = current->scopeDepth;
     parser->currentLoop = &loop;
 
     emitBytes(parser, OP_GET_LOCAL, ex_var);
@@ -1344,7 +1348,6 @@ static void foreachStatement(Parser *parser)
     emitLoop(parser);
 
     patchJump(parser, loop.exitAddress);
-
     endScope(parser);
     parser->currentLoop = parser->currentLoop->enclosing;
 }
@@ -1396,6 +1399,7 @@ static void whileStatement(Parser *parser)
     loop.startAddress = currentChunk(current)->count;
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
+    loop.loopScopeDepth = current->scopeDepth;
     parser->currentLoop = &loop;
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
     expression(parser);
@@ -1482,6 +1486,23 @@ static void importStatement(Parser *parser)
 {
     consume(parser, TOKEN_STRING, "Import needs a module to import");
     import_path(parser->previous.start, parser->previous.length);
+}
+
+static void nextStatement(Parser *parser)
+{
+    if (parser->currentLoop == NULL) {
+        error(parser, "Can't use 'next' outside of a loop.");
+    }
+
+    // Discard any locals created inside the loop.
+    for (int i = current->localCount - 1;
+        i >= 0 && current->locals[i].depth > parser->currentLoop->loopScopeDepth;
+        i--) {
+        emitByte(parser, OP_POP);
+    }
+
+    // Jump to top of current innermost loop.
+    emitLoop(parser);
 }
 
 static void synchronize(Parser *parser)
@@ -1597,6 +1618,10 @@ static void statement(Parser *parser)
     else if (match(parser, TOKEN_IMPORT))
     {
         importStatement(parser);
+    }
+    else if (match(parser, TOKEN_NEXT))
+    {
+        nextStatement(parser);
     }
     else
     {

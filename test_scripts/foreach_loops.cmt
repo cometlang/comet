@@ -1,6 +1,9 @@
 {
-    var str2 = "This"
-    foreach (var char2 in str2) {
-        print(char2)
+    var str = "T H I S"
+    foreach(var char in str)
+    {
+        if (char == ' ')
+            next
+        print(char)
     }
 }

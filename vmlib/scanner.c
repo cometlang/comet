@@ -200,7 +200,17 @@ static TokenType identifierType(Scanner *scanner)
         }
         break;
     case 'n':
-        return checkKeyword(scanner, 1, 2, "il", TOKEN_NIL);
+        if (scanner->current - scanner->start > 2)
+        {
+            switch (scanner->start[1])
+            {
+                case 'e':
+                    return checkKeyword(scanner, 2, 2, "xt", TOKEN_NEXT);
+                case 'i':
+                    return checkKeyword(scanner, 2, 1, "l", TOKEN_NIL);
+            }
+        }
+        break;
     case 'o':
         return checkKeyword(scanner, 1, 7, "perator", TOKEN_OPERATOR);
     case 'p':

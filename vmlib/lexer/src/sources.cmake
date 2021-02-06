@@ -1,0 +1,3 @@
+set(LEXER_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/scanner.c
+)

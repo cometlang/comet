@@ -8,21 +8,15 @@ set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
 
 set(MEMORYCHECK_COMMAND_OPTIONS "--track-origins=yes --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 --log-fd=2")
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../comet
-)
+add_subdirectory(lexer)
+add_subdirectory(compiler)
 
 set(VM_SOURCE
 chunk.c
 chunk.h
 common.h
-compiler.c
-compiler.h
 debug.c
 debug.h
-import.c
-import.h
 mem.c
 mem.h
 messages.c
@@ -31,8 +25,6 @@ native.c
 native.h
 objects.c
 objects.h
-scanner.c
-scanner.h
 table.c
 table.h
 value.c
@@ -43,5 +35,10 @@ vm.h
 )
 
 add_library(vmlib STATIC ${VM_SOURCE})
-target_link_libraries(vmlib stdlib)
+target_include_directories(vmlib PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../comet
+)
+
+target_link_libraries(vmlib stdlib compiler lexer)
 target_include_directories(vmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

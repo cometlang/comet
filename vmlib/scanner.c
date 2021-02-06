@@ -24,6 +24,13 @@ static bool isDigit(char c)
     return c >= '0' && c <= '9';
 }
 
+static bool isHex(char c)
+{
+    return isDigit(c) ||
+        (c >= 'a' && c <= 'f') ||
+        (c >= 'A' && c <= 'f');
+}
+
 static bool isAtEnd(Scanner *scanner)
 {
     return *scanner->current == '\0';
@@ -271,19 +278,31 @@ static Token identifier(Scanner *scanner)
     return makeToken(scanner, identifierType(scanner));
 }
 
-static Token number(Scanner *scanner)
+static Token number(Scanner *scanner, char previous)
 {
-    while (isDigit(peek(scanner)) || peek(scanner) == '_')
-        advance(scanner);
-
-    // Look for a fractional part.
-    if (peek(scanner) == '.' && isDigit(peekNext(scanner)))
+    // hexadecimal
+    if (previous == '0' &&
+        (peek(scanner) == 'x' || peek(scanner) == 'X'))
     {
-        // Consume the ".".
         advance(scanner);
-
+        while (isHex(peek(scanner)))
+            advance(scanner);
+    }
+    // decimal
+    else
+    {
         while (isDigit(peek(scanner)) || peek(scanner) == '_')
             advance(scanner);
+
+        // Look for a fractional part.
+        if (peek(scanner) == '.' && isDigit(peekNext(scanner)))
+        {
+            // Consume the ".".
+            advance(scanner);
+
+            while (isDigit(peek(scanner)) || peek(scanner) == '_')
+                advance(scanner);
+        }
     }
 
     return makeToken(scanner, TOKEN_NUMBER);
@@ -321,7 +340,7 @@ Token scanToken(Scanner *scanner)
     if (isAlpha(c))
         return identifier(scanner);
     if (isDigit(c))
-        return number(scanner);
+        return number(scanner, c);
 
     switch (c)
     {

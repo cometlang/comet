@@ -28,6 +28,13 @@ typedef struct ClassCompiler
     bool hasSuperclass;
 } ClassCompiler;
 
+typedef struct LoopCompiler
+{
+    struct LoopCompiler *enclosing;
+    int startAddress;
+    int exitAddress;
+} LoopCompiler;
+
 typedef struct
 {
     Token current;
@@ -37,6 +44,7 @@ typedef struct
     const char *filename;
     Scanner *scanner;
     ClassCompiler *currentClass;
+    LoopCompiler *currentLoop;
 } Parser;
 
 typedef enum
@@ -189,11 +197,11 @@ static void emitBytes(Parser *parser, uint8_t byte1, uint8_t byte2)
     emitByte(parser, byte2);
 }
 
-static void emitLoop(Parser *parser, int loopStart)
+static void emitLoop(Parser *parser)
 {
     emitByte(parser, OP_LOOP);
 
-    int offset = currentChunk(current)->count - loopStart + 2;
+    int offset = currentChunk(current)->count - parser->currentLoop->startAddress + 2;
     if (offset > UINT16_MAX)
         error(parser, "Loop body too large.");
 
@@ -1240,17 +1248,19 @@ static void forStatement(Parser *parser)
         expressionStatement(parser);
     }
     consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
+    LoopCompiler loop;
+    loop.startAddress = currentChunk(current)->count;
+    loop.exitAddress = -1;
+    loop.enclosing = parser->currentLoop;
+    parser->currentLoop = &loop;
 
-    int loopStart = currentChunk(current)->count;
-
-    int exitJump = -1;
     if (!match(parser, TOKEN_SEMI_COLON))
     {
         expression(parser);
         consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop condition.");
 
         // Jump out of the loop if the condition is false.
-        exitJump = emitJump(parser, OP_JUMP_IF_FALSE);
+        loop.exitAddress = emitJump(parser, OP_JUMP_IF_FALSE);
         emitByte(parser, OP_POP); // Condition.
     }
     if (!match(parser, TOKEN_RIGHT_PAREN))
@@ -1262,22 +1272,23 @@ static void forStatement(Parser *parser)
         emitByte(parser, OP_POP);
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
 
-        emitLoop(parser, loopStart);
-        loopStart = incrementStart;
+        emitLoop(parser);
+        loop.startAddress = incrementStart;
         patchJump(parser, bodyJump);
     }
 
     statement(parser);
 
-    emitLoop(parser, loopStart);
+    emitLoop(parser);
 
-    if (exitJump != -1)
+    if (loop.exitAddress != -1)
     {
-        patchJump(parser, exitJump);
+        patchJump(parser, loop.exitAddress);
         emitByte(parser, OP_POP); // Condition.
     }
 
     endScope(parser);
+    parser->currentLoop = parser->currentLoop->enclosing;
 }
 
 static void syntheticMethodCall(Parser *parser, const char *method_name)
@@ -1311,12 +1322,15 @@ static void foreachStatement(Parser *parser)
     syntheticMethodCall(parser, "iterator");
     defineVariable(parser, ex_var);
 
-    int exitJump = -1;
-    int loopStart = currentChunk(current)->count;
+    LoopCompiler loop;
+    loop.startAddress = currentChunk(current)->count;
+    loop.exitAddress = -1;
+    loop.enclosing = parser->currentLoop;
+    parser->currentLoop = &loop;
 
     emitBytes(parser, OP_GET_LOCAL, ex_var);
     syntheticMethodCall(parser, "has_next?");
-    exitJump = emitJump(parser, OP_JUMP_IF_FALSE);
+    loop.exitAddress = emitJump(parser, OP_JUMP_IF_FALSE);
     emitByte(parser, OP_POP);
 
     emitBytes(parser, OP_GET_LOCAL, ex_var);
@@ -1327,11 +1341,12 @@ static void foreachStatement(Parser *parser)
     statement(parser);
     emitByte(parser, OP_POP);
 
-    emitLoop(parser, loopStart);
+    emitLoop(parser);
 
-    patchJump(parser, exitJump);
+    patchJump(parser, loop.exitAddress);
 
     endScope(parser);
+    parser->currentLoop = parser->currentLoop->enclosing;
 }
 
 static void ifStatement(Parser *parser)
@@ -1377,20 +1392,25 @@ static void returnStatement(Parser *parser)
 
 static void whileStatement(Parser *parser)
 {
-    int loopStart = currentChunk(current)->count;
+    LoopCompiler loop;
+    loop.startAddress = currentChunk(current)->count;
+    loop.exitAddress = -1;
+    loop.enclosing = parser->currentLoop;
+    parser->currentLoop = &loop;
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
     expression(parser);
     consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after condition.");
 
-    int exitJump = emitJump(parser, OP_JUMP_IF_FALSE);
+    loop.exitAddress = emitJump(parser, OP_JUMP_IF_FALSE);
 
     emitByte(parser, OP_POP);
     statement(parser);
 
-    emitLoop(parser, loopStart);
+    emitLoop(parser);
 
-    patchJump(parser, exitJump);
+    patchJump(parser, loop.exitAddress);
     emitByte(parser, OP_POP);
+    parser->currentLoop = parser->currentLoop->enclosing;
 }
 
 static void tryStatement(Parser *parser)
@@ -1591,6 +1611,7 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename)
     parser->panicMode = false;
     parser->scanner = scanner;
     parser->currentClass = NULL;
+    parser->currentLoop = NULL;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)

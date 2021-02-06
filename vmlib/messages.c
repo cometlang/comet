@@ -3,6 +3,7 @@
 #include <stdarg.h>
 
 
+// Taken directly from the strtol manpage:
 char *make_message(const char *fmt, ...)
 {
     int n = 0;

@@ -87,7 +87,7 @@ static bool propagateException(VM *vm)
 
 Value getStackTrace(VM *vm)
 {
-#define MAX_LINE_LENGTH 1024
+#define MAX_LINE_LENGTH 512
     int maxStacktraceLength = vm->frameCount * MAX_LINE_LENGTH;
     char *stacktrace = ALLOCATE(char, maxStacktraceLength);
     uint16_t index = 0;

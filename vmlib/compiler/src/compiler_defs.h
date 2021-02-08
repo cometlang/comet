@@ -100,6 +100,8 @@ extern VM *main_thread;
 
 Token syntheticToken(const char *text);
 Chunk *currentChunk(Compiler *compiler);
+int getCurrentOffset(Compiler *compiler);
+void setCodeOffset(Compiler *compiler, int offset, uint8_t value);
 
 void synchronize(Parser *parser);
 

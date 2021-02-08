@@ -16,7 +16,7 @@ void emitLoop(Parser *parser)
 {
     emitByte(parser, OP_LOOP);
 
-    int offset = currentChunk(current)->count - parser->currentLoop->startAddress + 2;
+    int offset = getCurrentOffset(current) - parser->currentLoop->startAddress + 2;
     if (offset > UINT16_MAX)
         error(parser, "Loop body too large.");
 
@@ -29,7 +29,7 @@ int emitJump(Parser *parser, uint8_t instruction)
     emitByte(parser, instruction);
     emitByte(parser, 0xff);
     emitByte(parser, 0xff);
-    return currentChunk(current)->count - 2;
+    return getCurrentOffset(current) - 2;
 }
 
 void emitReturn(Parser *parser)

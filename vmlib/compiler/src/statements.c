@@ -48,7 +48,7 @@ void forStatement(Parser *parser)
     }
     consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
     LoopCompiler loop;
-    loop.startAddress = currentChunk(current)->count;
+    loop.startAddress = getCurrentOffset(current);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
     loop.loopScopeDepth = current->scopeDepth;
@@ -67,7 +67,7 @@ void forStatement(Parser *parser)
     {
         int bodyJump = emitJump(parser, OP_JUMP);
 
-        int incrementStart = currentChunk(current)->count;
+        int incrementStart = getCurrentOffset(current);
         expression(parser);
         emitByte(parser, OP_POP);
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
@@ -123,7 +123,7 @@ void foreachStatement(Parser *parser)
     defineVariable(parser, ex_var);
 
     LoopCompiler loop;
-    loop.startAddress = currentChunk(current)->count;
+    loop.startAddress = getCurrentOffset(current);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
     loop.loopScopeDepth = current->scopeDepth;
@@ -193,7 +193,7 @@ void returnStatement(Parser *parser)
 void whileStatement(Parser *parser)
 {
     LoopCompiler loop;
-    loop.startAddress = currentChunk(current)->count;
+    loop.startAddress = getCurrentOffset(current);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
     loop.loopScopeDepth = current->scopeDepth;
@@ -216,18 +216,19 @@ void whileStatement(Parser *parser)
 
 static void patchAddress(int offset)
 {
-    currentChunk(current)->code[offset] = (currentChunk(current)->count >> 8) & 0xff;
-    currentChunk(current)->code[offset + 1] = currentChunk(current)->count & 0xff;
+    int currentOffset = getCurrentOffset(current);
+    setCodeOffset(current, offset, (currentOffset >> 8) & 0xff);
+    setCodeOffset(current, offset + 1, currentOffset & 0xff);
 }
 
 void tryStatement(Parser *parser)
 {
     emitByte(parser, OP_PUSH_EXCEPTION_HANDLER);
-    int exceptionType = currentChunk(current)->count;
+    int exceptionType = getCurrentOffset(current);
     emitByte(parser, 0xff);
-    int handlerAddress = currentChunk(current)->count;
+    int handlerAddress = getCurrentOffset(current);
     emitBytes(parser, 0xff, 0xff);
-    int finallyAddress = currentChunk(current)->count;
+    int finallyAddress = getCurrentOffset(current);
     emitBytes(parser, 0xff, 0xff);
 
     statement(parser);
@@ -242,7 +243,7 @@ void tryStatement(Parser *parser)
         consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after catch");
         consume(parser, TOKEN_IDENTIFIER, "Expect type name to catch");
         uint8_t name = identifierConstant(parser, &parser->previous);
-        currentChunk(current)->code[exceptionType] = name;
+        setCodeOffset(current, exceptionType, name);
         patchAddress(handlerAddress);
         if (match(parser, TOKEN_AS))
         {

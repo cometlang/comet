@@ -25,6 +25,16 @@ Chunk *currentChunk(Compiler *compiler)
     return &compiler->function->chunk;
 }
 
+int getCurrentOffset(Compiler *compiler)
+{
+    return compiler->function->chunk.count;
+}
+
+void setCodeOffset(Compiler *compiler, int offset, uint8_t value)
+{
+    currentChunk(compiler)->code[offset] = value;
+}
+
 static void errorAt(Parser *parser, Token *token, const char *message)
 {
     if (parser->panicMode)
@@ -100,15 +110,14 @@ bool match(Parser *parser, TokenType type)
 void patchJump(Parser *parser, int offset)
 {
     // -2 to adjust for the bytecode for the jump offset itself.
-    int jump = currentChunk(current)->count - offset - 2;
+    int jump = getCurrentOffset(current) - offset - 2;
 
     if (jump > UINT16_MAX)
     {
         error(parser, "Too much code to jump over.");
     }
-
-    currentChunk(current)->code[offset] = (jump >> 8) & 0xff;
-    currentChunk(current)->code[offset + 1] = jump & 0xff;
+    setCodeOffset(current, offset, (jump >> 8) & 0xff);
+    setCodeOffset(current, offset + 1, jump & 0xff);
 }
 
 void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)

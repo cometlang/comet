@@ -6,6 +6,7 @@
 #include "debug.h"
 #include "vm.h"
 #include "cometlib.h"
+#include "compiler.h"
 
 static VM virtualMachine;
 
@@ -29,40 +30,9 @@ static void repl()
     }
 }
 
-static SourceFile *readFile(const char *path)
-{
-    SourceFile *sourcefile = (SourceFile *) malloc(sizeof(SourceFile));
-    FILE *file = fopen(path, "rb");
-    if (file == NULL)
-    {
-        fprintf(stderr, "Could not open file \"%s\"\n", path);
-        exit(74);
-    }
-
-    fseek(file, 0L, SEEK_END);
-    size_t fileSize = ftell(file);
-    rewind(file);
-
-    sourcefile->source = (char *)malloc(fileSize + 1);
-    if (sourcefile->source == NULL)
-    {
-        fprintf(stderr, "Could not allocate memory to read \"%s\"\n", path);
-        exit(74);
-    }
-
-    size_t bytesRead = fread(sourcefile->source, sizeof(char), fileSize, file);
-    sourcefile->source[bytesRead] = '\0';
-
-    fclose(file);
-    int pathLen = strlen(path);
-    sourcefile->path = (char *) malloc(pathLen + 1);
-    strncpy(sourcefile->path, path, pathLen + 1);
-    return sourcefile;
-}
-
 static void runFile(const char *path)
 {
-    SourceFile *source = readFile(path);
+    SourceFile *source = readSourceFile(path);
     InterpretResult result = interpret(&virtualMachine, source);
     free(source->path);
     free(source->source);

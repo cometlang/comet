@@ -187,7 +187,7 @@ static TokenType identifierType(Scanner *scanner)
                 case 'f':
                     return checkKeyword(scanner, 1, 1, "f", TOKEN_IF);
                 case 'm':
-                    return checkKeyword(scanner, 1, 4, "port", TOKEN_IMPORT);
+                    return checkKeyword(scanner, 2, 4, "port", TOKEN_IMPORT);
                 case 'n':
                 {
                     if (scanner->current - scanner->start > 2)

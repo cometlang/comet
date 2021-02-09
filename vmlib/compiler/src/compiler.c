@@ -140,7 +140,7 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     Local *local = &current->locals[current->localCount++];
     local->depth = 0;
     local->isCaptured = false;
-    if (type != TYPE_FUNCTION)
+    if (type == TYPE_METHOD || type == TYPE_INITIALIZER)
     {
         // In a method, it holds the receiver, "self".
         local->name.start = "self";

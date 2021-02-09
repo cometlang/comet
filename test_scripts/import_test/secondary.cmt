@@ -1,0 +1,4 @@
+function print_something()
+{
+    print("Something")
+}

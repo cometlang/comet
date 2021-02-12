@@ -289,7 +289,7 @@ void throwStatement(Parser *parser)
 void importStatement(Parser *parser)
 {
     consume(parser, TOKEN_STRING, "Import needs a module to import");
-    import_path(main_thread, parser->previous.start, parser->previous.length);
+    import_from_file(main_thread, parser->filename, parser->previous.start, parser->previous.length);
 }
 
 void nextStatement(Parser *parser)

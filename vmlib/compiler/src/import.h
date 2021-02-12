@@ -3,6 +3,6 @@
 
 #include "vm.h"
 
-void import_path(VM *vm, const char *path, int path_len);
+void import_from_file(VM *vm, const char *filename, const char *path, int path_len);
 
 #endif

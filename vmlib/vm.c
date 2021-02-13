@@ -79,8 +79,15 @@ static bool propagateException(VM *vm)
         vm->frameCount--;
     }
     printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
-    Value stacktrace = excpetion_get_stacktrace(vm, exception);
-    printf("%s", string_get_cstr(stacktrace));
+    Value stacktrace = exception_get_stacktrace(vm, exception);
+    if (stacktrace == NIL_VAL)
+    {
+        printf("No stacktrace found - did you rethrow something not previously thrown?\n");
+    }
+    else
+    {
+        printf("%s", string_get_cstr(stacktrace));
+    }
     fflush(stdout);
     return false;
 }

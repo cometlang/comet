@@ -22,7 +22,7 @@ void exception_set_stacktrace(VM *vm, VALUE self, VALUE stacktrace)
     setNativeProperty(vm, self, "stacktrace", stacktrace);
 }
 
-VALUE excpetion_get_stacktrace(VM *vm, VALUE self)
+VALUE exception_get_stacktrace(VM *vm, VALUE self)
 {
     return getNativeProperty(vm, self, "stacktrace");
 }

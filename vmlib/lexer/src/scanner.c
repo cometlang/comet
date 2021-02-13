@@ -216,29 +216,42 @@ static TokenType identifierType(Scanner *scanner)
     case 'p':
         if (scanner->current - scanner->start > 4)
         {
-            if (scanner->start[1] == 'r')
+            switch (scanner->start[1])
             {
-                switch (scanner->start[2])
-                {
-                    case 'i':
+                case 'r':
+                    switch (scanner->start[2])
                     {
-                        switch (scanner->start[3])
+                        case 'i':
                         {
-                            case 'v':
-                                return checkKeyword(scanner, 4, 3, "ate", TOKEN_PRIVATE);
+                            switch (scanner->start[3])
+                            {
+                                case 'v':
+                                    return checkKeyword(scanner, 4, 3, "ate", TOKEN_PRIVATE);
+                            }
+                            break;
                         }
-                        break;
+                        case 'o':
+                            return checkKeyword(scanner, 3, 6, "tected", TOKEN_PROTECTED);
                     }
-                    case 'o':
-                        return checkKeyword(scanner, 3, 6, "tected", TOKEN_PROTECTED);
-                    case 'u':
-                       return checkKeyword(scanner, 3, 4, "blic", TOKEN_PUBLIC);
-                }
+                    break;
+                case 'u':
+                    return checkKeyword(scanner, 2, 4, "blic", TOKEN_PUBLIC);
             }
         }
         break;
     case 'r':
-        return checkKeyword(scanner, 1, 5, "eturn", TOKEN_RETURN);
+        if (scanner->current - scanner->start > 3)
+        {
+            // We haven't checked 1 & 2, so need to include 'et' in the final checks
+            switch (scanner->start[3])
+            {
+                case 'h':
+                    return checkKeyword(scanner, 1, 6, "ethrow", TOKEN_RETHROW);
+                case 'u':
+                    return checkKeyword(scanner, 1, 5, "eturn", TOKEN_RETURN);
+            }
+        }
+        break;
     case 's':
         if (scanner->current - scanner->start > 1)
         {

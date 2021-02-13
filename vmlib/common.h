@@ -11,7 +11,7 @@
 #define DEBUG_LOG_GC (0)
 #define MAX_VAR_COUNT (UINT8_MAX + 1)
 #define MAX_HANDLER_FRAMES (UINT8_MAX)
-#define DEBUG_ASSERT_ENABLED (0)
+#define DEBUG_ASSERT_ENABLED (1)
 
 #ifndef UNUSED
 #define UNUSED(x) x __attribute__ ((unused))

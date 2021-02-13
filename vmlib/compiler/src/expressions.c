@@ -387,6 +387,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_NEXT]             = {NULL,         NULL,      PREC_NONE},
     [TOKEN_NIL]              = {literal,      NULL,      PREC_NONE},
     [TOKEN_OPERATOR]         = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_RETHROW]          = {NULL,         NULL,      PREC_NONE},
     [TOKEN_RETURN]           = {NULL,         NULL,      PREC_NONE},
     [TOKEN_SELF]             = {self,         NULL,      PREC_NONE},
     [TOKEN_SUPER]            = {super_,       NULL,      PREC_NONE},

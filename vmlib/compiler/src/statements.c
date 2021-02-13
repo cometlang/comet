@@ -286,6 +286,14 @@ void throwStatement(Parser *parser)
     emitByte(parser, OP_THROW);
 }
 
+void rethrowStatement(Parser *parser)
+{
+    expression(parser);
+    if (!check(parser, TOKEN_EOF))
+        consume(parser, TOKEN_EOL, "Only one statement per line allowed");
+    emitByte(parser, OP_PROPAGATE_EXCEPTION);
+}
+
 void importStatement(Parser *parser)
 {
     consume(parser, TOKEN_STRING, "Import needs a module to import");
@@ -335,6 +343,10 @@ void statement(Parser *parser)
     else if (match(parser, TOKEN_TRY))
     {
         tryStatement(parser);
+    }
+    else if (match(parser, TOKEN_RETHROW))
+    {
+        rethrowStatement(parser);
     }
     else if (match(parser, TOKEN_THROW))
     {

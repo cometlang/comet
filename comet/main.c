@@ -55,7 +55,7 @@ int main(int argc, const char **argv)
     {
         repl();
     }
-    else if (argc == 2)
+    else if (argc >= 2)
     {
         runFile(argv[1]);
     }

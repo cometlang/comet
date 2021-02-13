@@ -128,7 +128,7 @@ static VALUE enum_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUS
     return instance;
 }
 
-static VALUE enum_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE enum_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     for (int i = 0; i < data->array.count; i++)

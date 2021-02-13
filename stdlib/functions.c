@@ -32,9 +32,20 @@ static VALUE assertNative(VM *vm, int UNUSED(arg_count), VALUE *args)
     return NIL_VAL;
 }
 
+static VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
+{
+    VALUE val = args[0];
+    if (IS_BOUND_METHOD(val) || IS_CLASS(val) || IS_FUNCTION(val) || IS_CLOSURE(val) ||
+        IS_NATIVE(val) || IS_NATIVE_METHOD(val) || IS_NATIVE_CLASS(val))
+        return TRUE_VAL;
+
+    return FALSE_VAL;
+}
+
 void init_functions(VM *vm)
 {
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
     defineNativeFunction(vm, "assert", &assertNative);
+    defineNativeFunction(vm, "callable?", &callable_p);
 }

@@ -365,6 +365,11 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_GREATER_EQUAL]    = {NULL,         binary,    PREC_COMPARISON},
     [TOKEN_LESS]             = {NULL,         binary,    PREC_COMPARISON},
     [TOKEN_LESS_EQUAL]       = {NULL,         binary,    PREC_COMPARISON},
+    [TOKEN_PLUS_EQUAL]       = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_MINUS_EQUAL]      = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_STAR_EQUAL]       = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_SLASH_EQUAL]      = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_PERCENT_EQUAL]    = {NULL,         NULL,      PREC_NONE},
     [TOKEN_LOGICAL_OR]       = {NULL,         or_,       PREC_OR},
     [TOKEN_LOGICAL_AND]      = {NULL,         and_,      PREC_AND},
     // Literals

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "scanner.h"
 #include "vm.h"
 #include "compiler_defs.h"
@@ -313,6 +314,7 @@ void nextStatement(Parser *parser)
         emitByte(parser, OP_POP);
     }
 
+    emitByte(parser, OP_POP);
     // Jump to top of current innermost loop.
     emitLoop(parser);
 }

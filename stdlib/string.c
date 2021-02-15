@@ -138,7 +138,7 @@ VALUE string_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*a
     return instance;
 }
 
-VALUE string_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
     StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);

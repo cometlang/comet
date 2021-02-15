@@ -260,9 +260,10 @@ static bool callValue(VM *vm, Value callee, int argCount)
 
 static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, int argCount)
 {
-    if (method->arity != argCount)
+    if (argCount < method->arity)
     {
-        runtimeError(vm, "%s expects %u argument(s), but was given %d\n", string_get_cstr(method->name), method->arity, argCount);
+        runtimeError(vm, "%s expects at least %u argument(s), but was given %d\n",
+                     string_get_cstr(method->name), method->arity, argCount);
     }
     Value result = method->function(vm, receiver, argCount, vm->stackTop - argCount);
     popMany(vm, argCount + 1);
@@ -900,7 +901,7 @@ static InterpretResult run(VM *vm)
 #undef READ_BYTE
 }
 
-VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments)
+VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
 {
     VM frame;
     initVM(&frame);
@@ -910,7 +911,15 @@ VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arg
     {
         push(&frame, arguments[i]);
     }
-    if (invoke(&frame, method_name, arg_count))
+    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
+    {
+        if (callValue(&frame, method, arg_count) && run(&frame) == INTERPRET_OK)
+        {
+            // This is kinda dodgey...but also correct.
+            result = *(frame.stackTop + arg_count);
+        }
+    }
+    else if (invoke(&frame, method, arg_count))
     {
         result = pop(&frame);
     }

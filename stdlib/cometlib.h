@@ -15,9 +15,12 @@ void init_boolean(VM *vm);
 void init_socket(VM *vm);
 void init_thread(VM *vm);
 void init_enum(VM *vm);
+void init_set(VM* vm);
 void bootstrap_number(VM *vm);
 void complete_number(VM *vm);
 void bootstrap_iterable(VM *vm);
 void complete_iterable(VM *vm);
+
+VALUE callable_p(VM *vm, int arg_count, VALUE *args);
 
 #endif

@@ -32,7 +32,7 @@ static VALUE assertNative(VM *vm, int UNUSED(arg_count), VALUE *args)
     return NIL_VAL;
 }
 
-static VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
+VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
 {
     VALUE val = args[0];
     if (IS_BOUND_METHOD(val) || IS_CLASS(val) || IS_FUNCTION(val) || IS_CLOSURE(val) ||

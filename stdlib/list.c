@@ -148,6 +148,32 @@ VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE
     return NIL_VAL;
 }
 
+VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    VALUE result = create_list(vm);
+    push(vm, result);
+    for (int i = 0; i < data->count; i++)
+    {
+        VALUE status = call_function(NIL_VAL, arguments[0], 1, &data->entries[i].item);
+        if (status == TRUE_VAL)
+        {
+            list_add(vm, result, 1, &data->entries[i].item);
+        }
+    }
+    return pop(vm);
+}
+
+VALUE list_map(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
+VALUE list_reduce(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 VALUE list_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return copyString(vm, "Native List Instance", 20);
@@ -190,6 +216,9 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_iterable_empty_q, "empty?", 0, false);
     defineNativeMethod(vm, list_class, &list_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, list_class, &list_get_at, "get_at", 1, false);
+    defineNativeMethod(vm, list_class, &list_filter, "filter", 1, false);
+    defineNativeMethod(vm, list_class, &list_map, "map", 1, false);
+    defineNativeMethod(vm, list_class, &list_reduce, "reduce", 1, false);
     defineNativeMethod(vm, list_class, &list_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "size", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "length", 0, false);

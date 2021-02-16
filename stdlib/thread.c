@@ -27,7 +27,7 @@ VALUE thread_join(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
 
 void init_thread(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, thread_destructor, NULL);
+    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, thread_destructor, NULL, CLS_THREAD);
     defineNativeMethod(vm, klass, &thread_init, "init", 0, false);
     defineNativeMethod(vm, klass, &thread_start, "start", 0, false);
     defineNativeMethod(vm, klass, &thread_join, "join", 0, false);

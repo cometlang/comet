@@ -46,6 +46,28 @@ typedef enum
 
 typedef enum
 {
+    CLS_BOOLEAN,
+    CLS_DATETIME,
+    CLS_ENUM,
+    CLS_ENUM_VALUE,
+    CLS_EXCEPTION,
+    CLS_FILE,
+    CLS_ITERABLE,
+    CLS_ITERATOR,
+    CLS_LIST,
+    CLS_HASH,    
+    CLS_NIL,
+    CLS_NUMBER,
+    CLS_OBJECT,
+    CLS_SET,
+    CLS_SOCKET,
+    CLS_STRING,
+    CLS_THREAD,
+    CLS_USER_DEF,
+} ClassType;
+
+typedef enum
+{
     OPERATOR_MULTIPLICATION,
     OPERATOR_PLUS,
     OPERATOR_MINUS,
@@ -110,6 +132,7 @@ typedef struct sObjClass
     Table staticMethods;
     Value operators[NUM_OPERATORS];
     struct sObjClass *super_;
+    ClassType classType;
 } ObjClass;
 
 typedef void *(*NativeConstructor)(void);

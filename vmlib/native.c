@@ -14,9 +14,9 @@ void defineNativeFunction(VM *vm, const char *name, NativeFn function)
     pop(vm);
 }
 
-VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor)
+VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType)
 {
-    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor));
+    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType));
 }
 
 VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
@@ -56,9 +56,9 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
     }
 }
 
-VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name)
+VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name, ClassType classType)
 {
-    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor));
+    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType));
     return completeNativeClassDefinition(vm, klass, super_name);
 }
 

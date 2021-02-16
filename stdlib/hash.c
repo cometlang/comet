@@ -240,8 +240,9 @@ void table_remove_white(VM *vm, HashTable *table)
     }
 }
 
-void mark_table(HashTable *table)
+void hash_mark_contents(VALUE self)
 {
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     for (size_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
@@ -257,7 +258,7 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL);
+    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL, CLS_HASH);
     defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
     defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);

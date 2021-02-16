@@ -3,7 +3,7 @@
 
 void init_stdlib(VM *vm)
 {
-    VALUE obj_klass = bootstrapNativeClass(vm, "Object", NULL, NULL);
+    VALUE obj_klass = bootstrapNativeClass(vm, "Object", NULL, NULL, CLS_OBJECT);
     bootstrap_number(vm);
     bootstrap_iterable(vm);
     init_string(vm, obj_klass);

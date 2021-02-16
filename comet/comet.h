@@ -28,4 +28,7 @@ double number_get_value(VALUE self);
 VALUE create_list(VM *vm);
 VALUE list_add(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
+void hash_mark_contents(VALUE self);
+void list_mark_contents(VALUE self);
+void set_mark_contents(VALUE self);
 #endif

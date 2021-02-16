@@ -200,6 +200,18 @@ VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
+void list_mark_contents(VALUE self)
+{
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        if (!IS_NIL(data->entries[i].item))
+        {
+            markValue(data->entries[i].item);
+        }
+    }
+}
+
 VALUE create_list(VM *vm)
 {
     return OBJ_VAL(newInstance(vm, AS_CLASS(list_class)));
@@ -207,7 +219,7 @@ VALUE create_list(VM *vm)
 
 void init_list(VM *vm)
 {
-    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable");
+    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable", CLS_LIST);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
@@ -226,7 +238,7 @@ void init_list(VM *vm)
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
 
     list_iterator_class = defineNativeClass(
-        vm, "ListIterator", &list_iterator_constructor, &list_iterator_destructor, "Iterator");
+        vm, "ListIterator", &list_iterator_constructor, &list_iterator_destructor, "Iterator", CLS_ITERATOR);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_get_next, "get_next", 0, false);
 }

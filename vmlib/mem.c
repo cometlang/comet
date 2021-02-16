@@ -90,6 +90,24 @@ void markObject(Obj *object)
     printf("\n");
 #endif
 
+    if (object->type == OBJ_NATIVE_INSTANCE || object->type == OBJ_INSTANCE)
+    {
+        ObjInstance *instance = (ObjInstance *)object;
+        switch (instance->klass->classType)
+        {
+            case CLS_HASH:
+                hash_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_LIST:
+                list_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_SET:
+                set_mark_contents(OBJ_VAL(object));
+                break;
+            default:
+                break;
+        }
+    }
     object->isMarked = true;
 
     if (grey_capacity < grey_count + 1)

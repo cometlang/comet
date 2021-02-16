@@ -155,7 +155,7 @@ static VALUE enum_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 
 void init_enum(VM *vm)
 {
-    enum_class = defineNativeClass(vm, "Enum", &enum_constructor, &enum_destructor, "Iterable");
+    enum_class = defineNativeClass(vm, "Enum", &enum_constructor, &enum_destructor, "Iterable", CLS_ENUM);
     defineNativeMethod(vm, enum_class, &enum_parse, "parse", 1, true);
     defineNativeMethod(vm, enum_class, &enum_add, "add", 2, false);
     defineNativeMethod(vm, enum_class, &enum_iterator, "iterator", 0, false);
@@ -163,12 +163,12 @@ void init_enum(VM *vm)
     defineNativeMethod(vm, enum_class, &enum_empty_q, "empty?", 0, false);
     defineNativeMethod(vm, enum_class, &enum_length, "length", 0, false);
 
-    enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, &enumvalue_destructor, "Number");
+    enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, &enumvalue_destructor, "Number", CLS_ENUM_VALUE);
     defineNativeMethod(vm, enum_value_class, &enumvalue_init, "init", 2, false);
     defineNativeMethod(vm, enum_value_class, &enumvalue_to_string, "to_string", 0, false);
 
     enum_iterator_class = defineNativeClass(
-        vm, "EnumIterator", &enum_iterator_constructor, &enum_iterator_destructor, "Iterator");
+        vm, "EnumIterator", &enum_iterator_constructor, &enum_iterator_destructor, "Iterator", CLS_ITERATOR);
     defineNativeMethod(vm, enum_iterator_class, &enum_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, enum_iterator_class, &enum_iterator_get_next, "get_next", 0, false);
 }

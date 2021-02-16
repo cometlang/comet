@@ -33,9 +33,14 @@ VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg
     return NIL_VAL;
 }
 
+void set_mark_contents(VALUE UNUSED(self))
+{
+
+}
+
 void init_set(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable");
+    VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable", CLS_SET);
     defineNativeMethod(vm, klass, &set_add, "add", 1, false);
     defineNativeMethod(vm, klass, &set_remove, "remove", 1, false);
 }

@@ -29,9 +29,9 @@ VALUE exception_get_stacktrace(VM *vm, VALUE self)
 
 void init_exception(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL);
+    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, CLS_EXCEPTION);
     defineNativeMethod(vm, klass, &exception_init, "init", 1, false);
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
-    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception");
+    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION);
 }

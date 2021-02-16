@@ -787,7 +787,7 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_CLASS:
-            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()))));
+            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF)));
             break;
         case OP_INHERIT:
         {

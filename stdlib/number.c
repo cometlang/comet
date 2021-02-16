@@ -148,7 +148,7 @@ double number_get_value(VALUE self)
 
 void bootstrap_number(VM *vm)
 {
-    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor);
+    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor, CLS_NUMBER);
 }
 
 void complete_number(VM *vm)

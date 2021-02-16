@@ -17,8 +17,9 @@ If given an `initial_capactiy` then the list will be pre-allocated to contain th
 - `to_string()` returns a string representation of the list
 - `size()` returns the number of items stored in the list
 - `length()` alias for `size()`
-- `sort()` returns a sorted shallow copy of the list
-- `sort!()` sorts the list in-place, returning `self`
+- `sort()` returns a sorted shallow copy of the list (not yet implemented)
+- `sort!()` sorts the list in-place, returning `self` (not yet implemented)
+- `filter()` takes a callable object which is called with every item, returning `true` if the item should be part of the list returned.  The list returned is a new object and the initial list is left unchanged.
 
 ### operators
 - `==` compares the contents of the list to another list to see if the contents (and order!) are identical

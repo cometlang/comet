@@ -10,15 +10,17 @@ Comments use the `#` character and go to the end of the line.  There are no bloc
 
 ## Keywords
 
-`as`, `catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `function`, `if`, `in`, `instanceof`, `nil`, `operator`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
+`as`, `catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `foreach`, `function`, `if`, `import`, `in`, `instanceof`, `next`, `nil`, `operator`, `rethrow`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
 
 ## Literals
 
 ### Strings
-Literal strings can be defined using either single `'` or double `"` quotes.  There isn't an interpolated string, yet.  String literals are UTF-8 encoded.
+Literal strings can be defined using either single `'` or double `"` quotes.  There isn't an interpolated string, yet. All strings are UTF-8 encoded.  Strings in Comet are immutable.
 
 ### Numbers
-Currently all numbers are 64bit signed floating point values.
+Currently all numbers are 64bit signed floating point values.  Literal numbers can contain underscores for your reading convenience, e.g. 1_000_000
+
+Hexadecimal constants are supported, prefixed by 0x (not 0X). e.g. 0xdeadbeef15bad
 
 ### Lists
 literal lists can be declared with `[]` for an empty list or `[val, val2, ...]` for static initialization.
@@ -38,7 +40,8 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `+` addition
 - `-` subtraction
 - `/` division
-- `%` modulo (not yet implemented)
+- `%` modulo
+(the += operators are not yet implemented, though they should be accepted by the lexer)
 
 ### Comparison
 - `>` greater than
@@ -70,10 +73,11 @@ var my_variable = 'This super cool string'
 There may only be one statement per line.  The semi-colon `;` is not valid to end a statement and may only be used to delineate for loop section declarations.
 
 ## Loops
-There are currently no `break` or `continue` statements in Comet for loop control.  They are planned and coming.
+The `next` statement will mean that the next iteration of the loop will be executed.
+There is currently no `break` statement in Comet for loop control.  It is planned and coming.
 
 ### for
-Exactly like you expect.  `for ([declaration]; [condition]; [post action] )`
+Exactly like a tradional C for loop.  `for ([declaration]; [condition]; [post action] )`
 
 ```
 for (var i = 0; i < 10; i = i + 1)
@@ -83,7 +87,7 @@ for (var i = 0; i < 10; i = i + 1)
 ```
 
 ### while
-Exactly like you expect. `while (condition)`
+Exactly like a tradional C while loop. `while (condition)`
 ```
 while (true)
 {
@@ -91,8 +95,8 @@ while (true)
 }
 ```
 
-### foreach (not yet implemented)
-The foreach loops are special - they are syntactic sugar for iterating over an interable object.  So anything that implements the [Iterable](../stdlib/iterable.md) methods can be used in a foreach loop.
+### foreach
+The foreach loops are special - they are syntactic sugar for iterating over an iterable object.  So anything that implements the [Iterable](../stdlib/iterable.md) methods can be used in a foreach loop.
 
 ```
 foreach(var thing in things)
@@ -107,6 +111,7 @@ Is the same as writing:
 var iterator = things.iterator()
 while (iterator.has_next?())
 {
+    ...
     var thing = iterator.get_next()
 }
 ```
@@ -265,15 +270,17 @@ Lambda functions are anonymous functions that can access the current lexical sco
 
 
 ```
+var my_string = 'This is a cool string'
 var my_lambda = |arg1, arg2[, ...]| {
     print(arg1, arg2)
+    printf(my_string)
 }
 
 my_lambda('this is ', 'a string')
 ```
 
 ## Exception Handling
-An [Exception](../stdlib/exception.md) may be thrown (well, it can be any type, but traditionally, it is exceptions that are thrown) via the `throw` keyword.  When an exception is thrown, the interpreter will set a field on it called `stacktrace` which contains the string representation of the stacktrace (separated by newline characters).  If the exception being thrown already contains a field called `stacktrace`, it will be overwritten.
+An [Exception](../stdlib/exception.md) may be thrown (well, any type may be thrown, but traditionally, it is exceptions that are) via the `throw` keyword.  When an exception is thrown, the interpreter will set a field on it called `stacktrace` which contains the string representation of the stacktrace (separated by newline characters).  If the exception being thrown already contains a field called `stacktrace`, it will be overwritten.
 
 Exceptions may be caught if they are thrown from within a `try` block.  Exception handlers may also have an optional `finally` block to be executed irrespective of whether an exception is thrown or handled.
 
@@ -300,6 +307,13 @@ finally
 
 It is only possible to catch a single type of exception and it's only possible to have a single catch block at this stage.
 
+If you have caught an exception and wish to re-throw it, but maintain the previous stacktrace stored, then you should use the `rethrow` keyword.  It is possible to use this outside of an exception handler, but it doesn't make a lot of sense anywhere else.  Rethrowing an exception that hasn't previously been thrown will print a warning instead of a stacktrace.
+
+## Imports
+
+Currently, imports are cheap-and-cheerful, and are planned to be changed in the future.  It is possible to import a file through the `import` keyword, followed by a string containing the path to a file, but without its extension. This can be relative or absolute.  e.g. `import '../path/to/file'`
+I say that imports are cheap and cheerful, because all files share a single global scope, meaning that globals are truly global and name collisions are a real possibility.
+
 ## Native Enhancements
 
-It's totally possible to implement classes as native libraries (see the stdlib).  It's not possible to do exception handling in native code, however.
+It's totally possible to implement classes as native libraries (see the stdlib).  It's not possible to do exception handling in native code, however.  You can even make calls into the non-native code, so long as you have access to it.

@@ -12,3 +12,6 @@ print(MY_ENUM.two)
 print("Three is deliberately missing")
 print(MY_ENUM.four)
 print(MY_ENUM.five)
+
+print(MY_ENUM.parse("four"))
+print(MY_ENUM.parse(5))

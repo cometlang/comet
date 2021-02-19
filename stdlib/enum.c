@@ -184,10 +184,19 @@ static VALUE enum_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
     return create_number(vm, data->array.count);
 }
 
+void enum_mark_contents(VALUE self)
+{
+    EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
+    for (int i = 0; i < data->array.count; i++)
+    {
+        markValue(data->array.values[i]);
+    }
+}
+
 void init_enum(VM *vm)
 {
     enum_class = defineNativeClass(vm, "Enum", &enum_constructor, &enum_destructor, "Iterable", CLS_ENUM);
-    defineNativeMethod(vm, enum_class, &enum_parse, "parse", 1, true);
+    defineNativeMethod(vm, enum_class, &enum_parse, "parse", 1, false);
     defineNativeMethod(vm, enum_class, &enum_add, "add", 2, false);
     defineNativeMethod(vm, enum_class, &enum_iterator, "iterator", 0, false);
     defineNativeMethod(vm, enum_class, &enum_contains_p, "contains?", 1, false);

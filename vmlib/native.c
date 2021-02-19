@@ -22,7 +22,7 @@ VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor construct
 VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
 {
     ObjClass *klass = AS_CLASS(klass_);
-    Value name_string = copyString(vm, klass->name, strlen(klass->name));
+    Value name_string = copyString(vm, klass->name, (int)strlen(klass->name));
     push(vm, name_string);
     if (string_compare_to_cstr(name_string, "Object") != 0)
     {
@@ -31,7 +31,7 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         {
             super_name = "Object";
         }
-        if (!findGlobal(copyString(vm, super_name, strlen(super_name)), &parent))
+        if (!findGlobal(copyString(vm, super_name, (int)strlen(super_name)), &parent))
         {
             runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;

@@ -17,7 +17,7 @@ ObjFunction *newFunction();
 Obj *newInstance(VM *vm, ObjClass *klass);
 ObjNative *newNativeFunction(VM *vm, NativeFn function);
 Value takeString(VM *vm, char *chars, int length);
-Value copyString(VM *vm, const char *chars, int length);
+Value copyString(VM *vm, const char *chars, size_t length);
 ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);

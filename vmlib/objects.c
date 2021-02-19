@@ -171,7 +171,7 @@ Value takeString(VM *vm, char *chars, int length)
     return allocateString(vm, chars, length);
 }
 
-Value copyString(VM *vm, const char *chars, int length)
+Value copyString(VM *vm, const char *chars, size_t length)
 {
     uint32_t hash = string_hash_cstr(chars, length);
     Value interned = findInternedString(chars, hash);

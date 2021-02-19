@@ -29,8 +29,9 @@ SourceFile *readSourceFile(const char *path)
     sourcefile->source[bytesRead] = '\0';
 
     fclose(file);
-    int pathLen = strlen(path);
+    size_t pathLen = strlen(path);
     sourcefile->path = (char *) malloc(pathLen + 1);
-    strncpy(sourcefile->path, path, pathLen + 1);
+    memcpy(sourcefile->path, path, pathLen);
+    sourcefile->path[pathLen] = '\0';
     return sourcefile;
 }

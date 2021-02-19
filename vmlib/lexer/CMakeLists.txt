@@ -9,4 +9,6 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/../
 )
 
-add_subdirectory(test)
+if (NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Release")
+    add_subdirectory(test)
+endif()

@@ -204,6 +204,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     if (intermediate_length < 0)
     {
         printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+        return NIL_VAL;
     }
     char output[data->length + 1];
 

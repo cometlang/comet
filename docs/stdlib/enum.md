@@ -11,7 +11,7 @@ Not intended to be instantiated directly, but rather through the `enum NAME {}` 
 - `contains?(value)` returns `true` if the given [EnumValue](#enumvalue) is part of this enum
 
 ### static methods
-- `parse(value)` parses either an enum name, a stringified integer, or an integer to the corresponding [EnumValue](#enumvalue).  Returns `nil` if no corresponding [EnumValue](#enumvalue) could be found in this enum.
+- `parse(value)` parses either an enum name, or an integer to the corresponding [EnumValue](#enumvalue).  Returns `nil` if no corresponding [EnumValue](#enumvalue) could be found in this enum.
 
 
 ## EnumValue

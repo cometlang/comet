@@ -383,6 +383,13 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
+bool is_a_string(VALUE instance)
+{
+    if (instanceof(instance, string_class) == TRUE_VAL)
+        return true;
+    return false;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(vm, "String", string_constructor, string_destructor, CLS_STRING);

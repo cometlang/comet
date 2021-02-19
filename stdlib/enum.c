@@ -105,9 +105,40 @@ static void enum_destructor(void *to_destruct)
     FREE(EnumData, data);
 }
 
-static VALUE enum_parse(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE enum_parse(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    // handle string names, string ints and int ints.
+    EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
+    VALUE candidate = arguments[0];
+    if (is_a_string(candidate))
+    {
+        for (int i = 0; i < data->array.count; i++)
+        {
+            VALUE current = data->array.values[i];
+            if (current != NIL_VAL)
+            {
+                EnumValueData *val = GET_NATIVE_INSTANCE_DATA(EnumValueData, current);
+                if (strcmp(string_get_cstr(val->name), string_get_cstr(candidate)) == 0)
+                {
+                    return current;
+                }
+            }
+        }
+    }
+    else if (is_a_number(candidate))
+    {
+        for (int i = 0; i < data->array.count; i++)
+        {
+            VALUE current = data->array.values[i];
+            if (current != NIL_VAL)
+            {
+                EnumValueData *val = GET_NATIVE_INSTANCE_DATA(EnumValueData, current);
+                if (val->num.num == number_get_value(candidate))
+                {
+                    return current;
+                }
+            }
+        }
+    }
     return NIL_VAL;
 }
 
@@ -128,7 +159,7 @@ static VALUE enum_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUS
     return instance;
 }
 
-static VALUE enum_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+static VALUE enum_contains_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     for (int i = 0; i < data->array.count; i++)
@@ -139,7 +170,7 @@ static VALUE enum_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), 
     return FALSE_VAL;
 }
 
-static VALUE enum_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE enum_empty_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     if (data->array.count == 0)
@@ -159,8 +190,8 @@ void init_enum(VM *vm)
     defineNativeMethod(vm, enum_class, &enum_parse, "parse", 1, true);
     defineNativeMethod(vm, enum_class, &enum_add, "add", 2, false);
     defineNativeMethod(vm, enum_class, &enum_iterator, "iterator", 0, false);
-    defineNativeMethod(vm, enum_class, &enum_contains_q, "contains?", 1, false);
-    defineNativeMethod(vm, enum_class, &enum_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, enum_class, &enum_contains_p, "contains?", 1, false);
+    defineNativeMethod(vm, enum_class, &enum_empty_p, "empty?", 0, false);
     defineNativeMethod(vm, enum_class, &enum_length, "length", 0, false);
 
     enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, &enumvalue_destructor, "Number", CLS_ENUM_VALUE);

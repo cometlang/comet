@@ -24,3 +24,6 @@
 
 ## print
 - `print([...])` print every argument by first calling `to_string()` on it first, ending with the newline
+
+## assert
+- `assert(value)` if value is falsy, then an AssertionException is thrown

@@ -40,7 +40,7 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `+` addition
 - `-` subtraction
 - `/` division
-- `%` modulo
+- `%` modulo    
 (the += operators are not yet implemented, though they should be accepted by the lexer)
 
 ### Comparison
@@ -48,7 +48,7 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `<` less than
 - `>=` greater than or equal to
 - `<=` less than or equal to
-- `instanceof` compares an instance to see if it is an instance of the given class
+- `instanceof` compares an instance to see if it is an instance of the given class, including its inheritance hierarchy
 
 ### Logical
 - `&&` logical and

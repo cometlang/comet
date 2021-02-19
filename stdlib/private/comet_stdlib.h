@@ -8,4 +8,7 @@ typedef struct {
   double num;
 } NumberData;
 
+bool is_a_string(VALUE instance);
+bool is_a_number(VALUE instance);
+
 #endif

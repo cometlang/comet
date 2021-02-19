@@ -146,6 +146,13 @@ double number_get_value(VALUE self)
     return NAN;
 }
 
+bool is_a_number(VALUE instance)
+{
+    if (instanceof(instance, number_class) == TRUE_VAL)
+        return true;
+    return false;
+}
+
 void bootstrap_number(VM *vm)
 {
     number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor, CLS_NUMBER);

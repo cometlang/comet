@@ -11,6 +11,3 @@ Exception(message)
 
 ### methods
 - `message()` gets the message set in the constructor
-
-### operators
-- `==` compares if the two objects are the same instance

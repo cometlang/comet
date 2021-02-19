@@ -94,10 +94,9 @@ ObjFunction *newFunction(VM *vm)
 
 Obj *newInstance(VM *vm, ObjClass *klass)
 {
-    if (OBJ_VAL(klass) == NIL_VAL)
+    if (klass->classType == CLS_NIL)
     {
-        fprintf(stderr, "Can't instantiate nil\n");
-        abort();
+        runtimeError(vm, "Can't instantiate Nil\n");
         return NULL;
     }
     Obj *obj = (Obj *)klass;

@@ -18,7 +18,12 @@ static InterpretResult run(VM *vm);
 
 static bool create_instance(VM *vm, ObjClass *klass, int argCount)
 {
-    Value instance = OBJ_VAL(newInstance(vm, klass));
+    Obj *obj_instance = newInstance(vm, klass);
+    if (obj_instance == NULL)
+    {
+        return false;
+    }
+    Value instance = OBJ_VAL(obj_instance);
     vm->stackTop[-argCount - 1] = instance;
     // Call the initializer, if there is one.
     Value initializer;

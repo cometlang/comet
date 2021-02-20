@@ -27,3 +27,6 @@
 
 ## assert
 - `assert(value)` if value is falsy, then an AssertionException is thrown
+
+## callable?
+- `callable?(value)` returns `true` if the value can be called (like a function)

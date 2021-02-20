@@ -34,4 +34,5 @@ void init_exception(VM *vm)
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
     defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION);
+    defineNativeClass(vm, "ArgumentException", NULL, NULL, "Exception", CLS_EXCEPTION);
 }

@@ -182,8 +182,36 @@ VALUE list_reduce(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-VALUE list_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    VALUE callable = arguments[0];
+    VALUE receiver = NIL_VAL;
+    if (!callable_p(vm, 1, &callable))
+    {
+        if (IS_INSTANCE(callable) || IS_NATIVE_INSTANCE(callable))
+        {
+            receiver = callable;
+            ObjInstance *instance = AS_INSTANCE(callable);
+            callable = instance->klass->operators[OPERATOR_EQUALS];
+        }
+        else
+        {
+            throw_exception_native(
+                vm,
+                "ArgumentException",
+                "Unable to compare '%s' in List.find",
+                objTypeName(OBJ_TYPE(callable)));
+            return NIL_VAL;
+        }
+    }
+
+    for (int i = 0; i < data->capacity; i++)
+    {
+        VALUE result = call_function(receiver, callable, 1, &data->entries[i].item);
+        if (result == TRUE_VAL)
+            return data->entries[i].item;
+    }
     return NIL_VAL;
 }
 

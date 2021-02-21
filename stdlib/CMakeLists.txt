@@ -11,7 +11,7 @@ include_directories(
 set(SOURCE 
   _init.c
   boolean.c
-  # datetime.c
+  datetime.c
   enum.c
   exception.c
   file.c

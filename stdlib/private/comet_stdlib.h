@@ -11,4 +11,7 @@ typedef struct {
 bool is_a_string(VALUE instance);
 bool is_a_number(VALUE instance);
 
+VALUE enum_create(VM *vm);
+void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t value);
+
 #endif

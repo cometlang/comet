@@ -145,10 +145,12 @@ static VALUE enum_parse(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE
 static VALUE enum_add(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(enum_value_class)));
+    push(vm, instance);
     enumvalue_init(vm, instance, arg_count, arguments);
     setNativeProperty(vm, self, string_get_cstr(arguments[0]), instance);
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     writeValueArray(&data->array, instance);
+    pop(vm);
     return NIL_VAL;
 }
 
@@ -191,6 +193,22 @@ void enum_mark_contents(VALUE self)
     {
         markValue(data->array.values[i]);
     }
+}
+
+VALUE enum_create(VM *vm)
+{
+    return OBJ_VAL(newInstance(vm, AS_CLASS(enum_class)));
+}
+
+void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t value)
+{
+    VALUE args[2];
+    args[0] = copyString(vm, name, strlen(name));
+    push(vm, args[0]);
+    args[1] = create_number(vm, value);
+    push(vm, args[1]);
+    enum_add(vm, enum_instance, 2, args);
+    popMany(vm, 2);
 }
 
 void init_enum(VM *vm)

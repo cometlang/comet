@@ -177,9 +177,20 @@ VALUE list_map(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return pop(vm);
 }
 
-VALUE list_reduce(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_reduce(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    VALUE accumulator = arguments[1];
+    push(vm, accumulator);
+    VALUE args[3];
+    for (int i = 0; i < data->capacity; i++)
+    {
+        args[0] = accumulator;
+        args[1] = data->entries[i].item;
+        args[2] = create_number(vm, i);
+        accumulator = call_function(NIL_VAL, arguments[0], 3, args);
+    }
+    return pop(vm);
 }
 
 VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

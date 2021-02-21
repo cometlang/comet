@@ -31,19 +31,18 @@ void file_destructor(void *data)
     FREE(FileData, file_data);
 }
 
-VALUE file_static_open(VM *vm, VALUE klass, int arg_count, VALUE *arguments)
+VALUE file_static_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
 {
-    if (arg_count != 2)
-    {
-        fprintf(stderr, "Require 2 arguments a path and opening mode: got %d\n", arg_count);
-        // Throw an exception
-        return NIL_VAL;
-    }
     ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     const char *path = string_get_cstr(arguments[0]);
     const char *mode = string_get_cstr(arguments[1]);
     FILE *fp = fopen(path, mode);
-    //should probably check for NULL and free the object, returning NIL, or throwing an exception or something
+    if (fp == NULL)
+    {
+        // GC will take care of the instance
+        throw_exception_native(vm, "IOException", strerror(errno));
+        return NIL_VAL;
+    }
     ((FileData *)instance->data)->fp = fp;
     return OBJ_VAL(instance);
 }
@@ -77,7 +76,7 @@ VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
     size_t fileSize = ftell(data->fp);
     rewind(data->fp);
 
-    char *buffer = (char *) malloc(sizeof(char) * (fileSize + 1));
+    char *buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
     buffer[bytesRead] = '\0';
 
@@ -139,7 +138,34 @@ VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_cou
 
 VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    FILE *fp = fopen(string_get_cstr(arguments[0]), string_get_cstr(arguments[1]));
+
+    fseek(fp, 0L, SEEK_END);
+    size_t fileSize = ftell(fp);
+    rewind(fp);
+
+    char *buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, fp);
+    buffer[bytesRead] = '\0';
+
+    VALUE result = create_list(vm);
+    push(vm, result);
+
+    uint32_t index = 0;
+    char *current = buffer;
+    while (index < fileSize)
+    {
+        char *line_end = strchr(current, '\n');
+        int length = line_end - current;
+        VALUE string = copyString(vm, current, length);
+        list_add(vm, result, 1, &string);
+        index += length;
+        current = line_end + 1;
+    }
+
+    FREE_ARRAY(char, buffer, fileSize + 1);
+
+    return pop(vm);
 }
 
 void init_file(VM *vm)

@@ -35,4 +35,5 @@ void init_exception(VM *vm)
 
     defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION);
     defineNativeClass(vm, "ArgumentException", NULL, NULL, "Exception", CLS_EXCEPTION);
+    defineNativeClass(vm, "IOException", NULL, NULL, "Exception", CLS_EXCEPTION);
 }

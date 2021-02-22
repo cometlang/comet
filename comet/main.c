@@ -42,6 +42,21 @@ static void runFile(const char *path)
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
+void initArgv(VM *vm, int argc, const char **argv)
+{
+    VALUE argv_list = create_list(vm);
+    push(vm, argv_list);
+    for (int i = 2; i < argc; i++)
+    {
+        VALUE arg = copyString(vm, argv[i], strlen(argv[i]));
+        push(vm, arg);
+        list_add(vm, argv_list, 1, &arg);
+        pop(vm);
+    }
+    addGlobal(copyString(vm, "ARGV", 4), argv_list);
+    pop(vm);
+}
+
 int main(int argc, const char **argv)
 {
     initGlobals();
@@ -50,6 +65,8 @@ int main(int argc, const char **argv)
     common_strings[STRING_INIT] = copyString(&virtualMachine, "init", 4);
     common_strings[STRING_HASH] = copyString(&virtualMachine, "hash", 4);
     common_strings[STRING_TO_STRING] = copyString(&virtualMachine, "to_string", 9);
+
+    initArgv(&virtualMachine, argc, argv);
 
     if (argc == 1)
     {

@@ -50,6 +50,7 @@ typedef enum
     CLS_DATETIME,
     CLS_ENUM,
     CLS_ENUM_VALUE,
+    CLS_ENV,
     CLS_EXCEPTION,
     CLS_FILE,
     CLS_ITERABLE,

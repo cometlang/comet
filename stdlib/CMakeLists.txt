@@ -13,6 +13,7 @@ set(SOURCE
   boolean.c
   datetime.c
   enum.c
+  env.c
   exception.c
   file.c
   functions.c

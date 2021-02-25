@@ -32,7 +32,7 @@ set(SOURCE
 
 add_library(stdlib STATIC "${SOURCE}")
 target_link_libraries(stdlib vmlib utf8proc)
-target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private")
+target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private", Threads::Threads)
 target_include_directories(stdlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_subdirectory(test)

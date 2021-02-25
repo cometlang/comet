@@ -40,5 +40,5 @@ target_include_directories(vmlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/../comet
 )
 
-target_link_libraries(vmlib stdlib compiler lexer)
+target_link_libraries(vmlib stdlib compiler lexer Threads::Threads)
 target_include_directories(vmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

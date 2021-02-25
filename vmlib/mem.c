@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdlib.h>
 #include <string.h>
 #include "common.h"
@@ -25,6 +26,8 @@ static int thread_capacity = 0;
 static Obj **grey_stack;
 static int grey_capacity = 0;
 static int grey_count = 0;
+
+static pthread_mutex_t gc_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void register_thread(VM *vm)
 {
@@ -57,6 +60,7 @@ void deregister_thread(VM *vm)
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
+    pthread_mutex_lock(&gc_lock);
     _bytes_allocated += newSize - oldSize;
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
@@ -68,12 +72,12 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
         collectGarbage();
     }
 #endif
+    pthread_mutex_unlock(&gc_lock);
     if (newSize == 0)
     {
         free(previous);
         return NULL;
     }
-
     return realloc(previous, newSize);
 }
 
@@ -413,4 +417,6 @@ void finalizeGarbageCollection(void)
     threads = NULL;
     thread_capacity = 0;
     num_threads = 0;
+
+    pthread_mutex_destroy(&gc_lock);
 }

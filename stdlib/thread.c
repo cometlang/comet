@@ -1,4 +1,5 @@
 #include "comet.h"
+#include <pthread.h>
 
 void *thread_constructor(void)
 {

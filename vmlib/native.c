@@ -41,6 +41,10 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
 
         tableAddAll(&parent_class->methods, &klass->methods);
         tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
+        for (int i = 0; i < NUM_OPERATORS; i++)
+        {
+            klass->operators[i] = parent_class->operators[i];
+        }
         klass->super_ = AS_CLASS(parent);
     }
     if (addGlobal(name_string, OBJ_VAL(klass)))

@@ -62,11 +62,12 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
     pthread_mutex_lock(&gc_lock);
     _bytes_allocated += newSize - oldSize;
+#if DEBUG_STRESS_GC
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
     {
         collectGarbage();
     }
-#if DEBUG_STRESS_GC
+#else
     if (_bytes_allocated > _next_GC)
     {
         collectGarbage();

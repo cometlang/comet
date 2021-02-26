@@ -45,6 +45,12 @@ static VALUE enumvalue_init(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *ar
     return NIL_VAL;
 }
 
+uint64_t enumvalue_get_value(VALUE instance)
+{
+    EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, instance);
+    return (uint64_t) data->num.num;
+}
+
 static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, self);

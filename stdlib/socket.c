@@ -4,34 +4,58 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 
 static VALUE socket_type;
-static VALUE socket_family;
+static VALUE address_family;
 
 typedef struct {
     int sock_fd;
-    struct addrinfo *address;
 } SocketData;
 
-VALUE socket_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *) newInstance(vm, AS_CLASS(klass));
-    SocketData UNUSED(*data) = GET_NATIVE_INSTANCE_DATA(SocketData, OBJ_VAL(instance));
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    int af = enumvalue_get_value(arguments[0]);
+    data->sock_fd = socket(af, enumvalue_get_value(arguments[1]), 0);
     return NIL_VAL;
+}
+
+VALUE socket_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
+{
+    VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(klass)));
+    push(vm, instance);
+    socket_init(vm, instance, arg_count, arguments);
+    return pop(vm);
 }
 
 VALUE socket_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, OBJ_VAL(self));
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
     if (data->sock_fd > 0)
     {
         close(data->sock_fd);
     }
     data->sock_fd = -1;
+    return NIL_VAL;
+}
+
+VALUE socket_connect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    int af = enumvalue_get_value(arguments[0]);
+    struct sockaddr address;
+    inet_pton(af, string_get_cstr(arguments[0]), &address);
+    if (connect(data->sock_fd, &address, sizeof(address)) != 0)
+    {
+        throw_exception_native(vm, "IOException", "Could not connect: %s", strerror(errno));
+    }
     return NIL_VAL;
 }
 
@@ -69,10 +93,11 @@ VALUE socket_listen(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
 void init_socket(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Socket", NULL, NULL, NULL, CLS_SOCKET);
-    defineNativeMethod(vm, klass, &socket_open, "open", 1, true);
+    defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
     defineNativeMethod(vm, klass, &socket_bind, "bind", 1, false);
     defineNativeMethod(vm, klass, &socket_accept, "accept", 0, false);
     defineNativeMethod(vm, klass, &socket_listen, "listen", 1, false);
+    defineNativeMethod(vm, klass, &socket_connect, "connect", 1, false);
 
     socket_type = enum_create(vm);
     push(vm, socket_type);
@@ -82,9 +107,9 @@ void init_socket(VM *vm)
     enum_add_value(vm, socket_type, "RAW", SOCK_RAW);
     pop(vm);
 
-    socket_family = enum_create(vm);
-    push(vm, socket_family);
-    addGlobal(copyString(vm, "SOCKET_FAMILY", 13), socket_family);
+    address_family = enum_create(vm);
+    push(vm, address_family);
+    addGlobal(copyString(vm, "ADDRESS_FAMILY", 13), address_family);
     enum_add_value(vm, socket_type, "UNIX", AF_UNIX);
     enum_add_value(vm, socket_type, "IPv4", AF_INET);
     enum_add_value(vm, socket_type, "IPv6", AF_INET6);

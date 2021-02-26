@@ -110,9 +110,9 @@ void init_socket(VM *vm)
     address_family = enum_create(vm);
     push(vm, address_family);
     addGlobal(copyString(vm, "ADDRESS_FAMILY", 13), address_family);
-    enum_add_value(vm, socket_type, "UNIX", AF_UNIX);
-    enum_add_value(vm, socket_type, "IPv4", AF_INET);
-    enum_add_value(vm, socket_type, "IPv6", AF_INET6);
-    enum_add_value(vm, socket_type, "NETLINK", AF_NETLINK);
+    enum_add_value(vm, address_family, "UNIX", AF_UNIX);
+    enum_add_value(vm, address_family, "IPv4", AF_INET);
+    enum_add_value(vm, address_family, "IPv6", AF_INET6);
+    enum_add_value(vm, address_family, "NETLINK", AF_NETLINK);
     pop(vm);
 }

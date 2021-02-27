@@ -78,14 +78,25 @@ VALUE socket_connect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments
     return NIL_VAL;
 }
 
-VALUE socket_write(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_write(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    const char *string = string_get_cstr(arguments[0]);
+    size_t length = strlen(string);
+    size_t sent = 0;
+    while (sent < length)
+    {
+        sent += send(data->sock_fd, &string[sent], length - sent, 0);
+    }
     return NIL_VAL;
 }
 
-VALUE socket_read(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    char received[2048];
+    size_t actual = recv(data->sock_fd, received, 2048, 0);
+    return copyString(vm, received, actual);
 }
 
 VALUE socket_bind(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

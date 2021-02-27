@@ -46,15 +46,34 @@ VALUE socket_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUS
     return NIL_VAL;
 }
 
+
+/**
+ * @arg1 ADDRESS_FAMILY
+ * @arg2 IP Address as a String
+ * @arg3 Port number
+ */
 VALUE socket_connect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
     int af = enumvalue_get_value(arguments[0]);
     struct sockaddr address;
-    inet_pton(af, string_get_cstr(arguments[0]), &address);
-    if (connect(data->sock_fd, &address, sizeof(address)) != 0)
+    inet_pton(af, string_get_cstr(arguments[1]), &address);
+    uint16_t port = number_get_value(arguments[2]);
+    socklen_t length;
+    if (af == AF_INET)
     {
-        throw_exception_native(vm, "IOException", "Could not connect: %s", strerror(errno));
+        ((struct sockaddr_in *) &address)->sin_port = port;
+        length = sizeof(struct sockaddr_in);
+    }
+    else if (af == AF_INET6)
+    {
+        ((struct sockaddr_in6 *) &address)->sin6_port = port;
+        length = sizeof(struct sockaddr_in6);
+    }
+
+    if (connect(data->sock_fd, &address, length) != 0)
+    {
+        throw_exception_native(vm, "SocketException", "Could not connect: %s", strerror(errno));
     }
     return NIL_VAL;
 }
@@ -79,13 +98,13 @@ VALUE socket_accept(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
     return NIL_VAL;
 }
 
-VALUE socket_listen(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_listen(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, OBJ_VAL(self));
     int queued_connections = number_get_value(arguments[0]);
     if (listen(data->sock_fd, queued_connections) < 0)
     {
-        throw_exception_native(vm, "IOException", "Unable to open socket: %s\n", strerror(errno));
+        throw_exception_native(vm, "SocketException", "Unable to open socket: %s\n", strerror(errno));
     }
     return NIL_VAL;
 }
@@ -93,6 +112,7 @@ VALUE socket_listen(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
 void init_socket(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Socket", NULL, NULL, NULL, CLS_SOCKET);
+    defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
     defineNativeMethod(vm, klass, &socket_bind, "bind", 1, false);
     defineNativeMethod(vm, klass, &socket_accept, "accept", 0, false);

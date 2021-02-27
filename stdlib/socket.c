@@ -90,6 +90,29 @@ VALUE socket_read(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
 
 VALUE socket_bind(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    int af = enumvalue_get_value(arguments[0]);
+    const char *ip_address = string_get_cstr(arguments[1]);
+    struct sockaddr address;
+    inet_pton(af, ip_address, &address);
+    uint16_t port = number_get_value(arguments[2]);
+    socklen_t length;
+    if (af == AF_INET)
+    {
+        ((struct sockaddr_in *) &address)->sin_port = port;
+        length = sizeof(struct sockaddr_in);
+    }
+    else if (af == AF_INET6)
+    {
+        ((struct sockaddr_in6 *) &address)->sin6_port = port;
+        length = sizeof(struct sockaddr_in6);
+    }
+
+    if (bind(data->sock_fd, &address, length) != 0)
+    {
+        throw_exception_native(
+            vm, "SocketException", "Could not bind to address %s:%u", ip_address, port);
+    }
     return NIL_VAL;
 }
 

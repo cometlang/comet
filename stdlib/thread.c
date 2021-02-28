@@ -1,5 +1,7 @@
+#include <errno.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
 #include "comet.h"
 #include "comet_stdlib.h"
 
@@ -26,7 +28,7 @@ void *thread_runner(void *arg)
     return AS_OBJ(call_function(data->self, data->start_routine, 1, &data->arg));
 }
 
-VALUE thread_start(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE thread_start(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ThreadData *data = GET_NATIVE_INSTANCE_DATA(ThreadData, self);
     data->self = self;
@@ -34,7 +36,11 @@ VALUE thread_start(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arg
     data->arg = arguments[1];
     pthread_attr_t thread_attributes;
     pthread_attr_init(&thread_attributes);
-    pthread_create(&data->thread_id, &thread_attributes, &thread_runner, data);
+    int status = pthread_create(&data->thread_id, &thread_attributes, &thread_runner, data);
+    if (status != 0)
+    {
+        throw_exception_native(vm, "SocketException", "Unable to start thread");
+    }
     pthread_attr_destroy(&thread_attributes);
     return NIL_VAL;
 }
@@ -43,7 +49,11 @@ VALUE thread_join(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSE
 {
     ThreadData *data = GET_NATIVE_INSTANCE_DATA(ThreadData, self);
     void *result = NULL;
-    pthread_join(data->thread_id, &result);
+    int status = pthread_join(data->thread_id, &result);
+    if (status != 0)
+    {
+        throw_exception_native(vm, "SocketException", "Unable to join thread");
+    }
     if (result != NULL)
         return OBJ_VAL(result);
     return NIL_VAL;

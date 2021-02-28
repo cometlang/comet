@@ -1,6 +1,7 @@
 #include "cometlib.h"
 #include "comet.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -42,10 +43,23 @@ VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
     return FALSE_VAL;
 }
 
+#define NANO_SECONDS_PER_SECOND 1000000000
+
+VALUE fn_sleep(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
+{
+    double input_time = number_get_value(args[0]);
+    struct timespec sleep_time, remainder;
+    sleep_time.tv_sec = floor(input_time);
+    sleep_time.tv_nsec = (input_time - sleep_time.tv_sec) * NANO_SECONDS_PER_SECOND;
+    nanosleep(&sleep_time, &remainder);
+    return NIL_VAL;
+}
+
 void init_functions(VM *vm)
 {
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
     defineNativeFunction(vm, "assert", &assertNative);
     defineNativeFunction(vm, "callable?", &callable_p);
+    defineNativeFunction(vm, "sleep", &fn_sleep);
 }

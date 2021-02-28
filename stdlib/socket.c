@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -146,8 +147,21 @@ VALUE socket_bind(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE socket_accept(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_accept(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
+    struct sockaddr peer;
+    socklen_t peer_len;
+    int connection_fd = accept(data->sock_fd, &peer, &peer_len);
+    if (connection_fd > 0)
+    {
+        ObjNativeInstance *connection = (ObjNativeInstance *) newInstance(vm, AS_INSTANCE(self)->klass);
+        SocketData *conn_data = (SocketData *) connection->data;
+        conn_data->address_family = peer.sa_family;
+        conn_data->sock_fd = connection_fd;
+        conn_data->sock_type = data->sock_type;
+        return OBJ_VAL(connection);
+    }
     return NIL_VAL;
 }
 
@@ -167,6 +181,7 @@ void init_socket(VM *vm)
     VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET);
     defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
+    defineNativeMethod(vm, klass, &socket_close, "close", 0, false);
     defineNativeMethod(vm, klass, &socket_bind, "bind", 1, false);
     defineNativeMethod(vm, klass, &socket_accept, "accept", 0, false);
     defineNativeMethod(vm, klass, &socket_listen, "listen", 1, false);

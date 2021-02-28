@@ -1,4 +1,5 @@
 #include <pthread.h>
+#include <stdio.h>
 #include "comet.h"
 #include "comet_stdlib.h"
 

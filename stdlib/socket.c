@@ -1,29 +1,46 @@
-#include "comet.h"
-#include "comet_stdlib.h"
-
-#include <stdio.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <netdb.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+
+#include "comet.h"
+#include "comet_stdlib.h"
 
 static VALUE socket_type;
 static VALUE address_family;
 
 typedef struct {
     int sock_fd;
+    int address_family;
+    int sock_type;
 } SocketData;
+
+void *socket_constructor(void)
+{
+    return ALLOCATE(SocketData, 1);
+}
+
+void socket_destructor(void *data)
+{
+    FREE(SocketData, data);
+}
 
 VALUE socket_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
-    int af = enumvalue_get_value(arguments[0]);
-    data->sock_fd = socket(af, enumvalue_get_value(arguments[1]), 0);
+    data->address_family = enumvalue_get_value(arguments[0]);
+    data->sock_type = enumvalue_get_value(arguments[1]);
+    data->sock_fd = socket(data->address_family, data->sock_type, 0);
+    if (data->sock_fd < 0)
+    {
+        throw_exception_native(vm, "SocketException", "Could not open socket: %s", gai_strerror(data->sock_fd));
+    }
     return NIL_VAL;
 }
 
@@ -46,34 +63,45 @@ VALUE socket_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUS
     return NIL_VAL;
 }
 
+static struct addrinfo *get_address_info(VM *vm, SocketData *data, const char *ip_address, uint16_t port)
+{
+    int status;
+    struct addrinfo hints;
+    struct addrinfo *servinfo;
+    char port_string[5];
+    snprintf(port_string, 5, "%u", port);
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = data->address_family;
+    hints.ai_socktype = data->sock_type;
+    hints.ai_flags = AI_PASSIVE;
+
+    if ((status = getaddrinfo(ip_address, port_string, &hints, &servinfo)) != 0) {
+        throw_exception_native(
+            vm, "SocketException", "Failed to get Address Info: %s", gai_strerror(status));
+        return NULL;
+    }
+    return servinfo;
+}
 
 /**
- * @arg1 ADDRESS_FAMILY
- * @arg2 IP Address as a String
- * @arg3 Port number
+ * @arg1 IP Address as a String
+ * @arg2 Port number as a Number
  */
 VALUE socket_connect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
-    int af = enumvalue_get_value(arguments[0]);
-    struct sockaddr address;
-    inet_pton(af, string_get_cstr(arguments[1]), &address);
-    uint16_t port = number_get_value(arguments[2]);
-    socklen_t length;
-    if (af == AF_INET)
-    {
-        ((struct sockaddr_in *) &address)->sin_port = port;
-        length = sizeof(struct sockaddr_in);
-    }
-    else if (af == AF_INET6)
-    {
-        ((struct sockaddr_in6 *) &address)->sin6_port = port;
-        length = sizeof(struct sockaddr_in6);
-    }
+    const char *ip_address = string_get_cstr(arguments[0]);
+    uint16_t port = number_get_value(arguments[1]);
+    struct addrinfo *address = get_address_info(vm, data, ip_address, port);
 
-    if (connect(data->sock_fd, &address, length) != 0)
+    if (address != NULL)
     {
-        throw_exception_native(vm, "SocketException", "Could not connect: %s", strerror(errno));
+        if (connect(data->sock_fd, address->ai_addr, address->ai_addrlen) != 0)
+        {
+            throw_exception_native(vm, "SocketException", "Could not connect: %s", strerror(errno));
+        }
+        freeaddrinfo(address);
     }
     return NIL_VAL;
 }
@@ -99,30 +127,21 @@ VALUE socket_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argum
     return copyString(vm, received, actual);
 }
 
-VALUE socket_bind(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE socket_bind(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
-    int af = enumvalue_get_value(arguments[0]);
-    const char *ip_address = string_get_cstr(arguments[1]);
-    struct sockaddr address;
-    inet_pton(af, ip_address, &address);
-    uint16_t port = number_get_value(arguments[2]);
-    socklen_t length;
-    if (af == AF_INET)
-    {
-        ((struct sockaddr_in *) &address)->sin_port = port;
-        length = sizeof(struct sockaddr_in);
-    }
-    else if (af == AF_INET6)
-    {
-        ((struct sockaddr_in6 *) &address)->sin6_port = port;
-        length = sizeof(struct sockaddr_in6);
-    }
+    const char *ip_address = string_get_cstr(arguments[0]);
+    uint16_t port = ((uint16_t) number_get_value(arguments[1])) & 0xFFFF;
+    struct addrinfo *address = get_address_info(vm, data, ip_address, port);
 
-    if (bind(data->sock_fd, &address, length) != 0)
+    if (address != NULL)
     {
-        throw_exception_native(
-            vm, "SocketException", "Could not bind to address %s:%u", ip_address, port);
+        if (bind(data->sock_fd, address->ai_addr, address->ai_addrlen) != 0)
+        {
+            throw_exception_native(
+                vm, "SocketException", "Could not bind to address %s:%u", ip_address, port);
+        }
+        freeaddrinfo(address);
     }
     return NIL_VAL;
 }
@@ -145,13 +164,15 @@ VALUE socket_listen(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *ar
 
 void init_socket(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Socket", NULL, NULL, NULL, CLS_SOCKET);
+    VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET);
     defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
     defineNativeMethod(vm, klass, &socket_bind, "bind", 1, false);
     defineNativeMethod(vm, klass, &socket_accept, "accept", 0, false);
     defineNativeMethod(vm, klass, &socket_listen, "listen", 1, false);
     defineNativeMethod(vm, klass, &socket_connect, "connect", 1, false);
+    defineNativeMethod(vm, klass, &socket_read, "read", 0, false);
+    defineNativeMethod(vm, klass, &socket_write, "write", 1, false);
 
     socket_type = enum_create(vm);
     push(vm, socket_type);
@@ -163,7 +184,7 @@ void init_socket(VM *vm)
 
     address_family = enum_create(vm);
     push(vm, address_family);
-    addGlobal(copyString(vm, "ADDRESS_FAMILY", 13), address_family);
+    addGlobal(copyString(vm, "ADDRESS_FAMILY", 14), address_family);
     enum_add_value(vm, address_family, "UNIX", AF_UNIX);
     enum_add_value(vm, address_family, "IPv4", AF_INET);
     enum_add_value(vm, address_family, "IPv6", AF_INET6);

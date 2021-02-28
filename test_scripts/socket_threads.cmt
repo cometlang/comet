@@ -1,0 +1,21 @@
+function client(arg)
+{
+    print("Inside Child thread")
+    var client = Socket(ADDRESS_FAMILY.IPv6, SOCKET_TYPE.TCP)
+    client.connect("::1", 8008)
+    var contents = client.read()
+    print(contents)
+    client.write("This is from the client")
+    client.close()
+}
+
+var client_thread = Thread()
+client_thread.start(client, nil)
+
+var server = Socket(ADDRESS_FAMILY.IPv6, SOCKET_TYPE.TCP)
+server.bind("::1", 8008)
+server.listen(1)
+server.write("This is a string sent from the server")
+print(server.read())
+
+client_thread.join()

@@ -84,6 +84,11 @@ static bool propagateException(VM *vm)
         vm->frameCount--;
     }
     printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
+    VALUE message = exception_get_message(vm, exception, 0, NULL);
+    if (message != NIL_VAL)
+    {
+        printf("%s\n", string_get_cstr(message));
+    }
     Value stacktrace = exception_get_stacktrace(vm, exception);
     if (stacktrace == NIL_VAL)
     {
@@ -916,7 +921,7 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         push(&frame, arguments[i]);
     }
-    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
+    if (IS_BOUND_METHOD(method) || IS_CLOSURE(method) || IS_FUNCTION(method))
     {
         if (callValue(&frame, method, arg_count) && run(&frame) == INTERPRET_OK)
         {

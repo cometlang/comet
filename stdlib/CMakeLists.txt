@@ -28,6 +28,7 @@ set(SOURCE
   string.c
   system.c
   thread.c
+  thread_synchronisation.c
 )
 
 add_library(stdlib STATIC "${SOURCE}")

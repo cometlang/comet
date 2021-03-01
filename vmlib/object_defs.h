@@ -47,6 +47,7 @@ typedef enum
 typedef enum
 {
     CLS_BOOLEAN,
+    CLS_COND_VAR,
     CLS_DATETIME,
     CLS_ENUM,
     CLS_ENUM_VALUE,

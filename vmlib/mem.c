@@ -112,6 +112,9 @@ void markObject(Obj *object)
             case CLS_ENUM:
                 enum_mark_contents(OBJ_VAL(object));
                 break;
+            case CLS_THREAD:
+                thread_mark_contents(OBJ_VAL(object));
+                break;
             default:
                 break;
         }

@@ -43,8 +43,6 @@ VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
     return FALSE_VAL;
 }
 
-#define NANO_SECONDS_PER_SECOND 1000000000
-
 VALUE fn_sleep(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
 {
     double input_time = number_get_value(args[0]);

@@ -3,6 +3,8 @@
 
 #include "comet.h"
 
+#define NANO_SECONDS_PER_SECOND 1000000000
+
 void init_object(VM *vm, VALUE klass);
 void init_string(VM *vm, VALUE obj_klass);
 void init_exception(VM *vm);
@@ -15,6 +17,7 @@ void init_nil(VM *vm);
 void init_boolean(VM *vm);
 void init_socket(VM *vm);
 void init_thread(VM *vm);
+void init_thread_sync(VM *vm);
 void init_enum(VM *vm);
 void init_set(VM *vm);
 void init_env(VM *vm);

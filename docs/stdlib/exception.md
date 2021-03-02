@@ -11,3 +11,10 @@ Exception(message)
 
 ### methods
 - `message()` gets the message set in the constructor
+
+## Known Subclasses
+ - `AssertionException`
+ - `ArgumentException`
+ - `IOException`
+ - `SocketException`
+ - `TimeoutException`

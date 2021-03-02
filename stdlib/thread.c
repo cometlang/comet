@@ -14,7 +14,12 @@ typedef struct {
 
 void *thread_constructor(void)
 {
-    return ALLOCATE(ThreadData, 1);
+    ThreadData *data = ALLOCATE(ThreadData, 1);
+    data->start_routine = NIL_VAL;
+    data->arg = NIL_VAL;
+    data->self = NIL_VAL;
+    data->thread_id = -1;
+    return data;
 }
 
 void thread_destructor(void UNUSED(*data))
@@ -57,6 +62,13 @@ VALUE thread_join(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSE
     if (result != NULL)
         return OBJ_VAL(result);
     return NIL_VAL;
+}
+
+void thread_mark_contents(VALUE self)
+{
+    ThreadData *data = GET_NATIVE_INSTANCE_DATA(ThreadData, self);
+    markValue(data->start_routine);
+    markValue(data->arg);
 }
 
 void init_thread(VM *vm)

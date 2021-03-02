@@ -1,7 +1,9 @@
+var condition = ConditionVariable()
+
 function client(arg)
 {
-    sleep(0.5)
     var client = Socket(ADDRESS_FAMILY.IPv6, SOCKET_TYPE.TCP)
+    condition.signal_one()
     client.connect("::1", 8008)
     var contents = client.read()
     print(contents)
@@ -16,6 +18,7 @@ server.listen(1)
 var client_thread = Thread()
 client_thread.start(client, nil)
 
+condition.wait()
 var client_conn = server.accept()
 client_conn.write("This is a string sent from the server")
 print(client_conn.read())

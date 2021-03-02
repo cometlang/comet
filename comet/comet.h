@@ -33,4 +33,6 @@ void hash_mark_contents(VALUE self);
 void list_mark_contents(VALUE self);
 void set_mark_contents(VALUE self);
 void enum_mark_contents(VALUE self);
+void thread_mark_contents(VALUE self);
+
 #endif

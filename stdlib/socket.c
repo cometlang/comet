@@ -35,8 +35,8 @@ void socket_destructor(void *data)
 VALUE socket_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SocketData *data = GET_NATIVE_INSTANCE_DATA(SocketData, self);
-    data->address_family = enumvalue_get_value(arguments[0]);
-    data->sock_type = enumvalue_get_value(arguments[1]);
+    data->sock_type = enumvalue_get_value(arguments[0]);
+    data->address_family = enumvalue_get_value(arguments[1]);
     data->sock_fd = socket(data->address_family, data->sock_type, 0);
     if (data->sock_fd < 0)
     {
@@ -69,8 +69,8 @@ static struct addrinfo *get_address_info(VM *vm, SocketData *data, const char *i
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
-    char port_string[5];
-    snprintf(port_string, 5, "%u", port);
+    char port_string[6];
+    snprintf(port_string, 6, "%u", port);
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = data->address_family;

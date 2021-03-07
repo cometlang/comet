@@ -16,3 +16,15 @@ jobs:
         cmake ../
         make
         make test
+
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: build
+      run: |
+        mkdir release
+        cd release
+        cmake -DCMAKE_BUILD_TYPE=Release ../
+        make

@@ -44,7 +44,7 @@ static void runFile(const char *path)
 
 void initArgv(VM *vm, int argc, const char **argv)
 {
-    VALUE argv_list = create_list(vm);
+    VALUE argv_list = list_create(vm);
     push(vm, argv_list);
     for (int i = 2; i < argc; i++)
     {

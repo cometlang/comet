@@ -148,7 +148,7 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, fp);
     buffer[bytesRead] = '\0';
 
-    VALUE result = create_list(vm);
+    VALUE result = list_create(vm);
     push(vm, result);
 
     uint32_t index = 0;

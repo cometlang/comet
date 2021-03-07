@@ -151,7 +151,7 @@ VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE
 VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    VALUE result = create_list(vm);
+    VALUE result = list_create(vm);
     push(vm, result);
     for (int i = 0; i < data->capacity; i++)
     {
@@ -167,7 +167,7 @@ VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 VALUE list_map(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    VALUE result = create_list(vm);
+    VALUE result = list_create(vm);
     push(vm, result);
     for (int i = 0; i < data->capacity; i++)
     {
@@ -264,7 +264,7 @@ void list_mark_contents(VALUE self)
     }
 }
 
-VALUE create_list(VM *vm)
+VALUE list_create(VM *vm)
 {
     return OBJ_VAL(newInstance(vm, AS_CLASS(list_class)));
 }

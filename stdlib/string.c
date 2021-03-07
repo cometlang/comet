@@ -240,7 +240,7 @@ VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
 
 VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    VALUE list = create_list(vm);
+    VALUE list = list_create(vm);
     push(vm, list);
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     StringData *separator = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);

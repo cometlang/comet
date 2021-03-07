@@ -388,6 +388,7 @@ static void collectGarbage()
 
 void incorporateObjects(VM *vm)
 {
+    pthread_mutex_lock(&gc_lock);
     VM *main_thread = threads[0];
     Obj *object = vm->objects;
     while (object != NULL)
@@ -397,6 +398,7 @@ void incorporateObjects(VM *vm)
         main_thread->objects = object;
         object = next;
     }
+    pthread_mutex_unlock(&gc_lock);
 }
 
 void freeObjects(VM *vm)

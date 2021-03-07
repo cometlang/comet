@@ -925,8 +925,9 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         if (callValue(&frame, method, arg_count) && run(&frame) == INTERPRET_OK)
         {
-            // This is kinda dodgey...but also correct.
+            // There is a small window here where the result might be GC'd
             result = *(frame.stackTop + arg_count);
+            push(&frame, result);
         }
     }
     else if (invoke(&frame, method, arg_count))

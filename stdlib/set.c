@@ -45,9 +45,27 @@ static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
     }
     else
     {
-        // do separate chaining
+        SetEntry *current = entries[index];
+        SetEntry *previous = NULL;
+        while (current != NULL)
+        {
+            // try the cheap comparison first (also covers non-instance objects, like types)
+            if (current->key == entry->key)
+                return false;
+            if ((IS_NATIVE_INSTANCE(entry->key) || IS_INSTANCE(entry->key)) &&
+                (IS_NATIVE_INSTANCE(current->key) || IS_INSTANCE(current->key)))
+            {
+                ObjInstance *obj = AS_INSTANCE(entry->key);
+                VALUE result = call_function(entry->key, obj->klass->operators[OPERATOR_EQUALS], 1, &current->key);
+                if (result == TRUE_VAL)
+                    return false;
+            }
+            previous = current;
+            current = current->next;
+        }
+        previous->next = entry;
     }
-    return false;
+    return true;
 }
 
 static void adjust_capacity(SetData *data)

@@ -34,6 +34,23 @@ void set_destructor(void *data)
     FREE(SetData, set_data);
 }
 
+static bool compare_objects(VALUE lhs, VALUE rhs)
+{
+    // try the cheap comparison first (also covers non-instance objects, like types)
+    if (lhs == rhs)
+        return true;
+    if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)) &&
+        (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
+    {
+        ObjInstance *obj = AS_INSTANCE(lhs);
+        VALUE result = call_function(lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
+        if (result == TRUE_VAL)
+            return true;
+    }
+
+    return false;
+}
+
 static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
 {
     VALUE hash = call_function(entry->key, common_strings[STRING_HASH], 0, NULL);
@@ -49,17 +66,8 @@ static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
         SetEntry *previous = NULL;
         while (current != NULL)
         {
-            // try the cheap comparison first (also covers non-instance objects, like types)
-            if (current->key == entry->key)
+            if (compare_objects(current->key, entry->key))
                 return false;
-            if ((IS_NATIVE_INSTANCE(entry->key) || IS_INSTANCE(entry->key)) &&
-                (IS_NATIVE_INSTANCE(current->key) || IS_INSTANCE(current->key)))
-            {
-                ObjInstance *obj = AS_INSTANCE(entry->key);
-                VALUE result = call_function(entry->key, obj->klass->operators[OPERATOR_EQUALS], 1, &current->key);
-                if (result == TRUE_VAL)
-                    return false;
-            }
             previous = current;
             current = current->next;
         }
@@ -99,8 +107,34 @@ VALUE set_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argument
     return FALSE_VAL;
 }
 
-VALUE set_remove(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *current = data->entries[i];
+        SetEntry *previous = NULL;
+        while (current != NULL)
+        {
+            if (compare_objects(current->key, arguments[0]))
+            {
+                VALUE result = current->key;
+                push(vm, result);
+                if (previous == NULL)
+                {
+                    data->entries[i] = current->next;
+                }
+                else
+                {
+                    previous->next = current->next;
+                }
+                FREE(SetEntry, current);
+                return pop(vm);
+            }
+            previous = current;
+            current = current->next;
+        }
+    }
     return NIL_VAL;
 }
 

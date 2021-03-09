@@ -1,6 +1,8 @@
 #include "comet.h"
 #include "comet_stdlib.h"
 
+static VALUE set_iterator_class;
+
 typedef struct _set_entry
 {
     Value key;
@@ -12,6 +14,13 @@ typedef struct {
     int capacity;
     SetEntry **entries;
 } SetData;
+
+typedef struct {
+    SetData *set;
+    int index;
+    int returned_count;
+    SetEntry *current;
+} SetIterator;
 
 #define SET_MAX_LOAD_FACTOR 0.75
 
@@ -102,7 +111,10 @@ VALUE set_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argument
     new_entry->next = NULL;
     new_entry->key = arguments[0];
     if (insert(data->entries, data->capacity, new_entry))
+    {
+        data->count++;
         return TRUE_VAL;
+    }
     FREE(SetEntry, new_entry);
     return FALSE_VAL;
 }
@@ -129,6 +141,7 @@ VALUE set_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argum
                     previous->next = current->next;
                 }
                 FREE(SetEntry, current);
+                data->count--;
                 return pop(vm);
             }
             previous = current;
@@ -178,9 +191,12 @@ VALUE set_iterable_empty_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VA
     return FALSE_VAL;
 }
 
-VALUE set_iterable_iterator(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    ObjNativeInstance *obj = (ObjNativeInstance *) newInstance(vm, AS_CLASS(set_iterator_class));
+    SetIterator *iter = (SetIterator *)obj->data;
+    iter->set = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    return OBJ_VAL(obj);
 }
 
 VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -202,6 +218,44 @@ void set_mark_contents(VALUE self)
     }
 }
 
+void *set_iterator_constructor(void)
+{
+    SetIterator *iter = ALLOCATE(SetIterator, 1);
+    iter->current = NULL;
+    iter->index = -1;
+    iter->set = NULL;
+    iter->returned_count = 0;
+
+    return iter;
+}
+
+void set_iterator_destructor(void *data)
+{
+    FREE(SetIterator, data);
+}
+
+VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
+    while (iter->current == NULL)
+    {
+        iter->index++;
+        iter->current = iter->set->entries[iter->index];
+    }
+    VALUE result = iter->current->key;
+    iter->current = iter->current->next;
+    iter->returned_count++;
+    return result;
+}
+
+VALUE set_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
+    if (iter->returned_count < iter->set->count)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_set(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable", CLS_SET);
@@ -212,4 +266,9 @@ void init_set(VM *vm)
     defineNativeMethod(vm, klass, &set_difference, "difference", 1, false);
     defineNativeMethod(vm, klass, &set_to_list, "to_list", 0, false);
     defineNativeMethod(vm, klass, &set_iterable_empty_p, "empty?", 0, false);
+
+    set_iterator_class = defineNativeClass(
+        vm, "SetIterator", &set_iterator_constructor, &set_iterator_destructor, "Iterator", CLS_ITERATOR);
+    defineNativeMethod(vm, set_iterator_class, &set_iterator_has_next_p, "has_next?", 0, false);
+    defineNativeMethod(vm, set_iterator_class, &set_iterator_get_next, "get_next", 0, false);
 }

@@ -82,9 +82,15 @@ VALUE hash_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UN
     return instance;
 }
 
+VALUE hash_iterable_count(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    return create_number(vm, table->count);
+}
+
 void *hash_constructor(void)
 {
-    Table *table = ALLOCATE(Table, 1);
+    HashTable *table = ALLOCATE(HashTable, 1);
     table->count = 0;
     table->capacity = -1;
     table->entries = NULL;
@@ -263,6 +269,7 @@ void init_hash(VM *vm)
     defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, klass, &hash_iterable_count, "count", 0, false);
     defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", 0, false);
     defineNativeOperator(vm, klass, &hash_get, 1, OPERATOR_INDEX);

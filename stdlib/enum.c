@@ -226,6 +226,7 @@ void init_enum(VM *vm)
     defineNativeMethod(vm, enum_class, &enum_contains_p, "contains?", 1, false);
     defineNativeMethod(vm, enum_class, &enum_empty_p, "empty?", 0, false);
     defineNativeMethod(vm, enum_class, &enum_length, "length", 0, false);
+    defineNativeMethod(vm, enum_class, &enum_length, "count", 0, false);
 
     enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, &enumvalue_destructor, "Number", CLS_ENUM_VALUE);
     defineNativeMethod(vm, enum_value_class, &enumvalue_init, "init", 2, false);

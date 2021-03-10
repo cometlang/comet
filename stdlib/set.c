@@ -229,6 +229,12 @@ void set_mark_contents(VALUE self)
     }
 }
 
+VALUE set_iterable_count(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    return create_number(vm, data->count);
+}
+
 void *set_iterator_constructor(void)
 {
     SetIterator *iter = ALLOCATE(SetIterator, 1);
@@ -277,6 +283,7 @@ void init_set(VM *vm)
     defineNativeMethod(vm, klass, &set_difference, "difference", 1, false);
     defineNativeMethod(vm, klass, &set_to_list, "to_list", 0, false);
     defineNativeMethod(vm, klass, &set_iterable_empty_p, "empty?", 0, false);
+    defineNativeMethod(vm, klass, &set_iterable_count, "count", 0, false);
 
     set_iterator_class = defineNativeClass(
         vm, "SetIterator", &set_iterator_constructor, &set_iterator_destructor, "Iterator", CLS_ITERATOR);

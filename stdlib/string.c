@@ -410,6 +410,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_to_upper, "to_upper", 0, false);
     defineNativeMethod(vm, string_class, &string_to_string, "to_string", 0, false);
     defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
+    defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);

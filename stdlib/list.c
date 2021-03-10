@@ -287,6 +287,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "size", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "length", 0, false);
+    defineNativeMethod(vm, list_class, &list_length, "count", 0, false);
     defineNativeOperator(vm, list_class, &list_get_at, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
 

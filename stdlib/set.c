@@ -199,9 +199,20 @@ VALUE set_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNU
     return OBJ_VAL(obj);
 }
 
-VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *current = data->entries[i];
+        while (current != NULL)
+        {
+            if (compare_objects(current->key, arguments[0]))
+                return TRUE_VAL;
+            current = current->next;
+        }
+    }
+    return FALSE_VAL;
 }
 
 void set_mark_contents(VALUE self)

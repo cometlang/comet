@@ -113,6 +113,11 @@ void addLocal(Parser *parser, Token name)
     local->isCaptured = false;
 }
 
+int resolveModuleVariable(Compiler UNUSED(*compiler), Parser UNUSED(*parser), Token UNUSED(*name))
+{
+    return UNRESOLVED_VARIABLE_INDEX;
+}
+
 void declareVariable(Parser *parser)
 {
     // Global variables are implicitly declared.
@@ -178,6 +183,11 @@ void namedVariable(Parser *parser, Token name, bool canAssign)
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
     }
+    else if ((arg = resolveModuleVariable(current, parser, &name)) != UNRESOLVED_VARIABLE_INDEX)
+    {
+        getOp = OP_GET_MODULE_VAR;
+        setOp = OP_SET_MODULE_VAR;
+    }
     else
     {
         arg = identifierConstant(parser, &name);
@@ -185,15 +195,17 @@ void namedVariable(Parser *parser, Token name, bool canAssign)
         setOp = OP_SET_GLOBAL;
     }
 
-    if (canAssign && match(parser, TOKEN_EQUAL))
+    if (canAssign)
     {
-        expression(parser);
-        emitBytes(parser, setOp, (uint8_t)arg);
+        if (match(parser, TOKEN_EQUAL))
+        {
+            expression(parser);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
     }
-    else
-    {
-        emitBytes(parser, getOp, (uint8_t)arg);
-    }
+
+    emitBytes(parser, getOp, (uint8_t)arg);
 }
 
 void variable(Parser *parser, bool canAssign)

@@ -612,6 +612,12 @@ static InterpretResult run(VM *vm)
             *frame->closure->upvalues[slot]->location = peek(vm, 0);
             break;
         }
+        case OP_SET_MODULE_VAR:
+        case OP_GET_MODULE_VAR:
+        {
+            runtimeError(vm, "UNIMPLEMENTED OPERATION");
+            return INTERPRET_RUNTIME_ERROR;
+        }
         case OP_GET_PROPERTY:
         {
             if (!IS_INSTANCE(peek(vm, 0)) && !IS_NATIVE_INSTANCE(peek(vm, 0)))

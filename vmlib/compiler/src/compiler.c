@@ -17,6 +17,7 @@
 #include "debug.h"
 #endif
 
+ModuleCompiler *currentModule = NULL;
 Compiler *current = NULL;
 VM *main_thread = NULL;
 
@@ -248,6 +249,18 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename)
     parser->currentLoop = NULL;
 }
 
+void initModuleCompiler(ModuleCompiler *module)
+{
+    module->variableCount = 0;
+    module->enclosing = currentModule;
+    currentModule = module;
+}
+
+void endModule(ModuleCompiler *module)
+{
+    currentModule = module->enclosing;
+}
+
 ObjFunction *compile(const SourceFile *source, VM *thread)
 {
     Scanner scanner;
@@ -256,6 +269,9 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
 
     Parser parser;
     initParser(&parser, &scanner, source->path);
+
+    ModuleCompiler module;
+    initModuleCompiler(&module);
 
     Compiler compiler;
     initCompiler(&compiler, TYPE_SCRIPT, &parser);
@@ -267,6 +283,9 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
         declaration(&parser);
     }
     ObjFunction *function = endCompiler(&parser);
+
+    endModule(&module);
+
     return parser.hadError ? NULL : function;
 }
 

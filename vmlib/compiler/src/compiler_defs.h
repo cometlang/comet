@@ -31,6 +31,7 @@ typedef struct
     Scanner *scanner;
     ClassCompiler *currentClass;
     LoopCompiler *currentLoop;
+    ObjModule *currentModule;
 } Parser;
 
 typedef enum
@@ -94,15 +95,9 @@ struct Compiler
 typedef struct ModuleCompiler
 {
     struct ModuleCompiler *enclosing;
-    Local variables[MAX_VAR_COUNT];
-    int variableCount;
+    ObjModule *module;
 } ModuleCompiler;
 
-#define GLOBAL_SCOPE 0
-#define UNINITIALIZED_LOCAL_SCOPE -1
-#define UNRESOLVED_VARIABLE_INDEX -1
-
-extern ModuleCompiler *currentModule;
 extern Compiler *current;
 extern VM *main_thread;
 

@@ -563,7 +563,8 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             Value value;
-            if (!findGlobal(name, &value))
+            if (!findModuleVariable(frame->closure->function->module, name, &value) &&
+                !findGlobal(name, &value))
             {
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
@@ -574,7 +575,7 @@ static InterpretResult run(VM *vm)
         case OP_DEFINE_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            addGlobal(name, peek(vm, 0));
+            addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
             pop(vm);
             break;
         }
@@ -888,7 +889,9 @@ static InterpretResult run(VM *vm)
             uint16_t handlerAddress = READ_SHORT();
             uint16_t finallyAddress = READ_SHORT();
             Value value;
-            if (!findGlobal(type, &value) || (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
+            if ((!findModuleVariable(frame->closure->function->module, type, &value) &&
+                 !findGlobal(type, &value)) ||
+                (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
             {
                 runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
                 return INTERPRET_RUNTIME_ERROR;

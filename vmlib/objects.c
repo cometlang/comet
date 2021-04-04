@@ -92,6 +92,13 @@ ObjFunction *newFunction(VM *vm)
     return function;
 }
 
+ObjModule *newModule(VM *vm)
+{
+    ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
+    initTable(&module->variables);
+    return module;
+}
+
 Obj *newInstance(VM *vm, ObjClass *klass)
 {
     if (klass->classType == CLS_NIL)

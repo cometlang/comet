@@ -182,7 +182,6 @@ void functionDeclaration(Parser *parser)
 void enumDeclaration(Parser *parser)
 {
     uint8_t enumName = parseVariable(parser, "Expect enum name");
-    defineVariable(parser, enumName);
     namedVariable(parser, syntheticToken("Enum"), false);
     emitBytes(parser, OP_CALL, 0);
     emitByte(parser, OP_DUP_TOP); // Duplicate the enum instance, so the pop leaves it for the return value of assignment

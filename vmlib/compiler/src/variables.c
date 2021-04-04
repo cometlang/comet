@@ -5,6 +5,10 @@
 #include "expressions.h"
 #include "emitter.h"
 
+#define GLOBAL_SCOPE 0
+#define UNINITIALIZED_SCOPE -1
+#define UNRESOLVED_VARIABLE_INDEX -1
+
 static int addConstant(Chunk *chunk, Value value)
 {
     push(main_thread, value);
@@ -44,7 +48,7 @@ int resolveLocal(Parser *parser, Compiler *compiler, Token *name)
         Local *local = &compiler->locals[i];
         if (identifiersEqual(name, &local->name))
         {
-            if (local->depth == UNINITIALIZED_LOCAL_SCOPE)
+            if (local->depth == UNINITIALIZED_SCOPE)
             {
                 error(parser, "Cannot read local variable in its own initializer.");
             }
@@ -109,13 +113,8 @@ void addLocal(Parser *parser, Token name)
     }
     Local *local = &current->locals[current->localCount++];
     local->name = name;
-    local->depth = UNINITIALIZED_LOCAL_SCOPE;
+    local->depth = UNINITIALIZED_SCOPE;
     local->isCaptured = false;
-}
-
-int resolveModuleVariable(Compiler UNUSED(*compiler), Parser UNUSED(*parser), Token UNUSED(*name))
-{
-    return UNRESOLVED_VARIABLE_INDEX;
 }
 
 void declareVariable(Parser *parser)
@@ -128,17 +127,18 @@ void declareVariable(Parser *parser)
     for (int i = current->localCount - 1; i >= 0; i--)
     {
         Local *local = &current->locals[i];
-        if (local->depth != UNINITIALIZED_LOCAL_SCOPE && local->depth < current->scopeDepth)
+        if (local->depth != UNINITIALIZED_SCOPE && local->depth < current->scopeDepth)
         {
-            break;
+            addLocal(parser, *name);
+            return;
         }
 
         if (identifiersEqual(name, &local->name))
         {
             error(parser, "Variable with this name already declared in this scope.");
+            return;
         }
     }
-    addLocal(parser, *name);
 }
 
 uint8_t parseVariable(Parser *parser, const char *errorMessage)
@@ -182,11 +182,6 @@ void namedVariable(Parser *parser, Token name, bool canAssign)
     {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;
-    }
-    else if ((arg = resolveModuleVariable(current, parser, &name)) != UNRESOLVED_VARIABLE_INDEX)
-    {
-        getOp = OP_GET_MODULE_VAR;
-        setOp = OP_SET_MODULE_VAR;
     }
     else
     {

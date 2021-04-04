@@ -201,9 +201,14 @@ static void blackenObject(Obj *object)
     case OBJ_UPVALUE:
         markValue(((ObjUpvalue *)object)->closed);
         break;
+    case OBJ_MODULE:
+    {
+        ObjModule *module = (ObjModule *)object;
+        markTable(&module->variables);
+        break;
+    }
     case OBJ_NATIVE_METHOD:
     case OBJ_NATIVE:
-    case OBJ_MODULE:
         break;
     }
 }
@@ -292,8 +297,12 @@ static void freeObject(Obj *object)
         FREE(ObjUpvalue, object);
         break;
     case OBJ_MODULE:
+    {
+        ObjModule *module = (ObjModule *)object;
+        freeTable(&module->variables);
         FREE(ObjModule, object);
         break;
+    }
     }
 }
 

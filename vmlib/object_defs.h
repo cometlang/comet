@@ -97,10 +97,17 @@ struct sObj
 typedef struct
 {
     Obj obj;
+    Table variables;
+} ObjModule;
+
+typedef struct
+{
+    Obj obj;
     int arity;
     int upvalueCount;
     Chunk chunk;
     Value name;
+    ObjModule *module;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);
@@ -179,12 +186,6 @@ typedef struct
 } ObjBoundMethod;
 
 typedef struct Compiler Compiler;
-
-typedef struct
-{
-    Obj obj;
-    Compiler *compiler;
-} ObjModule;
 
 extern ObjNativeInstance nil_instance;
 extern ObjNativeInstance boolean_true;

@@ -62,11 +62,14 @@ void freeVM(VM *vm);
 Value findInternedString(const char *chars, uint32_t hash);
 
 bool internString(Value string);
+void addModule(ObjModule *module, Value filename);
 void markGlobals(void);
 void removeWhiteStrings(void);
 
 bool addGlobal(Value name, Value value);
 bool findGlobal(Value name, Value *value);
+bool findModuleVariable(ObjModule *module, Value name, Value *value);
+bool addModuleVariable(ObjModule *module, Value name, Value value);
 
 VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
 

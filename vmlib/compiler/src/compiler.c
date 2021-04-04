@@ -17,7 +17,6 @@
 #include "debug.h"
 #endif
 
-ModuleCompiler *currentModule = NULL;
 Compiler *current = NULL;
 VM *main_thread = NULL;
 
@@ -130,6 +129,7 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     compiler->scopeDepth = 0;
     compiler->function = newFunction(main_thread);
     compiler->function->chunk.filename = parser->filename;
+    compiler->function->module = parser->currentModule;
     current = compiler;
 
     if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
@@ -245,20 +245,9 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename)
     parser->hadError = false;
     parser->panicMode = false;
     parser->scanner = scanner;
+    parser->currentModule = newModule(main_thread);
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
-}
-
-void initModuleCompiler(ModuleCompiler *module)
-{
-    module->variableCount = 0;
-    module->enclosing = currentModule;
-    currentModule = module;
-}
-
-void endModule(ModuleCompiler *module)
-{
-    currentModule = module->enclosing;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)
@@ -269,9 +258,6 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
 
     Parser parser;
     initParser(&parser, &scanner, source->path);
-
-    ModuleCompiler module;
-    initModuleCompiler(&module);
 
     Compiler compiler;
     initCompiler(&compiler, TYPE_SCRIPT, &parser);
@@ -284,7 +270,8 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
     }
     ObjFunction *function = endCompiler(&parser);
 
-    endModule(&module);
+    addModule(parser.currentModule,
+        copyString(main_thread, parser.filename, strlen(parser.filename)));
 
     return parser.hadError ? NULL : function;
 }

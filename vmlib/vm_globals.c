@@ -3,18 +3,21 @@
 
 static Table globals;
 static Table strings;
+static Table modules;
 Value common_strings[NUM_COMMON_STRINGS];
 
 void initGlobals(void)
 {
     initTable(&globals);
     initTable(&strings);
+    initTable(&modules);
 }
 
 void freeGlobals(void)
 {
     freeTable(&globals);
     freeTable(&strings);
+    freeTable(&modules);
     for (int i = 0; i < NUM_COMMON_STRINGS; i++)
     {
         common_strings[i] = NIL_VAL;
@@ -25,6 +28,7 @@ void markGlobals(void)
 {
     markTable(&globals);
     markTable(&strings);
+    markTable(&modules);
     for (int i = 0; i < NUM_COMMON_STRINGS; i++)
     {
         markValue(common_strings[i]);
@@ -57,4 +61,19 @@ bool findGlobal(Value name, Value *value)
 bool addGlobal(Value name, Value value)
 {
     return tableSet(&globals, name, value);
+}
+
+bool findModuleVariable(ObjModule *module, Value name, Value *value)
+{
+    return tableGet(&module->variables, name, value);
+}
+
+bool addModuleVariable(ObjModule *module, Value name, Value value)
+{
+    return tableSet(&module->variables, name, value);
+}
+
+void addModule(ObjModule *module, Value filename)
+{
+    tableSet(&modules, filename, OBJ_VAL(module));
 }

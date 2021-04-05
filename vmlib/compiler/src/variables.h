@@ -6,7 +6,7 @@
 uint8_t makeConstant(Parser *parser, Value value);
 uint8_t identifierConstant(Parser *parser, Token *name);
 bool identifiersEqual(Token *a, Token *b);
-void markInitialized();
+void markInitialized(Parser *parser);
 void defineVariable(Parser *parser, uint8_t global);
 uint8_t parseVariable(Parser *parser, const char *errorMessage);
 void declareVariable(Parser *parser);

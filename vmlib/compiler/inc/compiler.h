@@ -4,8 +4,6 @@
 #include "objects.h"
 #include "vm.h"
 
-typedef struct Compiler Compiler;
-
 ObjFunction* compile(const SourceFile* source, VM *thread);
 SourceFile *readSourceFile(const char *path);
 void markCompilerRoots(void);

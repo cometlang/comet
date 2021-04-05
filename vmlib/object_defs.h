@@ -185,8 +185,6 @@ typedef struct
     ObjClosure *method;
 } ObjBoundMethod;
 
-typedef struct Compiler Compiler;
-
 extern ObjNativeInstance nil_instance;
 extern ObjNativeInstance boolean_true;
 extern ObjNativeInstance boolean_false;

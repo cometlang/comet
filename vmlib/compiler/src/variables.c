@@ -19,7 +19,7 @@ static int addConstant(Chunk *chunk, Value value)
 
 uint8_t makeConstant(Parser *parser, Value value)
 {
-    int constant = addConstant(currentChunk(current), value);
+    int constant = addConstant(currentChunk(parser->currentFunction), value);
     if (constant > UINT8_MAX)
     {
         error(parser, "Too many constants in one chunk.");
@@ -106,12 +106,12 @@ int resolveUpvalue(Compiler *compiler, Parser *parser, Token *name)
 
 void addLocal(Parser *parser, Token name)
 {
-    if (current->localCount == MAX_VAR_COUNT)
+    if (parser->currentFunction->localCount == MAX_VAR_COUNT)
     {
         error(parser, "Too many local variables in function.");
         return;
     }
-    Local *local = &current->locals[current->localCount++];
+    Local *local = &parser->currentFunction->locals[parser->currentFunction->localCount++];
     local->name = name;
     local->depth = UNINITIALIZED_SCOPE;
     local->isCaptured = false;
@@ -120,14 +120,14 @@ void addLocal(Parser *parser, Token name)
 void declareVariable(Parser *parser)
 {
     // Global variables are implicitly declared.
-    if (current->scopeDepth == GLOBAL_SCOPE)
+    if (parser->currentFunction->scopeDepth == GLOBAL_SCOPE)
         return;
 
     Token *name = &parser->previous;
-    for (int i = current->localCount - 1; i >= 0; i--)
+    for (int i = parser->currentFunction->localCount - 1; i >= 0; i--)
     {
-        Local *local = &current->locals[i];
-        if (local->depth != UNINITIALIZED_SCOPE && local->depth < current->scopeDepth)
+        Local *local = &parser->currentFunction->locals[i];
+        if (local->depth != UNINITIALIZED_SCOPE && local->depth < parser->currentFunction->scopeDepth)
         {
             addLocal(parser, *name);
             return;
@@ -146,24 +146,24 @@ uint8_t parseVariable(Parser *parser, const char *errorMessage)
     consume(parser, TOKEN_IDENTIFIER, errorMessage);
 
     declareVariable(parser);
-    if (current->scopeDepth > GLOBAL_SCOPE)
+    if (parser->currentFunction->scopeDepth > GLOBAL_SCOPE)
         return 0;
 
     return identifierConstant(parser, &parser->previous);
 }
 
-void markInitialized()
+void markInitialized(Parser *parser)
 {
-    if (current->scopeDepth == GLOBAL_SCOPE)
+    if (parser->currentFunction->scopeDepth == GLOBAL_SCOPE)
         return;
-    current->locals[current->localCount - 1].depth = current->scopeDepth;
+    parser->currentFunction->locals[parser->currentFunction->localCount - 1].depth = parser->currentFunction->scopeDepth;
 }
 
 void defineVariable(Parser *parser, uint8_t global)
 {
-    if (current->scopeDepth > GLOBAL_SCOPE)
+    if (parser->currentFunction->scopeDepth > GLOBAL_SCOPE)
     {
-        markInitialized();
+        markInitialized(parser);
         return;
     }
     emitBytes(parser, OP_DEFINE_GLOBAL, global);
@@ -172,13 +172,13 @@ void defineVariable(Parser *parser, uint8_t global)
 void namedVariable(Parser *parser, Token name, bool canAssign)
 {
     uint8_t getOp, setOp;
-    int arg = resolveLocal(parser, current, &name);
+    int arg = resolveLocal(parser, parser->currentFunction, &name);
     if (arg != UNRESOLVED_VARIABLE_INDEX)
     {
         getOp = OP_GET_LOCAL;
         setOp = OP_SET_LOCAL;
     }
-    else if ((arg = resolveUpvalue(current, parser, &name)) != UNRESOLVED_VARIABLE_INDEX)
+    else if ((arg = resolveUpvalue(parser->currentFunction, parser, &name)) != UNRESOLVED_VARIABLE_INDEX)
     {
         getOp = OP_GET_UPVALUE;
         setOp = OP_SET_UPVALUE;

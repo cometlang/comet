@@ -33,7 +33,7 @@ void expressionStatement(Parser *parser)
 
 void forStatement(Parser *parser)
 {
-    beginScope();
+    beginScope(parser);
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'for'.");
     if (check(parser, TOKEN_SEMI_COLON))
     {
@@ -49,10 +49,10 @@ void forStatement(Parser *parser)
     }
     consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
     LoopCompiler loop;
-    loop.startAddress = getCurrentOffset(current);
+    loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
-    loop.loopScopeDepth = current->scopeDepth;
+    loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
 
     if (!match(parser, TOKEN_SEMI_COLON))
@@ -68,7 +68,7 @@ void forStatement(Parser *parser)
     {
         int bodyJump = emitJump(parser, OP_JUMP);
 
-        int incrementStart = getCurrentOffset(current);
+        int incrementStart = getCurrentOffset(parser->currentFunction);
         expression(parser);
         emitByte(parser, OP_POP);
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after for clauses.");
@@ -102,7 +102,7 @@ static void syntheticMethodCall(Parser *parser, const char *method_name)
 
 void foreachStatement(Parser *parser)
 {
-    beginScope();
+    beginScope(parser);
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'foreach'.");
     consume(parser, TOKEN_VAR, "Expect 'var' to declare foreach loop variable");
     Token loop_var_name = parser->current;
@@ -117,17 +117,17 @@ void foreachStatement(Parser *parser)
 
     Token iter_var_name = syntheticToken("");
     addLocal(parser, iter_var_name);
-    markInitialized();
-    uint8_t ex_var = resolveLocal(parser, current, &iter_var_name);
+    markInitialized(parser);
+    uint8_t ex_var = resolveLocal(parser, parser->currentFunction, &iter_var_name);
 
     syntheticMethodCall(parser, "iterator");
     defineVariable(parser, ex_var);
 
     LoopCompiler loop;
-    loop.startAddress = getCurrentOffset(current);
+    loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
-    loop.loopScopeDepth = current->scopeDepth;
+    loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
 
     emitBytes(parser, OP_GET_LOCAL, ex_var);
@@ -137,7 +137,7 @@ void foreachStatement(Parser *parser)
 
     emitBytes(parser, OP_GET_LOCAL, ex_var);
     syntheticMethodCall(parser, "get_next");
-    int variable = resolveLocal(parser, current, &loop_var_name);
+    int variable = resolveLocal(parser, parser->currentFunction, &loop_var_name);
     emitBytes(parser, OP_SET_LOCAL, (uint8_t) variable);
 
     statement(parser);
@@ -171,7 +171,7 @@ void ifStatement(Parser *parser)
 
 void returnStatement(Parser *parser)
 {
-    if (current->type == TYPE_SCRIPT)
+    if (parser->currentFunction->type == TYPE_SCRIPT)
     {
         error(parser, "Cannot return from top-level code.");
     }
@@ -181,7 +181,7 @@ void returnStatement(Parser *parser)
     }
     else
     {
-        if (current->type == TYPE_INITIALIZER)
+        if (parser->currentFunction->type == TYPE_INITIALIZER)
         {
             error(parser, "Cannot return a value from an initializer.");
         }
@@ -194,10 +194,10 @@ void returnStatement(Parser *parser)
 void whileStatement(Parser *parser)
 {
     LoopCompiler loop;
-    loop.startAddress = getCurrentOffset(current);
+    loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = -1;
     loop.enclosing = parser->currentLoop;
-    loop.loopScopeDepth = current->scopeDepth;
+    loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
     expression(parser);
@@ -215,21 +215,21 @@ void whileStatement(Parser *parser)
     parser->currentLoop = parser->currentLoop->enclosing;
 }
 
-static void patchAddress(int offset)
+static void patchAddress(Parser *parser, int offset)
 {
-    int currentOffset = getCurrentOffset(current);
-    setCodeOffset(current, offset, (currentOffset >> 8) & 0xff);
-    setCodeOffset(current, offset + 1, currentOffset & 0xff);
+    int currentOffset = getCurrentOffset(parser->currentFunction);
+    setCodeOffset(parser->currentFunction, offset, (currentOffset >> 8) & 0xff);
+    setCodeOffset(parser->currentFunction, offset + 1, currentOffset & 0xff);
 }
 
 void tryStatement(Parser *parser)
 {
     emitByte(parser, OP_PUSH_EXCEPTION_HANDLER);
-    int exceptionType = getCurrentOffset(current);
+    int exceptionType = getCurrentOffset(parser->currentFunction);
     emitByte(parser, 0xff);
-    int handlerAddress = getCurrentOffset(current);
+    int handlerAddress = getCurrentOffset(parser->currentFunction);
     emitBytes(parser, 0xff, 0xff);
-    int finallyAddress = getCurrentOffset(current);
+    int finallyAddress = getCurrentOffset(parser->currentFunction);
     emitBytes(parser, 0xff, 0xff);
 
     statement(parser);
@@ -240,18 +240,18 @@ void tryStatement(Parser *parser)
 
     if (match(parser, TOKEN_CATCH))
     {
-        beginScope();
+        beginScope(parser);
         consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after catch");
         consume(parser, TOKEN_IDENTIFIER, "Expect type name to catch");
         uint8_t name = identifierConstant(parser, &parser->previous);
-        setCodeOffset(current, exceptionType, name);
-        patchAddress(handlerAddress);
+        setCodeOffset(parser->currentFunction, exceptionType, name);
+        patchAddress(parser, handlerAddress);
         if (match(parser, TOKEN_AS))
         {
             consume(parser, TOKEN_IDENTIFIER, "Expect identifier for exception instance");
             addLocal(parser, parser->previous);
-            markInitialized();
-            uint8_t ex_var = resolveLocal(parser, current, &parser->previous);
+            markInitialized(parser);
+            uint8_t ex_var = resolveLocal(parser, parser->currentFunction, &parser->previous);
             emitBytes(parser, OP_SET_LOCAL, ex_var);
         }
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after catch statement");
@@ -268,7 +268,7 @@ void tryStatement(Parser *parser)
         // want to continue propagating the exception
         emitByte(parser, OP_FALSE);
 
-        patchAddress(finallyAddress);
+        patchAddress(parser, finallyAddress);
         statement(parser);
 
         int continueExecution = emitJump(parser, OP_JUMP_IF_FALSE);
@@ -308,8 +308,8 @@ void nextStatement(Parser *parser)
     }
 
     // Discard any locals created inside the loop.
-    for (int i = current->localCount - 1;
-        i >= 0 && current->locals[i].depth > parser->currentLoop->loopScopeDepth;
+    for (int i = parser->currentFunction->localCount - 1;
+        i >= 0 && parser->currentFunction->locals[i].depth > parser->currentLoop->loopScopeDepth;
         i--) {
         emitByte(parser, OP_POP);
     }
@@ -356,7 +356,7 @@ void statement(Parser *parser)
     }
     else if (match(parser, TOKEN_LEFT_BRACE))
     {
-        beginScope();
+        beginScope(parser);
         block(parser);
         endScope(parser);
     }

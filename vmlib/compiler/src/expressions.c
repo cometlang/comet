@@ -303,14 +303,14 @@ static void lambda(Parser *parser, bool UNUSED(canAssign))
 {
     Compiler compiler;
     initCompiler(&compiler, TYPE_LAMBDA, parser);
-    beginScope();
+    beginScope(parser);
 
     if (!check(parser, TOKEN_VBAR))
     {
         do
         {
-            current->function->arity++;
-            if (current->function->arity > 255)
+            parser->currentFunction->function->arity++;
+            if (parser->currentFunction->function->arity > 255)
             {
                 errorAtCurrent(parser, "Cannot have more than 255 parameters.");
             }

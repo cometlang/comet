@@ -21,19 +21,6 @@ typedef struct LoopCompiler
     int loopScopeDepth;
 } LoopCompiler;
 
-typedef struct
-{
-    Token current;
-    Token previous;
-    bool hadError;
-    bool panicMode;
-    const char *filename;
-    Scanner *scanner;
-    ClassCompiler *currentClass;
-    LoopCompiler *currentLoop;
-    ObjModule *currentModule;
-} Parser;
-
 typedef enum
 {
     PREC_NONE,
@@ -49,15 +36,6 @@ typedef enum
     PREC_INSTANCEOF, // instanceof
     PREC_PRIMARY,
 } Precedence;
-
-typedef void (*ParseFn)(Parser *parser, bool canAssign);
-
-typedef struct
-{
-    ParseFn prefix;
-    ParseFn infix;
-    Precedence precedence;
-} ParseRule;
 
 typedef struct
 {
@@ -81,7 +59,7 @@ typedef enum
     TYPE_LAMBDA,
 } FunctionType;
 
-struct Compiler
+typedef struct Compiler
 {
     struct Compiler *enclosing;
     ObjFunction *function;
@@ -90,15 +68,31 @@ struct Compiler
     int localCount;
     Upvalue upvalues[MAX_VAR_COUNT];
     int scopeDepth;
-};
+} Compiler;
 
-typedef struct ModuleCompiler
+typedef struct
 {
-    struct ModuleCompiler *enclosing;
-    ObjModule *module;
-} ModuleCompiler;
+    Token current;
+    Token previous;
+    bool hadError;
+    bool panicMode;
+    const char *filename;
+    Scanner *scanner;
+    ClassCompiler *currentClass;
+    LoopCompiler *currentLoop;
+    ObjModule *currentModule;
+    Compiler *currentFunction;
+} Parser;
 
-extern Compiler *current;
+typedef void (*ParseFn)(Parser *parser, bool canAssign);
+
+typedef struct
+{
+    ParseFn prefix;
+    ParseFn infix;
+    Precedence precedence;
+} ParseRule;
+
 extern VM *main_thread;
 
 Token syntheticToken(const char *text);
@@ -113,7 +107,7 @@ ObjFunction *endCompiler(Parser *parser);
 
 void patchJump(Parser *parser, int offset);
 
-void beginScope(void);
+void beginScope(Parser *parser);
 void endScope(Parser *parser);
 
 void advance(Parser *parser);

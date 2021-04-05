@@ -17,7 +17,6 @@
 #include "debug.h"
 #endif
 
-Compiler *current = NULL;
 VM *main_thread = NULL;
 
 Chunk *currentChunk(Compiler *compiler)
@@ -110,19 +109,19 @@ bool match(Parser *parser, TokenType type)
 void patchJump(Parser *parser, int offset)
 {
     // -2 to adjust for the bytecode for the jump offset itself.
-    int jump = getCurrentOffset(current) - offset - 2;
+    int jump = getCurrentOffset(parser->currentFunction) - offset - 2;
 
     if (jump > UINT16_MAX)
     {
         error(parser, "Too much code to jump over.");
     }
-    setCodeOffset(current, offset, (jump >> 8) & 0xff);
-    setCodeOffset(current, offset + 1, jump & 0xff);
+    setCodeOffset(parser->currentFunction, offset, (jump >> 8) & 0xff);
+    setCodeOffset(parser->currentFunction, offset + 1, jump & 0xff);
 }
 
 void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
 {
-    compiler->enclosing = current;
+    compiler->enclosing = parser->currentFunction;
     compiler->function = NULL;
     compiler->type = type;
     compiler->localCount = 0;
@@ -130,15 +129,15 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     compiler->function = newFunction(main_thread);
     compiler->function->chunk.filename = parser->filename;
     compiler->function->module = parser->currentModule;
-    current = compiler;
+    parser->currentFunction = compiler;
 
     if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
     {
-        current->function->name = copyString(main_thread, parser->previous.start,
+        parser->currentFunction->function->name = copyString(main_thread, parser->previous.start,
                                              parser->previous.length);
     }
 
-    Local *local = &current->locals[current->localCount++];
+    Local *local = &parser->currentFunction->locals[parser->currentFunction->localCount++];
     local->depth = 0;
     local->isCaptured = false;
     if (type == TYPE_METHOD || type == TYPE_INITIALIZER)
@@ -159,31 +158,32 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
 ObjFunction *endCompiler(Parser *parser)
 {
     emitReturn(parser);
-    ObjFunction *function = current->function;
+    ObjFunction *function = parser->currentFunction->function;
 #if DEBUG_PRINT_CODE
     if (!parser->hadError)
     {
-        disassembleChunk(currentChunk(current),
+        disassembleChunk(currentChunk(parser->currentFunction),
                          function->name != NIL_VAL ? string_get_cstr(function->name) : "<script>");
     }
 #endif
-    current = current->enclosing;
+    parser->currentFunction = parser->currentFunction->enclosing;
     return function;
 }
 
-void beginScope(void)
+void beginScope(Parser *parser)
 {
-    current->scopeDepth++;
+    parser->currentFunction->scopeDepth++;
 }
 
 void endScope(Parser *parser)
 {
-    current->scopeDepth--;
+    parser->currentFunction->scopeDepth--;
 
-    while (current->localCount > 0 &&
-           current->locals[current->localCount - 1].depth > current->scopeDepth)
+    while (parser->currentFunction->localCount > 0 &&
+           parser->currentFunction->locals[parser->currentFunction->localCount - 1].depth >
+            parser->currentFunction->scopeDepth)
     {
-        if (current->locals[current->localCount - 1].isCaptured)
+        if (parser->currentFunction->locals[parser->currentFunction->localCount - 1].isCaptured)
         {
             emitByte(parser, OP_CLOSE_UPVALUE);
         }
@@ -191,7 +191,7 @@ void endScope(Parser *parser)
         {
             emitByte(parser, OP_POP);
         }
-        current->localCount--;
+        parser->currentFunction->localCount--;
     }
 }
 
@@ -248,6 +248,7 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename)
     parser->currentModule = newModule(main_thread);
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
+    parser->currentFunction = NULL;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)
@@ -278,10 +279,10 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
 
 void markCompilerRoots(void)
 {
-    Compiler *compiler = current;
-    while (compiler != NULL)
-    {
-        markObject((Obj *)compiler->function);
-        compiler = compiler->enclosing;
-    }
+    // Compiler *compiler = current;
+    // while (compiler != NULL)
+    // {
+    //     markObject((Obj *)compiler->function);
+    //     compiler = compiler->enclosing;
+    // }
 }

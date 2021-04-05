@@ -84,12 +84,12 @@ void classDeclaration(Parser *parser)
         {
             error(parser, "A class cannot inherit from itself.");
         }
-        beginScope();
+        beginScope(parser);
         variable(parser, false);
     }
     else
     {
-        beginScope();
+        beginScope(parser);
         namedVariable(parser, syntheticToken("Object"), false);
     }
 
@@ -135,7 +135,7 @@ void function(Parser *parser, FunctionType type)
 {
     Compiler compiler;
     initCompiler(&compiler, type, parser);
-    beginScope();
+    beginScope(parser);
 
     // Compile the parameter list.
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
@@ -143,8 +143,8 @@ void function(Parser *parser, FunctionType type)
     {
         do
         {
-            current->function->arity++;
-            if (current->function->arity > 255)
+            parser->currentFunction->function->arity++;
+            if (parser->currentFunction->function->arity > 255)
             {
                 errorAtCurrent(parser, "Cannot have more than 255 parameters.");
             }
@@ -174,7 +174,7 @@ void function(Parser *parser, FunctionType type)
 void functionDeclaration(Parser *parser)
 {
     uint8_t global = parseVariable(parser, "Expect function name.");
-    markInitialized();
+    markInitialized(parser);
     function(parser, TYPE_FUNCTION);
     defineVariable(parser, global);
 }

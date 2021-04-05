@@ -208,7 +208,7 @@ void enumDeclaration(Parser *parser)
             {
                 current_value++;
             }
-            emitConstant(parser, create_number(main_thread, current_value));
+            emitConstant(parser, create_number(parser->compilation_thread, current_value));
 
             Token addToken = syntheticToken("add");
             uint8_t name = identifierConstant(parser, &addToken);

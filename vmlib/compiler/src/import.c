@@ -10,6 +10,18 @@
 
 #define EXTENSION_MAX_STRLEN 4
 
+// ObjFunction *function = compile(source, vm);
+//     if (function == NULL)
+//         return INTERPRET_COMPILE_ERROR;
+
+//     push(vm, OBJ_VAL(function));
+//     ObjClosure *closure = newClosure(vm, function);
+//     pop(vm);
+//     push(vm, OBJ_VAL(closure));
+//     callValue(vm, OBJ_VAL(closure), 0);
+
+//     return run(vm);
+
 void import_from_file(VM *vm, const char *filename, const char *path, int path_len)
 {
     int filename_len = strlen(filename);

@@ -82,6 +82,7 @@ typedef struct
     LoopCompiler *currentLoop;
     ObjModule *currentModule;
     Compiler *currentFunction;
+    VM *compilation_thread;
 } Parser;
 
 typedef void (*ParseFn)(Parser *parser, bool canAssign);
@@ -92,8 +93,6 @@ typedef struct
     ParseFn infix;
     Precedence precedence;
 } ParseRule;
-
-extern VM *main_thread;
 
 Token syntheticToken(const char *text);
 Chunk *currentChunk(Compiler *compiler);

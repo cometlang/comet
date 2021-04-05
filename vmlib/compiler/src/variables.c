@@ -9,17 +9,17 @@
 #define UNINITIALIZED_SCOPE -1
 #define UNRESOLVED_VARIABLE_INDEX -1
 
-static int addConstant(Chunk *chunk, Value value)
+static int addConstant(Parser *parser, Chunk *chunk, Value value)
 {
-    push(main_thread, value);
+    push(parser->compilation_thread, value);
     writeValueArray(&chunk->constants, value);
-    pop(main_thread);
+    pop(parser->compilation_thread);
     return chunk->constants.count - 1;
 }
 
 uint8_t makeConstant(Parser *parser, Value value)
 {
-    int constant = addConstant(currentChunk(parser->currentFunction), value);
+    int constant = addConstant(parser, currentChunk(parser->currentFunction), value);
     if (constant > UINT8_MAX)
     {
         error(parser, "Too many constants in one chunk.");
@@ -31,7 +31,7 @@ uint8_t makeConstant(Parser *parser, Value value)
 
 uint8_t identifierConstant(Parser *parser, Token *name)
 {
-    return makeConstant(parser, copyString(main_thread, name->start, name->length));
+    return makeConstant(parser, copyString(parser->compilation_thread, name->start, name->length));
 }
 
 bool identifiersEqual(Token *a, Token *b)

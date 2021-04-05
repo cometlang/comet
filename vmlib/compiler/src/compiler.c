@@ -17,8 +17,6 @@
 #include "debug.h"
 #endif
 
-VM *main_thread = NULL;
-
 Chunk *currentChunk(Compiler *compiler)
 {
     return &compiler->function->chunk;
@@ -126,14 +124,14 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction(main_thread);
+    compiler->function = newFunction(parser->compilation_thread);
     compiler->function->chunk.filename = parser->filename;
     compiler->function->module = parser->currentModule;
     parser->currentFunction = compiler;
 
     if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
     {
-        parser->currentFunction->function->name = copyString(main_thread, parser->previous.start,
+        parser->currentFunction->function->name = copyString(parser->compilation_thread, parser->previous.start,
                                              parser->previous.length);
     }
 
@@ -239,26 +237,26 @@ void synchronize(Parser *parser)
     }
 }
 
-void initParser(Parser *parser, Scanner *scanner, const char *filename)
+void initParser(Parser *parser, Scanner *scanner, const char *filename, VM *compilation_thread)
 {
     parser->filename = filename;
     parser->hadError = false;
     parser->panicMode = false;
     parser->scanner = scanner;
-    parser->currentModule = newModule(main_thread);
+    parser->currentModule = newModule(parser->compilation_thread);
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
     parser->currentFunction = NULL;
+    parser->compilation_thread = compilation_thread;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)
 {
     Scanner scanner;
     initScanner(&scanner, source);
-    main_thread = thread;
 
     Parser parser;
-    initParser(&parser, &scanner, source->path);
+    initParser(&parser, &scanner, source->path, thread);
 
     Compiler compiler;
     initCompiler(&compiler, TYPE_SCRIPT, &parser);
@@ -272,7 +270,7 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
     ObjFunction *function = endCompiler(&parser);
 
     addModule(parser.currentModule,
-        copyString(main_thread, parser.filename, strlen(parser.filename)));
+        copyString(parser.compilation_thread, parser.filename, strlen(parser.filename)));
 
     return parser.hadError ? NULL : function;
 }

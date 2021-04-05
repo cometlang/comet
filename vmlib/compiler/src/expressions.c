@@ -154,12 +154,12 @@ static void number(Parser *parser, bool UNUSED(canAssign))
     number_chars[offset] = '\0';
 
     double value = strtod(number_chars, NULL);
-    emitConstant(parser, create_number(main_thread, value));
+    emitConstant(parser, create_number(parser->compilation_thread, value));
 }
 
 static void string(Parser *parser, bool UNUSED(canAssign))
 {
-    emitConstant(parser, copyString(main_thread, parser->previous.start + 1,
+    emitConstant(parser, copyString(parser->compilation_thread, parser->previous.start + 1,
                                     parser->previous.length - 2));
 }
 

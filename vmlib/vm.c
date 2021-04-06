@@ -8,6 +8,7 @@
 #include "debug.h"
 #include "mem.h"
 #include "messages.h"
+#include "import.h"
 
 #include "comet.h"
 
@@ -613,12 +614,6 @@ static InterpretResult run(VM *vm)
             *frame->closure->upvalues[slot]->location = peek(vm, 0);
             break;
         }
-        case OP_SET_MODULE_VAR:
-        case OP_GET_MODULE_VAR:
-        {
-            runtimeError(vm, "UNIMPLEMENTED OPERATION");
-            return INTERPRET_RUNTIME_ERROR;
-        }
         case OP_GET_PROPERTY:
         {
             if (!IS_INSTANCE(peek(vm, 0)) && !IS_NATIVE_INSTANCE(peek(vm, 0)))
@@ -910,6 +905,19 @@ static InterpretResult run(VM *vm)
                 break;
             }
             return INTERPRET_RUNTIME_ERROR;
+        case OP_IMPORT:
+        {
+            // Check to see if the module has already been imported first
+            ObjFunction *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
+            push(vm, OBJ_VAL(imported));
+            addModule(imported->module, peek(vm, 1));
+            ObjClosure *closure = newClosure(vm, imported);
+            pop(vm);
+            push(vm, OBJ_VAL(closure));
+            callValue(vm, OBJ_VAL(closure), 0);
+            pop(vm); // Should I be popping twice? 1 for filename, 1 for module function result (nil)
+            break;
+        }
         }
     }
 

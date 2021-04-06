@@ -298,7 +298,8 @@ void rethrowStatement(Parser *parser)
 void importStatement(Parser *parser)
 {
     consume(parser, TOKEN_STRING, "Import needs a module to import");
-    import_from_file(parser->compilation_thread, parser->filename, parser->previous.start, parser->previous.length);
+    emitConstant(parser, copyString(parser->compilation_thread, parser->previous.start, parser->previous.length));
+    emitByte(parser, OP_IMPORT);
 }
 
 void nextStatement(Parser *parser)

@@ -243,11 +243,11 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename, VM *comp
     parser->hadError = false;
     parser->panicMode = false;
     parser->scanner = scanner;
+    parser->compilation_thread = compilation_thread;
     parser->currentModule = newModule(parser->compilation_thread);
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
     parser->currentFunction = NULL;
-    parser->compilation_thread = compilation_thread;
 }
 
 ObjFunction *compile(const SourceFile *source, VM *thread)

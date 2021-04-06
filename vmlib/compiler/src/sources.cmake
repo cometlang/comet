@@ -5,6 +5,5 @@ set(COMPILER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/expressions.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/source_files.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/statements.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/import.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/variables.c
 )

@@ -107,10 +107,6 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return byteInstruction("OP_GET_UPVALUE", chunk, offset);
     case OP_SET_UPVALUE:
         return byteInstruction("OP_SET_UPVALUE", chunk, offset);
-    case OP_SET_MODULE_VAR:
-        return byteInstruction("OP_SET_MODULE_VAR", chunk, offset);
-    case OP_GET_MODULE_VAR:
-        return byteInstruction("OP_GET_MODULE_VAR", chunk, offset);
     case OP_GET_PROPERTY:
         return constantInstruction("OP_GET_PROPERTY", chunk, offset);
     case OP_SET_PROPERTY:
@@ -197,6 +193,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_POP_EXCEPTION_HANDLER", offset);
     case OP_PROPAGATE_EXCEPTION:
         return simpleInstruction("OP_PROPAGATE_EXCEPTION", offset);
+    case OP_IMPORT:
+        return simpleInstruction("OP_IMPORT", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

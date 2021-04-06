@@ -7,24 +7,15 @@
 #include "import.h"
 #include "common.h"
 #include "compiler.h"
+#include "comet.h"
 
 #define EXTENSION_MAX_STRLEN 4
 
-// ObjFunction *function = compile(source, vm);
-//     if (function == NULL)
-//         return INTERPRET_COMPILE_ERROR;
-
-//     push(vm, OBJ_VAL(function));
-//     ObjClosure *closure = newClosure(vm, function);
-//     pop(vm);
-//     push(vm, OBJ_VAL(closure));
-//     callValue(vm, OBJ_VAL(closure), 0);
-
-//     return run(vm);
-
-void import_from_file(VM *vm, const char *filename, const char *path, int path_len)
+ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
 {
     int filename_len = strlen(filename);
+    const char *path = string_get_cstr(import_path);
+    int path_len = strlen(path);
     int length = path_len + filename_len + EXTENSION_MAX_STRLEN + 1;
     char candidate[length];
     char *dir = dirname((char *)filename);
@@ -35,6 +26,13 @@ void import_from_file(VM *vm, const char *filename, const char *path, int path_l
     memcpy(&candidate[dir_len + 1 + path_len - 2], ".cmt", 4);
     candidate[dir_len + 1 + path_len - 2 + 4] = '\0';
     SourceFile *source = readSourceFile(candidate);
-    if (interpret(vm, source) != INTERPRET_OK)
+    
+    ObjFunction *function = compile(source, vm);
+    if (function == NULL)
+    {
         runtimeError(vm, "Failed to import %s\n", candidate);
+        return NULL;
+    }
+
+    return function;
 }

@@ -17,6 +17,8 @@ chunk.h
 common.h
 debug.c
 debug.h
+import.c
+import.h
 mem.c
 mem.h
 messages.c

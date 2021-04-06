@@ -18,8 +18,6 @@ typedef enum
     OP_SET_GLOBAL,
     OP_GET_UPVALUE,
     OP_SET_UPVALUE,
-    OP_GET_MODULE_VAR,
-    OP_SET_MODULE_VAR,
     OP_GET_PROPERTY,
     OP_SET_PROPERTY,
     OP_GET_SUPER,
@@ -57,6 +55,7 @@ typedef enum
     OP_PUSH_EXCEPTION_HANDLER,
     OP_POP_EXCEPTION_HANDLER,
     OP_PROPAGATE_EXCEPTION,
+    OP_IMPORT,
 } OpCode;
 
 typedef struct

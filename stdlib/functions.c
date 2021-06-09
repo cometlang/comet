@@ -46,10 +46,14 @@ VALUE callable_p(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
 VALUE fn_sleep(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
 {
     double input_time = number_get_value(args[0]);
+#ifdef WIN32
+    Sleep(input_time * MILLI_SECONDS_PER_SECOND);
+#else
     struct timespec sleep_time, remainder;
     sleep_time.tv_sec = floor(input_time);
     sleep_time.tv_nsec = (input_time - sleep_time.tv_sec) * NANO_SECONDS_PER_SECOND;
     nanosleep(&sleep_time, &remainder);
+#endif
     return NIL_VAL;
 }
 

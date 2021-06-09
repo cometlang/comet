@@ -3,6 +3,7 @@
 
 #include "comet.h"
 
+#define MILLI_SECONDS_PER_SECOND 1000
 #define NANO_SECONDS_PER_SECOND 1000000000
 
 void init_object(VM *vm, VALUE klass);
@@ -27,5 +28,9 @@ void bootstrap_iterable(VM *vm);
 void complete_iterable(VM *vm);
 
 VALUE callable_p(VM *vm, int arg_count, VALUE *args);
+
+#ifdef WIN32
+void socket_cleanup(void);
+#endif
 
 #endif

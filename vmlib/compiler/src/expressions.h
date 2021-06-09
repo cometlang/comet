@@ -4,6 +4,6 @@
 
 void parsePrecedence(Parser *parser, Precedence precedence);
 void expression(Parser *parser);
-ParseRule *getRule(TokenType type);
+ParseRule *getRule(TokenType_t type);
 
 #endif

@@ -55,7 +55,11 @@ static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(
 {
     EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, self);
     const char *name = string_get_cstr(data->name);
+#if WIN32
+    #define max_len 256
+#else
     int max_len = 64 + strlen(name);
+#endif
     char temp_string[max_len];
     int length = snprintf(temp_string, max_len, "%s:%.17g", name, data->num.num);
     return copyString(vm, temp_string, length);

@@ -6,7 +6,7 @@
 #include "statements.h"
 #include "variables.h"
 
-static uint8_t argumentList(Parser *parser, TokenType closingToken)
+static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
 {
     uint8_t argCount = 0;
     if (!check(parser, closingToken))
@@ -40,7 +40,7 @@ static void and_(Parser *parser, bool UNUSED(canAssign))
 static void binary(Parser *parser, bool UNUSED(canAssign))
 {
     // Remember the operator.
-    TokenType operatorType = parser->previous.type;
+    TokenType_t operatorType = parser->previous.type;
 
     // Compile the right operand.
     ParseRule *rule = getRule(operatorType);
@@ -144,7 +144,7 @@ static void grouping(Parser *parser, bool UNUSED(canAssign))
 
 static void number(Parser *parser, bool UNUSED(canAssign))
 {
-    char number_chars[parser->previous.length + 1];
+    char *number_chars = ALLOCATE(char, parser->previous.length + 1);
     int offset = 0;
     for (int i = 0; i < parser->previous.length; i++)
     {
@@ -154,6 +154,7 @@ static void number(Parser *parser, bool UNUSED(canAssign))
     number_chars[offset] = '\0';
 
     double value = strtod(number_chars, NULL);
+    FREE_ARRAY(char, number_chars, parser->previous.length + 1);
     emitConstant(parser, create_number(parser->compilation_thread, value));
 }
 
@@ -229,7 +230,7 @@ static void self(Parser *parser, bool UNUSED(canAssign))
 
 static void unary(Parser *parser, bool UNUSED(canAssign))
 {
-    TokenType operatorType = parser->previous.type;
+    TokenType_t operatorType = parser->previous.type;
 
     // Compile the operand.
     parsePrecedence(parser, PREC_UNARY);
@@ -437,7 +438,7 @@ void parsePrecedence(Parser *parser, Precedence precedence)
     }
 }
 
-ParseRule *getRule(TokenType type)
+ParseRule *getRule(TokenType_t type)
 {
     return &rules[type];
 }

@@ -57,7 +57,11 @@ VALUE obj_hash(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argument
 VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjInstance *instance = AS_INSTANCE(self);
+#ifdef WIN32
+#define string_len 256
+#else
     size_t string_len = strlen(instance->klass->name) + strlen(" instance") + 1;
+#endif
     char string[string_len];
     snprintf(string, string_len, "%s instance", instance->klass->name);
     return copyString(vm, string, string_len);

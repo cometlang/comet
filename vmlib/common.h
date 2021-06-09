@@ -14,7 +14,12 @@
 #define DEBUG_ASSERT_ENABLED (1)
 
 #ifndef UNUSED
-#define UNUSED(x) x __attribute__ ((unused))
+# ifdef WIN32
+#include <Windows.h>
+#  define UNUSED(x) UNREFERENCED_PARAMETER(x)
+# else
+#  define UNUSED(x) x __attribute__ ((unused))
+# endif
 #endif
 
 typedef struct {

@@ -85,6 +85,6 @@ void test_scanner_tokens(void)
         printf("Testing: '%s', expecting %d\n", token_strings[i], i);
 
         Token result = scanToken(&scanner);
-        DEBUG_ASSERT(result.type == (TokenType) i);
+        DEBUG_ASSERT(result.type == (TokenType_t) i);
     }
 }

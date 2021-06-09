@@ -6,10 +6,12 @@
 
 VALUE env_set_value(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
 {
+#ifndef WIN32
     if (setenv(string_get_cstr(arguments[0]), string_get_cstr(arguments[1]), true) != 0)
     {
         throw_exception_native(vm, "Exception", "Could not set environment variable: %s", strerror(errno));
     }
+#endif
     return NIL_VAL;
 }
 

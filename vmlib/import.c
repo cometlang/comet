@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef WIN32
 #include <libgen.h>
+#endif
 
 #include "import.h"
 #include "common.h"
@@ -11,13 +13,25 @@
 
 #define EXTENSION_MAX_STRLEN 4
 
+#ifdef WIN32
+static char* dirname(char* filename)
+{
+    return filename;
+}
+#endif
+
 ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
 {
     int filename_len = strlen(filename);
     const char *path = string_get_cstr(import_path);
     int path_len = strlen(path);
     int length = path_len + filename_len + EXTENSION_MAX_STRLEN + 1;
-    char candidate[length];
+    char *candidate = malloc(sizeof(char) * length);
+    if (candidate == NULL)
+    {
+        runtimeError(vm, "Out of memory");
+        return NULL;
+    }
     char *dir = dirname((char *)filename);
     int dir_len = strlen(dir);
     memcpy(candidate, dir, dir_len);
@@ -31,8 +45,10 @@ ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
     if (function == NULL)
     {
         runtimeError(vm, "Failed to import %s\n", candidate);
+        free(candidate);
         return NULL;
     }
 
+    free(candidate);
     return function;
 }

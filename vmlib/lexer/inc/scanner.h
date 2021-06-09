@@ -37,10 +37,10 @@ typedef enum {
   TOKEN_EOF,
 
   NUM_TOKENS,
-} TokenType;
+} TokenType_t;
 
 typedef struct {
-    TokenType type;
+    TokenType_t type;
     const char *start;
     int length;
     int line;

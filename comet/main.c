@@ -82,6 +82,9 @@ int main(int argc, const char **argv)
         exit(64);
     }
 
+#ifdef WIN32
+    socket_cleanup();
+#endif
     freeVM(&virtualMachine);
     finalizeGarbageCollection();
     freeGlobals();

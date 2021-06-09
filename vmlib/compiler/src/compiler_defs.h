@@ -110,9 +110,9 @@ void beginScope(Parser *parser);
 void endScope(Parser *parser);
 
 void advance(Parser *parser);
-void consume(Parser *parser, TokenType type, const char *message);
-bool check(Parser *parser, TokenType type);
-bool match(Parser *parser, TokenType type);
+void consume(Parser *parser, TokenType_t type, const char *message);
+bool check(Parser *parser, TokenType_t type);
+bool match(Parser *parser, TokenType_t type);
 void error(Parser *parser, const char *message);
 void errorAtCurrent(Parser *parser, const char *message);
 void addLocal(Parser *parser, Token name);

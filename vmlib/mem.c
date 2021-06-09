@@ -1,4 +1,8 @@
+#ifdef WIN32
+#include <Windows.h>
+#else
 #include <pthread.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include "common.h"
@@ -27,7 +31,17 @@ static Obj **grey_stack;
 static int grey_capacity = 0;
 static int grey_count = 0;
 
+#ifdef WIN32
+static HANDLE gc_lock;
+#define MUTEX_LOCK(mut) WaitForSingleObject(mut, INFINITE)
+#define MUTEX_UNLOCK(mut) ReleaseMutex(mut)
+#define MUTEX_DESTROY(mut) CloseHandle(mut)
+#else
 static pthread_mutex_t gc_lock = PTHREAD_MUTEX_INITIALIZER;
+#define MUTEX_LOCK(mut) pthread_mutex_lock(&mut)
+#define MUTEX_UNLOCK(mut) pthread_mutex_unlock(&mut)
+#define MUTEX_DESTROY(mut) pthread_mutex_destroy(&mut)
+#endif
 
 void register_thread(VM *vm)
 {
@@ -60,7 +74,7 @@ void deregister_thread(VM *vm)
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
-    pthread_mutex_lock(&gc_lock);
+    MUTEX_LOCK(gc_lock);
     _bytes_allocated += newSize - oldSize;
 #if DEBUG_STRESS_GC
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
@@ -73,7 +87,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
         collectGarbage();
     }
 #endif
-    pthread_mutex_unlock(&gc_lock);
+    MUTEX_UNLOCK(gc_lock);
     if (newSize == 0)
     {
         free(previous);
@@ -397,7 +411,7 @@ static void collectGarbage()
 
 void incorporateObjects(VM *vm)
 {
-    pthread_mutex_lock(&gc_lock);
+    MUTEX_LOCK(gc_lock);
     VM *main_thread = threads[0];
     Obj *object = vm->objects;
     while (object != NULL)
@@ -407,7 +421,14 @@ void incorporateObjects(VM *vm)
         main_thread->objects = object;
         object = next;
     }
-    pthread_mutex_unlock(&gc_lock);
+    MUTEX_UNLOCK(gc_lock);
+}
+
+void initializeGarbageCollection()
+{
+#ifdef WIN32
+    gc_lock = CreateMutex(NULL, false, NULL);
+#endif
 }
 
 void freeObjects(VM *vm)
@@ -433,5 +454,5 @@ void finalizeGarbageCollection(void)
     thread_capacity = 0;
     num_threads = 0;
 
-    pthread_mutex_destroy(&gc_lock);
+    MUTEX_DESTROY(gc_lock);
 }

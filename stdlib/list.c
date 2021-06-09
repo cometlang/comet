@@ -241,9 +241,9 @@ VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
-        int64_t initial_length = (int64_t) number_get_value(arguments[0]);
-        VALUE args[initial_length];
-        for (int64_t i = 0; i < initial_length; i++)
+        int32_t initial_length = (int32_t) number_get_value(arguments[0]);
+        VALUE *args = (VALUE *) malloc(sizeof(VALUE) * initial_length);
+        for (int32_t i = 0; i < initial_length; i++)
         {
             args[i] = NIL_VAL;
         }

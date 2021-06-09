@@ -1,12 +1,23 @@
 #include <errno.h>
-#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include "comet.h"
 #include "comet_stdlib.h"
+#ifdef WIN32
+#include <Windows.h>
+#include <conio.h>
+#include <process.h>
+#else
+#include <pthread.h>
+#endif
 
 typedef struct {
+#ifdef WIN32
+    HANDLE thread_handle;
+    DWORD thread_id;
+#else
     pthread_t thread_id;
+#endif
     VALUE self;
     VALUE start_routine;
     VALUE arg;
@@ -39,14 +50,22 @@ VALUE thread_start(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     data->self = self;
     data->start_routine = arguments[0];
     data->arg = arguments[1];
+    int status = 0;
+#ifdef WIN32
+    data->thread_handle = CreateThread(NULL, 0, &thread_runner, data, 0, &data->thread_id);
+    status = data->thread_handle == NULL ? -1 : 0;
+#else
     pthread_attr_t thread_attributes;
     pthread_attr_init(&thread_attributes);
-    int status = pthread_create(&data->thread_id, &thread_attributes, &thread_runner, data);
+    status = pthread_create(&data->thread_id, &thread_attributes, &thread_runner, data);
+#endif
     if (status != 0)
     {
-        throw_exception_native(vm, "SocketException", "Unable to start thread");
+        throw_exception_native(vm, "ThreadException", "Unable to start thread");
     }
+#ifndef WIN32
     pthread_attr_destroy(&thread_attributes);
+#endif
     return NIL_VAL;
 }
 
@@ -54,10 +73,16 @@ VALUE thread_join(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSE
 {
     ThreadData *data = GET_NATIVE_INSTANCE_DATA(ThreadData, self);
     void *result = NULL;
-    int status = pthread_join(data->thread_id, &result);
+    int status = 0;
+#ifdef WIN32
+    status = WaitForSingleObject(data->thread_handle, INFINITE) == WAIT_OBJECT_0 ? 0 : -1;
+    CloseHandle(data->thread_handle);
+#else
+    status = pthread_join(data->thread_id, &result);
+#endif
     if (status != 0)
     {
-        throw_exception_native(vm, "SocketException", "Unable to join thread");
+        throw_exception_native(vm, "ThreadException", "Unable to join thread");
     }
     if (result != NULL)
         return OBJ_VAL(result);

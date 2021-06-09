@@ -76,7 +76,7 @@ VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arg
 InterpretResult interpret(VM *vm, const SourceFile *source);
 void runtimeError(VM *vm, const char *format, ...);
 void defineMethod(VM *vm, Value name, bool isStatic);
-void defineOperator(VM *vm, OPERATOR operator);
+void defineOperator(VM *vm, OPERATOR operator_);
 
 void push(VM *vm, Value value);
 Value pop(VM *vm);

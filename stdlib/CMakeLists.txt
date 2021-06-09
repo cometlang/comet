@@ -15,7 +15,6 @@ set(SOURCE
   enum.c
   env.c
   exception.c
-  file.c
   functions.c
   hash.c
   iterable.c
@@ -28,11 +27,22 @@ set(SOURCE
   string.c
   system.c
   thread.c
-  thread_synchronisation.c
 )
 
+if (WIN32)
+list(APPEND SOURCE file_win.c thread_synchronisation_win.c)
+else()
+list(APPEND SOURCE file.c thread_synchronisation.c)
+endif()
+
 add_library(stdlib STATIC "${SOURCE}")
+
+if (WIN32)
+target_link_libraries(stdlib vmlib utf8proc ws2_32)
+else()
 target_link_libraries(stdlib vmlib utf8proc m)
+endif (WIN32)
+
 target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private" Threads::Threads)
 target_include_directories(stdlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 

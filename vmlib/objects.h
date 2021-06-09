@@ -22,8 +22,8 @@ Value copyString(VM *vm, const char *chars, size_t length);
 ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);
-const char *getOperatorString(OPERATOR operator);
-OPERATOR getOperatorFromToken(TokenType token);
+const char *getOperatorString(OPERATOR operator_);
+OPERATOR getOperatorFromToken(TokenType_t token);
 
 static inline bool isObjType(Value value, ObjType type)
 {

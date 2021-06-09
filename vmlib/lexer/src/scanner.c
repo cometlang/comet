@@ -65,7 +65,7 @@ static bool match(Scanner *scanner, char expected)
     return true;
 }
 
-static Token makeToken(Scanner *scanner, TokenType type)
+static Token makeToken(Scanner *scanner, TokenType_t type)
 {
     Token token;
     token.type = type;
@@ -117,8 +117,8 @@ static void skipWhitespace(Scanner *scanner)
     }
 }
 
-static TokenType checkKeyword(Scanner *scanner, int start, int length,
-                              const char *rest, TokenType type)
+static TokenType_t checkKeyword(Scanner *scanner, int start, int length,
+                              const char *rest, TokenType_t type)
 {
     if (scanner->current - scanner->start == start + length &&
         memcmp(scanner->start + start, rest, length) == 0)
@@ -129,7 +129,7 @@ static TokenType checkKeyword(Scanner *scanner, int start, int length,
     return TOKEN_IDENTIFIER;
 }
 
-static TokenType identifierType(Scanner *scanner)
+static TokenType_t identifierType(Scanner *scanner)
 {
     switch (scanner->start[0])
     {

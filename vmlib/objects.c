@@ -320,7 +320,7 @@ const char *getOperatorString(OPERATOR operator)
     return "unknown";
 }
 
-OPERATOR getOperatorFromToken(TokenType token)
+OPERATOR getOperatorFromToken(TokenType_t token)
 {
     if (token == TOKEN_STAR)
         return OPERATOR_MULTIPLICATION;

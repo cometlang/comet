@@ -1,14 +1,19 @@
 #define _GNU_SOURCE
 #include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
+#ifdef WIN32
+#include <WinSock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
+#endif
 
 #include "comet.h"
 #include "comet_stdlib.h"
@@ -178,6 +183,17 @@ VALUE socket_listen(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *ar
 
 void init_socket(VM *vm)
 {
+#ifdef WIN32
+    WSADATA wsa;
+    SOCKET s;
+
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+    {
+        fprintf(stderr, "Could not initialise sockets");
+        exit(1);
+    }
+#endif
+
     VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET);
     defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
@@ -203,6 +219,15 @@ void init_socket(VM *vm)
     enum_add_value(vm, address_family, "UNIX", AF_UNIX);
     enum_add_value(vm, address_family, "IPv4", AF_INET);
     enum_add_value(vm, address_family, "IPv6", AF_INET6);
+#ifndef WIN32
     enum_add_value(vm, address_family, "NETLINK", AF_NETLINK);
+#endif
     pop(vm);
 }
+
+#ifdef WIN32
+void socket_cleanup(void)
+{
+    WSACleanup();
+}
+#endif

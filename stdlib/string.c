@@ -164,16 +164,18 @@ VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
 VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    utf8proc_int32_t intermediate[data->length + 1];
+    utf8proc_int32_t *intermediate = ALLOCATE(utf8proc_int32_t, data->length + 1);
     utf8proc_ssize_t intermediate_length = utf8proc_decompose(
         (const utf8proc_uint8_t *)data->chars, data->length,
         intermediate, data->length,
         UTF8PROC_NULLTERM);
     if (intermediate_length < 0)
     {
-        printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+        throw_exception_native(vm, "Exception", "ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+        return NIL_VAL;
     }
-    char output[data->length + 1];
+    char *output = ALLOCATE(char, data->length + 1);
     bool found_non_whitespace = false;
     int output_offset = 0;
 
@@ -190,23 +192,27 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
             output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *) &output[output_offset]);
         }
     }
-    return copyString(vm, (const char *)output, output_offset);
+    VALUE result = copyString(vm, (const char*)output, output_offset);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(char, output, data->length + 1);
+    return result;
 }
 
 VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    utf8proc_int32_t intermediate[data->length + 1];
+    utf8proc_int32_t* intermediate = ALLOCATE(utf8proc_int32_t, data->length + 1);
     utf8proc_ssize_t intermediate_length = utf8proc_decompose(
         (const utf8proc_uint8_t *)data->chars, data->length,
         intermediate, data->length,
         UTF8PROC_NULLTERM);
     if (intermediate_length < 0)
     {
-        printf("ERROR: %s\n", utf8proc_errmsg(intermediate_length));
+        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+        throw_exception_native(vm, "Exception", "ERROR: %s\n", utf8proc_errmsg(intermediate_length));
         return NIL_VAL;
     }
-    char output[data->length + 1];
+    char* output = ALLOCATE(char, data->length + 1);
 
     int i = intermediate_length - 1;
     for (; i >= 0; i--)
@@ -220,7 +226,11 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     {
         output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *) &output[output_offset]);
     }
-    return copyString(vm, (const char *)output, output_offset);
+
+    VALUE result = copyString(vm, (const char*)output, output_offset);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(char, output, data->length + 1);
+    return result;
 }
 
 VALUE string_trim(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

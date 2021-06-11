@@ -39,16 +39,30 @@ ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
     memcpy(&candidate[dir_len + 1], &path[1], path_len - 2);
     memcpy(&candidate[dir_len + 1 + path_len - 2], ".cmt", 4);
     candidate[dir_len + 1 + path_len - 2 + 4] = '\0';
-    SourceFile *source = readSourceFile(candidate);
-    
-    ObjFunction *function = compile(source, vm);
-    if (function == NULL)
+
+    char *full_path = realpath(candidate, NULL);
+    ObjModule *module = NULL;
+    Value full_path_val = copyString(vm, full_path, strlen(full_path));
+    push(vm, full_path_val);
+    ObjFunction *function = NULL;
+
+    if (!findModule(peek(vm, 0), &module))
     {
-        runtimeError(vm, "Failed to import %s\n", candidate);
+        SourceFile *source = readSourceFile(full_path);
+        function = compile(source, vm);
+        if (function == NULL)
+        {
+            runtimeError(vm, "Failed to import %s\n", full_path);
         free(candidate);
-        return NULL;
+        }
+        else
+        {
+            push(vm, OBJ_VAL(function));
+            addModule(function->module, full_path_val);
+            pop(vm);
+        }
     }
 
-    free(candidate);
+    free(full_path);
     return function;
 }

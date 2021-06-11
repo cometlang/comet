@@ -63,6 +63,7 @@ Value findInternedString(const char *chars, uint32_t hash);
 
 bool internString(Value string);
 void addModule(ObjModule *module, Value filename);
+bool findModule(Value filename, ObjModule **module);
 void markGlobals(void);
 void removeWhiteStrings(void);
 

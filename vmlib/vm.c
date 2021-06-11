@@ -916,15 +916,17 @@ static InterpretResult run(VM *vm)
             return INTERPRET_RUNTIME_ERROR;
         case OP_IMPORT:
         {
-            // Check to see if the module has already been imported first
             ObjFunction *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
-            push(vm, OBJ_VAL(imported));
-            addModule(imported->module, peek(vm, 1));
-            ObjClosure *closure = newClosure(vm, imported);
-            pop(vm);
-            push(vm, OBJ_VAL(closure));
-            callValue(vm, OBJ_VAL(closure), 0);
-            pop(vm); // Should I be popping twice? 1 for filename, 1 for module function result (nil)
+            if (imported != NULL)
+            {
+                push(vm, OBJ_VAL(imported));
+                addModuleVariable(frame->closure->function->module, peek(vm, 1), OBJ_VAL(imported->module));
+                ObjClosure *closure = newClosure(vm, imported);
+                pop(vm);
+                push(vm, OBJ_VAL(closure));
+                callValue(vm, OBJ_VAL(closure), 0);
+                pop(vm); // ??
+            }
             break;
         }
         }

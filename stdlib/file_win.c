@@ -63,7 +63,7 @@ VALUE file_write(VM* vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
     int result = 0;
     const char* buffer = string_get_cstr(arguments[0]);
-    WriteFile(data->fp, buffer, strlen(buffer), &result, NULL);
+    WriteFile(data->fp, buffer, (DWORD)strlen(buffer), &result, NULL);
     return create_number(vm, (double)result);
 }
 
@@ -71,12 +71,12 @@ VALUE file_read(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
 
-    fseek(data->fp, 0L, SEEK_END);
-    size_t fileSize = ftell(data->fp);
-    rewind(data->fp);
+    DWORD fileSize = 0;
+    GetFileSize(data->fp, &fileSize);
 
     char* buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
-    size_t bytesRead = fread(buffer, sizeof(char), fileSize, data->fp);
+    DWORD bytesRead = 0;
+    ReadFile(data->fp, buffer, fileSize, &bytesRead, NULL);
     buffer[bytesRead] = '\0';
 
     return takeString(vm, buffer, fileSize);

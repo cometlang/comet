@@ -56,6 +56,9 @@ typedef enum
     OP_POP_EXCEPTION_HANDLER,
     OP_PROPAGATE_EXCEPTION,
     OP_IMPORT,
+    OP_BITWISE_OR,
+    OP_BITWISE_AND,
+    OP_BITWISE_XOR,
 } OpCode;
 
 typedef struct

@@ -693,6 +693,15 @@ static InterpretResult run(VM *vm)
         case OP_MODULO:
             BINARY_OP(OPERATOR_MODULO);
             break;
+        case OP_BITWISE_OR:
+            BINARY_OP(OPERATOR_BITWISE_OR);
+            break;
+        case OP_BITWISE_AND:
+            BINARY_OP(OPERATOR_BITWISE_AND);
+            break;
+        case OP_BITWISE_XOR:
+            BINARY_OP(OPERATOR_BITWISE_XOR);
+            break;
         case OP_NOT:
         {
             Value result = FALSE_VAL;

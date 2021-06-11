@@ -129,6 +129,33 @@ VALUE number_operator_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_
     return FALSE_VAL;
 }
 
+VALUE number_operator_bitwise_or(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
+    return create_number(vm, (double) ((int64_t)lhs->num | (int64_t)rhs->num));
+}
+
+VALUE number_operator_bitwise_and(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
+    return create_number(vm, (double)((int64_t)lhs->num & (int64_t)rhs->num));
+}
+
+VALUE number_operator_bitwise_xor(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
+    return create_number(vm, (double)((int64_t)lhs->num ^ (int64_t)rhs->num));
+}
+
+VALUE number_operator_bitwise_negate(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    return create_number(vm, (double)(~(int64_t)lhs->num));
+}
+
 VALUE create_number(VM *vm, double number)
 {
     VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
@@ -168,6 +195,11 @@ void complete_number(VM *vm)
     defineNativeOperator(vm, number_class, &number_operator_divide, 1, OPERATOR_DIVISION);
     defineNativeOperator(vm, number_class, &number_operator_multiply, 1, OPERATOR_MULTIPLICATION);
     defineNativeOperator(vm, number_class, &number_operator_modulo, 1, OPERATOR_MODULO);
+
+    defineNativeOperator(vm, number_class, &number_operator_bitwise_or, 1, OPERATOR_BITWISE_OR);
+    defineNativeOperator(vm, number_class, &number_operator_bitwise_and, 1, OPERATOR_BITWISE_AND);
+    defineNativeOperator(vm, number_class, &number_operator_bitwise_xor, 1, OPERATOR_BITWISE_XOR);
+    defineNativeOperator(vm, number_class, &number_operator_bitwise_negate, 1, OPERATOR_BITWISE_NEGATE);
 
     // Ideally I should be able to compress these five down to one eventually
     defineNativeOperator(vm, number_class, &number_operator_greater_than, 1, OPERATOR_GREATER_THAN);

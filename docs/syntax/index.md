@@ -56,10 +56,11 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `!` logical not
 - `==` logical equivalency
 
-### Bitwise (not yet implemented)
+### Bitwise
 - `|` bitwise or
 - `&` bitwise and
 - `^` bitwise exclusive or
+- `~` bitwise negate
 
 ## Variables
 Variables must be declared before use.  Local and global variables are declared using the `var` keyword.  They may be initialized at the point of declaration. All variables in `Comet` are reference-types, so there is only pass-by-reference, and never pass-by-value.  All variables in `Comet` are objects and therefore inherit from [Object](../stdlib/object.md).
@@ -221,6 +222,10 @@ The operators able to be overloaded are as follows:
 - `*` (multiplication)
 - `+` (addition)
 - `-` (subtraction)
+- `|` (bitwise or)
+- `&` (bitwise and)
+- `^` (bitwise xor)
+- `~` (bitwise negate)
 - `/` (division)
 - `>` (greater than)
 - `<` (less than)

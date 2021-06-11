@@ -296,6 +296,14 @@ const char *getOperatorString(OPERATOR operator)
             return "-";
         case OPERATOR_DIVISION:
             return "/";
+        case OPERATOR_BITWISE_AND:
+            return "&";
+        case OPERATOR_BITWISE_OR:
+            return "|";
+        case OPERATOR_BITWISE_XOR:
+            return "^";
+        case OPERATOR_BITWISE_NEGATE:
+            return "~";
         case OPERATOR_GREATER_THAN:
             return ">";
         case OPERATOR_LESS_THAN:

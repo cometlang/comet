@@ -85,6 +85,15 @@ static void binary(Parser *parser, bool UNUSED(canAssign))
     case TOKEN_PERCENT:
         emitByte(parser, OP_MODULO);
         break;
+    case TOKEN_BITWISE_AND:
+        emitByte(parser, OP_BITWISE_AND);
+        break;
+    case TOKEN_VBAR:
+        emitByte(parser, OP_BITWISE_OR);
+        break;
+    case TOKEN_BITWISE_XOR:
+        emitByte(parser, OP_BITWISE_XOR);
+        break;
     default:
         return; // Unreachable.
     }
@@ -244,6 +253,9 @@ static void unary(Parser *parser, bool UNUSED(canAssign))
     case TOKEN_MINUS:
         emitByte(parser, OP_NEGATE);
         break;
+    case TOKEN_BITWISE_NEGATE:
+        emitByte(parser, OP_NEGATE);
+        break;
     default:
         return; // Unreachable.
     }
@@ -355,10 +367,10 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_STAR]             = {NULL,         binary,    PREC_FACTOR},
     [TOKEN_COLON]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_EOL]              = {NULL,         NULL,      PREC_NONE},
-    [TOKEN_VBAR]             = {lambda,       NULL,      PREC_NONE},
+    [TOKEN_VBAR]             = {lambda,       binary,    PREC_OR},
     [TOKEN_PERCENT]          = {NULL,         binary,    PREC_FACTOR},
     // One or two character tokens.
-    [TOKEN_BANG]             = {unary,        NULL,      PREC_NONE},
+    [TOKEN_BANG]             = {unary,        NULL,      PREC_UNARY},
     [TOKEN_BANG_EQUAL]       = {NULL,         binary,    PREC_EQUALITY},
     [TOKEN_EQUAL]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_EQUAL_EQUAL]      = {NULL,         binary,    PREC_EQUALITY},
@@ -373,6 +385,9 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_PERCENT_EQUAL]    = {NULL,         NULL,      PREC_NONE},
     [TOKEN_LOGICAL_OR]       = {NULL,         or_,       PREC_OR},
     [TOKEN_LOGICAL_AND]      = {NULL,         and_,      PREC_AND},
+    [TOKEN_BITWISE_AND]      = {NULL,         binary,    PREC_AND},
+    [TOKEN_BITWISE_XOR]      = {NULL,         binary,    PREC_XOR},
+    [TOKEN_BITWISE_NEGATE]   = {unary,        NULL,      PREC_UNARY},
     // Literals
     [TOKEN_IDENTIFIER]       = {variable,     NULL,      PREC_NONE},
     [TOKEN_STRING]           = {string,       NULL,      PREC_NONE},

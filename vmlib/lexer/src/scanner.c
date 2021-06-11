@@ -387,6 +387,10 @@ Token scanToken(Scanner *scanner)
         return makeToken(scanner, TOKEN_COMMA);
     case '.':
         return makeToken(scanner, TOKEN_DOT);
+    case '~':
+        return makeToken(scanner, TOKEN_BITWISE_NEGATE);
+    case '^':
+        return makeToken(scanner, TOKEN_BITWISE_XOR);
     case '-':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_MINUS_EQUAL : TOKEN_MINUS);
     case '+':
@@ -402,9 +406,7 @@ Token scanToken(Scanner *scanner)
     case '|':
         return makeToken(scanner, match(scanner, '|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
     case '&':
-        if (match(scanner, '&'))
-            return makeToken(scanner, TOKEN_LOGICAL_AND);
-        break;
+        return makeToken(scanner, match(scanner, '&') ? TOKEN_LOGICAL_AND : TOKEN_BITWISE_AND);
     case '!':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=':

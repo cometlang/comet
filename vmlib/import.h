@@ -3,6 +3,6 @@
 
 #include "vm.h"
 
-ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path);
+ObjModule *import_from_file(VM *vm, const char *filename, Value import_path);
 
 #endif

@@ -250,7 +250,7 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename, VM *comp
     parser->currentFunction = NULL;
 }
 
-ObjFunction *compile(const SourceFile *source, VM *thread)
+ObjModule *compile(const SourceFile *source, VM *thread)
 {
     Scanner scanner;
     initScanner(&scanner, source);
@@ -269,10 +269,9 @@ ObjFunction *compile(const SourceFile *source, VM *thread)
     }
     ObjFunction *function = endCompiler(&parser);
 
-    addModule(parser.currentModule,
-        copyString(parser.compilation_thread, parser.filename, strlen(parser.filename)));
+    tableSet(&function->module->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], OBJ_VAL(function));
 
-    return parser.hadError ? NULL : function;
+    return parser.hadError ? NULL : function->module;
 }
 
 void markCompilerRoots(void)

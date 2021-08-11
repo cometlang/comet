@@ -916,12 +916,14 @@ static InterpretResult run(VM *vm)
             return INTERPRET_RUNTIME_ERROR;
         case OP_IMPORT:
         {
-            ObjFunction *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
+            ObjModule *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
             if (imported != NULL)
             {
                 push(vm, OBJ_VAL(imported));
-                addModuleVariable(frame->closure->function->module, peek(vm, 1), OBJ_VAL(imported->module));
-                ObjClosure *closure = newClosure(vm, imported);
+                addModuleVariable(frame->closure->function->module, peek(vm, 1), OBJ_VAL(imported));
+                Value module_init_func;
+                tableGet(&imported->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], &module_init_func);
+                ObjClosure *closure = newClosure(vm, AS_FUNCTION(module_init_func));
                 pop(vm);
                 push(vm, OBJ_VAL(closure));
                 callValue(vm, OBJ_VAL(closure), 0);
@@ -969,12 +971,14 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
 
 InterpretResult interpret(VM *vm, const SourceFile *source)
 {
-    ObjFunction *function = compile(source, vm);
-    if (function == NULL)
+    ObjModule *main = compile(source, vm);
+    if (main == NULL)
         return INTERPRET_COMPILE_ERROR;
 
-    push(vm, OBJ_VAL(function));
-    ObjClosure *closure = newClosure(vm, function);
+    push(vm, OBJ_VAL(main));
+    Value module_init_func;
+    tableGet(&main->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], &module_init_func);
+    ObjClosure *closure = newClosure(vm, AS_FUNCTION(module_init_func));
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);

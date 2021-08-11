@@ -20,7 +20,7 @@ static char* dirname(char* filename)
 }
 #endif
 
-ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
+ObjModule *import_from_file(VM *vm, const char *filename, Value import_path)
 {
     int filename_len = strlen(filename);
     const char *path = string_get_cstr(import_path);
@@ -44,25 +44,24 @@ ObjFunction *import_from_file(VM *vm, const char *filename, Value import_path)
     ObjModule *module = NULL;
     Value full_path_val = copyString(vm, full_path, strlen(full_path));
     push(vm, full_path_val);
-    ObjFunction *function = NULL;
 
     if (!findModule(peek(vm, 0), &module))
     {
         SourceFile *source = readSourceFile(full_path);
-        function = compile(source, vm);
-        if (function == NULL)
+        module = compile(source, vm);
+        if (module == NULL)
         {
             runtimeError(vm, "Failed to import %s\n", full_path);
-        free(candidate);
         }
         else
         {
-            push(vm, OBJ_VAL(function));
-            addModule(function->module, full_path_val);
-            pop(vm);
+            addModule(module, copyString(vm, full_path, strlen(full_path)));
         }
     }
+    pop(vm);
 
+    free(candidate);
     free(full_path);
-    return function;
+
+    return module;
 }

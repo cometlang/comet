@@ -47,7 +47,6 @@ typedef enum
 
 typedef enum {
     STRING_INIT,
-    STRING_MOD_INIT_FUNC_NAME,
     STRING_HASH,
     STRING_TO_STRING,
     NUM_COMMON_STRINGS,

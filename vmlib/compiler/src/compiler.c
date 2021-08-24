@@ -268,8 +268,7 @@ ObjModule *compile(const SourceFile *source, VM *thread)
         declaration(&parser);
     }
     ObjFunction *function = endCompiler(&parser);
-
-    tableSet(&function->module->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], OBJ_VAL(function));
+    function->module->main = OBJ_VAL(function);
 
     return parser.hadError ? NULL : function->module;
 }

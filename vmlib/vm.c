@@ -921,13 +921,15 @@ static InterpretResult run(VM *vm)
             {
                 push(vm, OBJ_VAL(imported));
                 addModuleVariable(frame->closure->function->module, peek(vm, 1), OBJ_VAL(imported));
-                Value module_init_func;
-                tableGet(&imported->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], &module_init_func);
-                ObjClosure *closure = newClosure(vm, AS_FUNCTION(module_init_func));
+                if (!imported->initialised)
+                {
+                    imported->initialised = true;
+                    ObjClosure *closure = newClosure(vm, AS_FUNCTION(imported->main));
+                    pop(vm);
+                    push(vm, OBJ_VAL(closure));
+                    callValue(vm, OBJ_VAL(closure), 0);
+                }
                 pop(vm);
-                push(vm, OBJ_VAL(closure));
-                callValue(vm, OBJ_VAL(closure), 0);
-                pop(vm); // ??
             }
             break;
         }
@@ -976,9 +978,8 @@ InterpretResult interpret(VM *vm, const SourceFile *source)
         return INTERPRET_COMPILE_ERROR;
 
     push(vm, OBJ_VAL(main));
-    Value module_init_func;
-    tableGet(&main->variables, common_strings[STRING_MOD_INIT_FUNC_NAME], &module_init_func);
-    ObjClosure *closure = newClosure(vm, AS_FUNCTION(module_init_func));
+    main->initialised = true;
+    ObjClosure *closure = newClosure(vm, AS_FUNCTION(main->main));
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);

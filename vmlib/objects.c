@@ -96,6 +96,8 @@ ObjModule *newModule(VM *vm)
 {
     ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
     initTable(&module->variables);
+    module->initialised = false;
+    module->main = NIL_VAL;
     return module;
 }
 

@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (clox)
 enable_language(C)
+enable_language(CXX)
 enable_testing()
 
 if (WIN32)
@@ -21,7 +22,7 @@ chunk.h
 common.h
 debug.c
 debug.h
-import.c
+import.cpp
 import.h
 mem.c
 mem.h

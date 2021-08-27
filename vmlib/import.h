@@ -3,6 +3,14 @@
 
 #include "vm.h"
 
-ObjModule *import_from_file(VM *vm, const char *filename, Value import_path);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    ObjModule *import_from_file(VM *vm, const char *filename, Value import_path);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

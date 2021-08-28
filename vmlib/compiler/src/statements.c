@@ -298,8 +298,17 @@ void rethrowStatement(Parser *parser)
 void importStatement(Parser *parser)
 {
     consume(parser, TOKEN_STRING, "Import needs a module to import");
-    emitConstant(parser, copyString(parser->compilation_thread, parser->previous.start, parser->previous.length));
+    // Trim the String of the ' / " tokens
+    Value to_import = copyString(parser->compilation_thread, parser->previous.start + 1, parser->previous.length - 2);
+    push(parser->compilation_thread, to_import);
+    consume(parser, TOKEN_AS, "Expected 'as' after the module to import");
+    emitConstant(parser, to_import);
     emitByte(parser, OP_IMPORT);
+    // Imports are a function that return NIL, so ditch the nil from the stack
+    emitByte(parser, OP_POP);
+    uint8_t global = parseVariable(parser, "Expect variable name.");
+    defineVariable(parser, global);
+    pop(parser->compilation_thread);
 }
 
 void nextStatement(Parser *parser)

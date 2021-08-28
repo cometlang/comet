@@ -245,6 +245,7 @@ void initParser(Parser *parser, Scanner *scanner, const char *filename, VM *comp
     parser->scanner = scanner;
     parser->compilation_thread = compilation_thread;
     parser->currentModule = newModule(parser->compilation_thread);
+    parser->currentModule->filename = filename;
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
     parser->currentFunction = NULL;

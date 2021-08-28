@@ -250,6 +250,9 @@ void printObject(Value value)
     case OBJ_UPVALUE:
         printf("upvalue");
         break;
+    case OBJ_MODULE:
+        printf("module: %s", AS_MODULE(value)->filename);
+        break;
     default:
         printf("Unknown object");
     }

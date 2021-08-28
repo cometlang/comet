@@ -77,3 +77,14 @@ void addModule(ObjModule *module, Value filename)
 {
     tableSet(&modules, filename, OBJ_VAL(module));
 }
+
+bool findModule(Value filename, ObjModule **module)
+{
+    Value result;
+    if (tableGet(&modules, filename, &result))
+    {
+        *module = AS_MODULE(result);
+        return true;
+    }
+    return false;
+}

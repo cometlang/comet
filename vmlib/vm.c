@@ -372,7 +372,8 @@ static bool invoke(VM *vm, Value name, int argCount)
     if (!(IS_INSTANCE(receiver) ||
           IS_NATIVE_INSTANCE(receiver) ||
           IS_CLASS(receiver) ||
-          IS_NATIVE_CLASS(receiver)))
+          IS_NATIVE_CLASS(receiver) ||
+          IS_MODULE(receiver)))
     {
         if (IS_NIL(receiver))
         {
@@ -412,6 +413,24 @@ static bool invoke(VM *vm, Value name, int argCount)
 
         return invokeFromClass(vm, instance->klass, name, argCount);
     }
+    else if (IS_MODULE(receiver))
+    {
+        Value value;
+        ObjModule *module = AS_MODULE(receiver);
+        if (tableGet(&module->variables, name, &value))
+        {
+            // Load the field onto the stack in place of the receiver.
+            vm->stackTop[-argCount - 1] = value;
+            // Try to invoke it like a function.
+            return callValue(vm, value, argCount);
+        }
+        else
+        {
+            runtimeError(vm, "Undefined method '%s' on module '%s'.", string_get_cstr(name), module->filename);
+            return false;
+        }
+    }
+
     return invokeFromClass(vm, AS_CLASS(receiver), name, argCount);
 }
 
@@ -916,15 +935,25 @@ static InterpretResult run(VM *vm)
             return INTERPRET_RUNTIME_ERROR;
         case OP_IMPORT:
         {
-            // Check to see if the module has already been imported first
-            ObjFunction *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
-            push(vm, OBJ_VAL(imported));
-            addModule(imported->module, peek(vm, 1));
-            ObjClosure *closure = newClosure(vm, imported);
-            pop(vm);
-            push(vm, OBJ_VAL(closure));
-            callValue(vm, OBJ_VAL(closure), 0);
-            pop(vm); // Should I be popping twice? 1 for filename, 1 for module function result (nil)
+            ObjModule *imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
+            if (imported != NULL)
+            {
+                push(vm, OBJ_VAL(imported));
+                if (!imported->initialised)
+                {
+                    imported->initialised = true;
+                    ObjClosure *closure = newClosure(vm, AS_FUNCTION(imported->main));
+                    push(vm, OBJ_VAL(closure));
+                    callValue(vm, OBJ_VAL(closure), 0);
+                    frame = updateFrame(vm);
+                }
+                else
+                {
+                    // Simulate a function return that we will be ditching
+                    push(vm, NIL_VAL);
+                }
+                pop(vm);
+            }
             break;
         }
         }
@@ -967,12 +996,13 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
 
 InterpretResult interpret(VM *vm, const SourceFile *source)
 {
-    ObjFunction *function = compile(source, vm);
-    if (function == NULL)
+    ObjModule *main = compile(source, vm);
+    if (main == NULL)
         return INTERPRET_COMPILE_ERROR;
 
-    push(vm, OBJ_VAL(function));
-    ObjClosure *closure = newClosure(vm, function);
+    push(vm, OBJ_VAL(main));
+    main->initialised = true;
+    ObjClosure *closure = newClosure(vm, AS_FUNCTION(main->main));
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);

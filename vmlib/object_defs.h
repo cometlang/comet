@@ -102,6 +102,9 @@ typedef struct
 {
     Obj obj;
     Table variables;
+    bool initialised;
+    Value main;
+    const char *filename;
 } ObjModule;
 
 typedef struct

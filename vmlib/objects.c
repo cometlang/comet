@@ -96,6 +96,8 @@ ObjModule *newModule(VM *vm)
 {
     ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
     initTable(&module->variables);
+    module->initialised = false;
+    module->main = NIL_VAL;
     return module;
 }
 
@@ -247,6 +249,9 @@ void printObject(Value value)
         break;
     case OBJ_UPVALUE:
         printf("upvalue");
+        break;
+    case OBJ_MODULE:
+        printf("module: %s", AS_MODULE(value)->filename);
         break;
     default:
         printf("Unknown object");

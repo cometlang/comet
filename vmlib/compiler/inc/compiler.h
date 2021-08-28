@@ -4,7 +4,7 @@
 #include "objects.h"
 #include "vm.h"
 
-ObjFunction* compile(const SourceFile* source, VM *thread);
+ObjModule* compile(const SourceFile* source, VM *thread);
 SourceFile *readSourceFile(const char *path);
 void markCompilerRoots(void);
 

@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (clox)
 enable_language(C)
+enable_language(CXX)
 enable_testing()
 
 if (WIN32)
@@ -21,7 +22,7 @@ chunk.h
 common.h
 debug.c
 debug.h
-import.c
+import.cpp
 import.h
 mem.c
 mem.h
@@ -45,6 +46,8 @@ target_include_directories(vmlib PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/../comet
 )
+
+set_property(TARGET vmlib PROPERTY CXX_STANDARD 20)
 
 target_link_libraries(vmlib stdlib compiler lexer Threads::Threads)
 target_include_directories(vmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

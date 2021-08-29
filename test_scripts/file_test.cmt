@@ -1,0 +1,13 @@
+var FILE_NAME = 'test.txt'
+
+var file = File.open(FILE_NAME, FOPEN.READ_WRITE)
+file.write("This is a test file")
+file.close()
+
+var lines = File.read_all_lines(FILE_NAME)
+foreach (var line in lines)
+{
+    print(line)
+}
+
+File.delete(FILE_NAME)

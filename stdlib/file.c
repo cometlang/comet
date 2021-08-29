@@ -1,4 +1,6 @@
 #include "comet.h"
+#include "comet_stdlib.h"
+#include "file_common.h"
 
 #include <errno.h>
 #include <stdlib.h>
@@ -11,6 +13,7 @@
 typedef struct fileData
 {
     FILE *fp;
+    VALUE open_flags;
 } FileData;
 
 void *file_constructor(void)
@@ -31,11 +34,30 @@ void file_destructor(void *data)
     FREE(FileData, file_data);
 }
 
+static const char *translate_flags_to_mode(VALUE flags)
+{
+    uint64_t flag_value = enumvalue_get_value(flags);
+    bool include_bin = (flag_value & FOPEN_BINARY);
+    if (flag_value & FOPEN_READ_ONLY)
+    {
+        return include_bin ? "rb" : "r";
+    }
+    else if (flag_value & FOPEN_READ_WRITE)
+    {
+        return include_bin ? "wb+" : "w+";
+    }
+    else if (flag_value & FOPEN_APPEND)
+    {
+        return include_bin ? "ab+" : "a+";
+    }
+    return "r";
+}
+
 VALUE file_static_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
 {
     ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
     const char *path = string_get_cstr(arguments[0]);
-    const char *mode = string_get_cstr(arguments[1]);
+    const char *mode = translate_flags_to_mode(arguments[1]);
     FILE *fp = fopen(path, mode);
     if (fp == NULL)
     {
@@ -43,14 +65,16 @@ VALUE file_static_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *argume
         throw_exception_native(vm, "IOException", strerror(errno));
         return NIL_VAL;
     }
-    ((FileData *)instance->data)->fp = fp;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(instance));
+    data->fp = fp;
+    data->open_flags = arguments[1];
+
     return OBJ_VAL(instance);
 }
 
 VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData *data = (FileData *)instance->data;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
     if (data->fp != NULL)
     {
         fclose(data->fp);
@@ -61,16 +85,14 @@ VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
 
 VALUE file_write(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData *data = (FileData *)instance->data;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
     int result = fprintf(data->fp, "%s", string_get_cstr(arguments[0]));
     return create_number(vm, (double)result);
 }
 
 VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData *data = (FileData *)instance->data;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
 
     fseek(data->fp, 0L, SEEK_END);
     size_t fileSize = ftell(data->fp);
@@ -85,8 +107,7 @@ VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
 
 VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData *data = (FileData *)instance->data;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
     int result = fflush(data->fp);
     if (result == EOF)
     {
@@ -97,8 +118,7 @@ VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
 
 VALUE file_sync(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = AS_NATIVE_INSTANCE(self);
-    FileData *data = (FileData *)instance->data;
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
     int fd = fileno(data->fp);
     fsync(fd);
     return NIL_VAL;
@@ -138,7 +158,7 @@ VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_cou
 
 VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    FILE *fp = fopen(string_get_cstr(arguments[0]), string_get_cstr(arguments[1]));
+    FILE *fp = fopen(string_get_cstr(arguments[0]), "r");
 
     fseek(fp, 0L, SEEK_END);
     size_t fileSize = ftell(fp);
@@ -156,6 +176,10 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     while (index < fileSize)
     {
         char *line_end = strchr(current, '\n');
+        if (line_end == NULL)
+        {
+            line_end = buffer + fileSize;
+        }
         int length = line_end - current;
         VALUE string = copyString(vm, current, length);
         list_add(vm, result, 1, &string);
@@ -166,6 +190,16 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     FREE_ARRAY(char, buffer, fileSize + 1);
 
     return pop(vm);
+}
+
+VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    int result = unlink(string_get_cstr(arguments[0]));
+    if (result != 0)
+    {
+        runtimeError(vm, "Could not delete file: %s\n", strerror(errno));
+    }
+    return NIL_VAL;
 }
 
 void init_file(VM *vm)
@@ -181,4 +215,5 @@ void init_file(VM *vm)
     defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", 1, true);
     defineNativeMethod(vm, klass, &file_static_file_q, "file?", 1, true);
     defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", 1, true);
+    defineNativeMethod(vm, klass, &file_static_delete, "delete", 1, true);
 }

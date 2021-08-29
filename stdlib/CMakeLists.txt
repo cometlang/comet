@@ -15,6 +15,7 @@ set(SOURCE
   enum.c
   env.c
   exception.c
+  file_common.c
   functions.c
   hash.c
   iterable.c

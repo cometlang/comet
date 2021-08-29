@@ -10,6 +10,7 @@ void init_object(VM *vm, VALUE klass);
 void init_string(VM *vm, VALUE obj_klass);
 void init_exception(VM *vm);
 void init_file(VM *vm);
+void init_file_common(VM *vm);
 void init_datetime(VM *vm);
 void init_functions(VM *vm);
 void init_hash(VM *vm);

@@ -412,9 +412,21 @@ Token scanToken(Scanner *scanner)
     case '=':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
     case '<':
-        return makeToken(scanner, match(scanner, '=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
+    {
+        if (match(scanner, '='))
+            return makeToken(scanner, TOKEN_LESS_EQUAL);
+        else if (match(scanner, '<'))
+            return makeToken(scanner, TOKEN_BITSHIFT_LEFT);
+        return makeToken(scanner, TOKEN_LESS);
+    }
     case '>':
-        return makeToken(scanner, match(scanner, '=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+    {
+        if (match(scanner, '='))
+            return makeToken(scanner, TOKEN_GREATER_EQUAL);
+        else if (match(scanner, '>'))
+            return makeToken(scanner, TOKEN_BITSHIFT_RIGHT);
+        return makeToken(scanner, TOKEN_GREATER);
+    }
     case '"':
     case '\'':
         return string(scanner, c);

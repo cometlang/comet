@@ -307,6 +307,10 @@ const char *getOperatorString(OPERATOR operator)
             return "|";
         case OPERATOR_BITWISE_XOR:
             return "^";
+        case OPERATOR_BITSHIFT_LEFT:
+            return "<<";
+        case OPERATOR_BITSHIFT_RIGHT:
+            return ">>";
         case OPERATOR_BITWISE_NEGATE:
             return "~";
         case OPERATOR_GREATER_THAN:

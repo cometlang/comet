@@ -94,6 +94,12 @@ static void binary(Parser *parser, bool UNUSED(canAssign))
     case TOKEN_BITWISE_XOR:
         emitByte(parser, OP_BITWISE_XOR);
         break;
+    case TOKEN_BITSHIFT_RIGHT:
+        emitByte(parser, OP_BITSHIFT_RIGHT);
+        break;
+    case TOKEN_BITSHIFT_LEFT:
+        emitByte(parser, OP_BITSHIFT_LEFT);
+        break;
     default:
         return; // Unreachable.
     }
@@ -367,7 +373,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_STAR]             = {NULL,         binary,    PREC_FACTOR},
     [TOKEN_COLON]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_EOL]              = {NULL,         NULL,      PREC_NONE},
-    [TOKEN_VBAR]             = {lambda,       binary,    PREC_OR},
+    [TOKEN_VBAR]             = {lambda,       binary,    PREC_BITWISE_OR},
     [TOKEN_PERCENT]          = {NULL,         binary,    PREC_FACTOR},
     // One or two character tokens.
     [TOKEN_BANG]             = {unary,        NULL,      PREC_UNARY},
@@ -385,9 +391,11 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_PERCENT_EQUAL]    = {NULL,         NULL,      PREC_NONE},
     [TOKEN_LOGICAL_OR]       = {NULL,         or_,       PREC_OR},
     [TOKEN_LOGICAL_AND]      = {NULL,         and_,      PREC_AND},
-    [TOKEN_BITWISE_AND]      = {NULL,         binary,    PREC_AND},
+    [TOKEN_BITWISE_AND]      = {NULL,         binary,    PREC_BITWISE_AND},
     [TOKEN_BITWISE_XOR]      = {NULL,         binary,    PREC_XOR},
     [TOKEN_BITWISE_NEGATE]   = {unary,        NULL,      PREC_UNARY},
+    [TOKEN_BITSHIFT_LEFT]    = {NULL,         binary,    PREC_BITSHIFT},
+    [TOKEN_BITSHIFT_RIGHT]   = {NULL,         binary,    PREC_BITSHIFT},
     // Literals
     [TOKEN_IDENTIFIER]       = {variable,     NULL,      PREC_NONE},
     [TOKEN_STRING]           = {string,       NULL,      PREC_NONE},

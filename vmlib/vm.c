@@ -721,6 +721,12 @@ static InterpretResult run(VM *vm)
         case OP_BITWISE_XOR:
             BINARY_OP(OPERATOR_BITWISE_XOR);
             break;
+        case OP_BITSHIFT_LEFT:
+            BINARY_OP(OPERATOR_BITSHIFT_LEFT);
+            break;
+        case OP_BITSHIFT_RIGHT:
+            BINARY_OP(OPERATOR_BITSHIFT_RIGHT);
+            break;
         case OP_NOT:
         {
             Value result = FALSE_VAL;

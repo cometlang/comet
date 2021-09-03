@@ -10,9 +10,6 @@
 #define FRAMES_MAX 64
 #define STACK_MAX (FRAMES_MAX * MAX_VAR_COUNT)
 
-#define str(x) #x
-#define enum_str(x) str(x)
-
 typedef struct {
     uint16_t handlerAddress;
     uint16_t finallyAddress;

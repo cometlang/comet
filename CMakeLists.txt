@@ -1,6 +1,7 @@
 cmake_minimum_required (VERSION 3.0)
 project (comet)
 enable_language(C)
+enable_language(CXX)
 enable_testing()
 
 if (WIN32)
@@ -9,11 +10,15 @@ else()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -ggdb3 -Wall -Wextra -Werror")
 endif (WIN32)
 
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
 
 find_package(Threads REQUIRED)
-
+SET( BUILD_SHARED_LIBS OFF CACHE INTERNAL "Build static libraries")
+SET( BUILD_TZ_LIB ON CACHE INTERNAL "Build the timezone library")
+SET( USE_SYSTEM_TZ_DB ON CACHE INTERNAL "Use the system TimeZone database, removing need for libcurl")
 set(MEMORYCHECK_COMMAND_OPTIONS "--track-origins=yes --leak-check=full --errors-for-leak-kinds=all --error-exitcode=1 --log-fd=2")
+add_subdirectory(date)
 add_subdirectory(utf8proc-2.6.1)
 add_subdirectory(stdlib)
 add_subdirectory(vmlib)

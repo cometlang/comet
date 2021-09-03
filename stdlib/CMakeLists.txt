@@ -1,5 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
 enable_language(C)
+enable_language(CXX)
 project (stdlib)
 
 include_directories(
@@ -11,7 +12,7 @@ include_directories(
 set(SOURCE 
   _init.c
   boolean.c
-  datetime.c
+  datetime.cpp
   enum.c
   env.c
   exception.c
@@ -39,9 +40,9 @@ endif()
 add_library(stdlib STATIC "${SOURCE}")
 
 if (WIN32)
-target_link_libraries(stdlib vmlib utf8proc ws2_32)
+target_link_libraries(stdlib vmlib utf8proc ws2_32 date date-tz)
 else()
-target_link_libraries(stdlib vmlib utf8proc m)
+target_link_libraries(stdlib vmlib utf8proc m date date-tz)
 endif (WIN32)
 
 target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private" Threads::Threads)

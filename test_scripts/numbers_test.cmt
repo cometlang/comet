@@ -17,7 +17,7 @@ assert(Number.parse("three").nil?())
 
 assert(0xff == 255)
 
-assert(3 & 3 == 3)
+assert(3 & 2 == 2)
 assert(3 ^ 1 == 2)
 assert(2 | 1 == 3)
 assert(2 << 1 == 4)

@@ -1,2 +1,10 @@
 var dt = DateTime.now()
 print(dt)
+
+print(dt.year())
+print(dt.month())
+print(dt.day())
+print(dt.hours())
+print(dt.minutes())
+print(dt.seconds())
+print(dt.milliseconds())

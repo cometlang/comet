@@ -72,11 +72,21 @@ VALUE obj_nil_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE
     return FALSE_VAL;
 }
 
+VALUE obj_methods(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    VALUE list = list_create(vm);
+    push(vm, list);
+    ObjClass *klass = AS_INSTANCE(self)->klass;
+    tableGetKeys(&klass->methods, vm, list);
+    return pop(vm);
+}
+
 void init_object(VM *vm, VALUE klass)
 {
     defineNativeMethod(vm, klass, &obj_hash, "hash", 0, false);
     defineNativeMethod(vm, klass, &obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
     defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
+    defineNativeMethod(vm, klass, &obj_methods, "methods", 0, false);
     defineNativeOperator(vm, klass, &obj_equals, 1, OPERATOR_EQUALS);
 }

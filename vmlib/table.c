@@ -183,6 +183,18 @@ Value tableFindString(Table *table, const char *chars, uint32_t hash)
     }
 }
 
+void tableGetKeys(Table *table, VM *vm, VALUE list)
+{
+    for (int i = 0; i <= table->capacity; i++)
+    {
+        Entry *entry = &table->entries[i];
+        if (entry->key != NIL_VAL)
+        {
+            list_add(vm, list, 1, &entry->key);
+        }
+    }
+}
+
 void tablePrintKeys(Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)

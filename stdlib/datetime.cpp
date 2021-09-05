@@ -94,7 +94,6 @@ static VALUE datetime_milliseconds(VM UNUSED(*vm), VALUE self, int UNUSED(arg_co
     return create_number(vm, time.subseconds().count());
 }
 
-
 static VALUE datetime_static_now(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));

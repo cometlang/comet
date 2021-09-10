@@ -13,7 +13,7 @@ ObjClass *newClass(VM *vm, const char *name, ClassType classType);
 ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType);
 ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic, Value name);
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
-ObjFunction *newFunction(VM *vm);
+ObjFunction *newFunction(VM *vm, const char *filename, ObjModule *module);
 ObjModule *newModule(VM *vm);
 Obj *newInstance(VM *vm, ObjClass *klass);
 ObjNative *newNativeFunction(VM *vm, NativeFn function);

@@ -81,14 +81,16 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function)
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm)
+ObjFunction *newFunction(VM *vm, const char *filename, ObjModule *module)
 {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
     function->upvalueCount = 0;
     function->name = NIL_VAL;
-    initChunk(&function->chunk);
+    function->optionalArgCount = 0;
+    function->module = module;
+    initChunk(&function->chunk, filename);
     return function;
 }
 

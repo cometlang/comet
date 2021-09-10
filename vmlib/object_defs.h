@@ -117,6 +117,8 @@ typedef struct
     Chunk chunk;
     Value name;
     ObjModule *module;
+    uint16_t optionalArguments[MAX_OPTIONAL_ARGS];
+    uint8_t optionalArgCount;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);

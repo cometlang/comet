@@ -12,6 +12,7 @@
 #define MAX_VAR_COUNT (UINT8_MAX + 1)
 #define MAX_HANDLER_FRAMES (UINT8_MAX)
 #define DEBUG_ASSERT_ENABLED (1)
+#define MAX_OPTIONAL_ARGS (16)
 
 #ifndef UNUSED
 # ifdef WIN32

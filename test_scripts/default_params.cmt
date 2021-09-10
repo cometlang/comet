@@ -1,0 +1,10 @@
+function default_params(number=1234, string='string', null=nil, list=[], hash={})
+{
+    print(number)
+    print(string)
+    print(null)
+    print(list)
+    print(hash)
+}
+
+default_params()

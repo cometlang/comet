@@ -3,11 +3,71 @@
 #include <string.h>
 
 #include "comet.h"
+#include "constants.h"
 #include "declarations.h"
 #include "expressions.h"
 #include "statements.h"
 #include "emitter.h"
 #include "variables.h"
+
+static void defineParameterValue(Parser *parser, uint16_t value)
+{
+    ObjFunction *func = parser->currentFunction->function;
+    if (func->optionalArgCount == MAX_OPTIONAL_ARGS)
+    {
+        errorAtCurrent(parser, "Too many optional arguments in one function");
+    }
+    func->optionalArguments[func->optionalArgCount++] = value;
+}
+
+static void defaultParameter(Parser *parser)
+{
+    uint16_t constantVal;
+    if (match(parser, TOKEN_LEFT_SQ_BRACKET))
+    {
+        if (!match(parser, TOKEN_RIGHT_SQ_BRACKET))
+        {
+            error(parser, "A default parameter list must be empty");
+            return;
+        }
+        constantVal = NEW_LIST_PARAM_VALUE;
+    }
+    else if (match(parser, TOKEN_LEFT_BRACE))
+    {
+        constantVal = NEW_HASH_PARAM_VALUE;
+        if (!match(parser, TOKEN_RIGHT_BRACE))
+        {
+            error(parser, "A default parameter hash must be empty");
+            return;
+        }
+    }
+    else if (match(parser, TOKEN_STRING))
+    {
+        constantVal = makeConstant(parser, parseString(parser));
+    }
+    else if (match(parser, TOKEN_NUMBER))
+    {
+        constantVal = makeConstant(parser, parseNumber(parser));
+    }
+    else if (match(parser, TOKEN_TRUE))
+    {
+        constantVal = makeConstant(parser, TRUE_VAL);
+    }
+    else if (match(parser, TOKEN_FALSE))
+    {
+        constantVal = makeConstant(parser, FALSE_VAL);
+    }
+    else if (match(parser, TOKEN_NIL))
+    {
+        constantVal = makeConstant(parser, NIL_VAL);
+    }
+    else
+    {
+        errorAtCurrent(parser, "A default parameter can only be a string, number, nil, true/false, [] or {}");
+        return;
+    }
+    defineParameterValue(parser, constantVal);
+}
 
 void method(Parser *parser)
 {
@@ -141,16 +201,26 @@ void function(Parser *parser, FunctionType type)
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after function name.");
     if (!check(parser, TOKEN_RIGHT_PAREN))
     {
+        bool startedOptionals = false;
         do
         {
             parser->currentFunction->function->arity++;
-            if (parser->currentFunction->function->arity > 255)
+            if (parser->currentFunction->function->arity > MAX_VAR_COUNT)
             {
                 errorAtCurrent(parser, "Cannot have more than 255 parameters.");
             }
 
             uint8_t paramConstant = parseVariable(parser, "Expect parameter name.");
             defineVariable(parser, paramConstant);
+            if (match(parser, TOKEN_EQUAL))
+            {
+                startedOptionals = true;
+                defaultParameter(parser);
+            }
+            else if (startedOptionals)
+            {
+                errorAtCurrent(parser, "Non-optional parameter encountered after an optional one");
+            }
         } while (match(parser, TOKEN_COMMA));
     }
     consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after parameters.");

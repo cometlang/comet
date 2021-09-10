@@ -73,7 +73,7 @@ typedef struct
     const char *filename;
 } Chunk;
 
-void initChunk(Chunk *chunk);
+void initChunk(Chunk *chunk, const char *filename);
 
 void writeChunk(Chunk *chunk, uint8_t byte, int line);
 

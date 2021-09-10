@@ -5,13 +5,13 @@
 #include "value.h"
 #include "vm.h"
 
-void initChunk(Chunk *chunk)
+void initChunk(Chunk *chunk, const char *filename)
 {
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->code = NULL;
     chunk->lines = NULL;
-    chunk->filename = NULL;
+    chunk->filename = filename;
     initValueArray(&chunk->constants);
 }
 
@@ -35,5 +35,5 @@ void freeChunk(Chunk *chunk)
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
     freeValueArray(&chunk->constants);
-    initChunk(chunk);
+    initChunk(chunk, NULL);
 }

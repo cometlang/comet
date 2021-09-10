@@ -124,9 +124,7 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction(parser->compilation_thread);
-    compiler->function->chunk.filename = parser->filename;
-    compiler->function->module = parser->currentModule;
+    compiler->function = newFunction(parser->compilation_thread, parser->filename, parser->currentModule);
     parser->currentFunction = compiler;
 
     if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)

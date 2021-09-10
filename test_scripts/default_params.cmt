@@ -1,8 +1,8 @@
-function default_params(number=1234, string='string', null=nil, list=[], hash={})
+function default_params(number=1234, string='string', bool=false, list=[], hash={})
 {
     print(number)
     print(string)
-    print(null)
+    print(bool)
     print(list)
     print(hash)
 }

@@ -259,7 +259,7 @@ void hash_mark_contents(VALUE self)
 
 VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString(vm, "A Hash Instance\n", 16);
+    return copyString(vm, "A Hash Instance", 15);
 }
 
 void init_hash(VM *vm)

@@ -201,13 +201,42 @@ Value peek(VM *vm, int distance)
 
 static bool call(VM *vm, ObjClosure *closure, int argCount)
 {
-    if (argCount != closure->function->arity)
+    if (argCount + closure->function->optionalArgCount < closure->function->arity)
     {
-        runtimeError(vm, "'%s' Expects %d arguments to but got %d.",
+        runtimeError(vm, "'%s' Expects a minimum of %d arguments to but got %d.",
                      string_get_cstr(closure->function->name),
-                     closure->function->arity,
+                     closure->function->arity - closure->function->optionalArgCount,
                      argCount);
         return false;
+    }
+
+    if (argCount < closure->function->arity)
+    {
+        int index = argCount -
+            (closure->function->arity - closure->function->optionalArgCount);
+        while (index < closure->function->optionalArgCount)
+        {
+            uint16_t constant = closure->function->optionalArguments[index++];
+            if (constant == NEW_LIST_PARAM_VALUE)
+            {
+                Value klass;
+                findGlobal(copyString(vm, "List", 4), &klass);
+                push(vm, NIL_VAL);
+                create_instance(vm, AS_CLASS(klass), 0);
+            }
+            else if (constant == NEW_HASH_PARAM_VALUE)
+            {
+                Value klass;
+                findGlobal(copyString(vm, "Hash", 4), &klass);
+                push(vm, NIL_VAL);
+                create_instance(vm, AS_CLASS(klass), 0);
+            }
+            else
+            {
+                push(vm, closure->function->chunk.constants.values[constant]);
+            }
+            argCount++;
+        }
     }
 
     if (vm->frameCount == FRAMES_MAX)

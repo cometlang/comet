@@ -98,9 +98,6 @@ typedef struct
     Precedence precedence;
 } ParseRule;
 
-#define NEW_HASH_PARAM_VALUE ((uint16_t) 0x8000)
-#define NEW_LIST_PARAM_VALUE ((uint16_t) 0x4000)
-
 Token syntheticToken(const char *text);
 Chunk *currentChunk(Compiler *compiler);
 int getCurrentOffset(Compiler *compiler);

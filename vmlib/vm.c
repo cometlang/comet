@@ -1029,9 +1029,8 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     return result;
 }
 
-InterpretResult interpret(VM *vm, const SourceFile *source)
+InterpretResult interpret(VM *vm, ObjModule *main)
 {
-    ObjModule *main = compile(source, vm);
     if (main == NULL)
         return INTERPRET_COMPILE_ERROR;
 

@@ -30,8 +30,20 @@ constexpr string_view file_extenstion(".cmt");
 ObjModule *import_from_file(VM *vm, const char *relative_to_filename, Value to_import)
 {
     const char *to_import_path = string_get_cstr(to_import);
-    string current_dir = filesystem::path(relative_to_filename).parent_path();
-    filesystem::path candidate = filesystem::path(current_dir) / filesystem::path(string(to_import_path) + string(file_extenstion));
+    string current_dir;
+    if (relative_to_filename == NULL)
+    {
+        current_dir = filesystem::current_path();
+    }
+    else
+    {
+        current_dir = filesystem::path(relative_to_filename).parent_path();
+    }
+    filesystem::path candidate = filesystem::path(current_dir) / filesystem::path(string(to_import_path));
+    if (!filesystem::exists(candidate))
+    {
+        candidate += string(file_extenstion);
+    }
     filesystem::path absolute_path = filesystem::canonical(candidate);
 
     const char *full_path = absolute_path.c_str();

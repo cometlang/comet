@@ -71,7 +71,7 @@ bool addModuleVariable(ObjModule *module, Value name, Value value);
 
 VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
 
-InterpretResult interpret(VM *vm, const SourceFile *source);
+InterpretResult interpret(VM *vm, ObjModule *main);
 void runtimeError(VM *vm, const char *format, ...);
 void defineMethod(VM *vm, Value name, bool isStatic);
 void defineOperator(VM *vm, OPERATOR operator_);

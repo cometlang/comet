@@ -7,6 +7,7 @@
 #include "vm.h"
 #include "cometlib.h"
 #include "compiler.h"
+#include "import.h"
 
 static VM virtualMachine;
 
@@ -26,17 +27,24 @@ static void repl()
             break;
         }
 
-        interpret(&virtualMachine, &source);
+        ObjModule *module = compile(&source, &virtualMachine);
+        if (module == NULL)
+        {
+            runtimeError(&virtualMachine, "compilation error");
+        }
+        else
+        {
+            interpret(&virtualMachine, module);
+        }
     }
 }
 
 static void runFile(const char *path)
 {
-    SourceFile *source = readSourceFile(path);
-    InterpretResult result = interpret(&virtualMachine, source);
-    free(source->path);
-    free(source->source);
-    free(source);
+    Value to_import = copyString(&virtualMachine, path, strlen(path));
+    push(&virtualMachine, to_import);
+    ObjModule *main = import_from_file(&virtualMachine, NULL, to_import);
+    InterpretResult result = interpret(&virtualMachine, main);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);

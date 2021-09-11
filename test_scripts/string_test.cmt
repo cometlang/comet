@@ -27,3 +27,6 @@ print("Iteration start")
 foreach(var char in utf8_string)
     print(char)
 print("Iteration complete")
+
+print("This has an\nescaped newline in it")
+print("This has an \\ escaped escape in it")

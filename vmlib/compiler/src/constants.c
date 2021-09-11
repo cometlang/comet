@@ -23,7 +23,52 @@ Value parseNumber(Parser *parser)
 
 Value parseString(Parser *parser)
 {
-    return copyString(parser->compilation_thread,
-                      parser->previous.start + 1,
-                      parser->previous.length - 2);
+    int index = 0;
+    char *string_chars = ALLOCATE(char, parser->previous.length - 1);
+    for (int i = 1; i < parser->previous.length - 1; i++)
+    {
+        if (parser->previous.start[i] == '\\')
+        {
+            if (parser->previous.start[i+1] == 'n')
+            {
+                string_chars[index++] = '\n';
+                i++;
+            }
+            else if (parser->previous.start[i+1] == '\\')
+            {
+                string_chars[index++] = '\\';
+                i++;
+            }
+            else if (parser->previous.start[i+1] == 't')
+            {
+                string_chars[index++] = '\t';
+                i++;
+            }
+            else if (parser->previous.start[i+1] == 'r')
+            {
+                string_chars[index++] = '\r';
+                i++;
+            }
+            else if (parser->previous.start[i+1] == '\'')
+            {
+                string_chars[index++] = '\'';
+                i++;
+            }
+            else if (parser->previous.start[i+1] == '"')
+            {
+                string_chars[index++] = '"';
+                i++;
+            }
+            else
+            {
+                string_chars[index++] = parser->previous.start[i];
+            }
+        }
+        else
+        {
+            string_chars[index++] = parser->previous.start[i];
+        }
+    }
+    string_chars[index] = '\0';
+    return takeString(parser->compilation_thread, string_chars, index);
 }

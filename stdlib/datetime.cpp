@@ -128,7 +128,7 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
 
 void init_datetime(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "DateTime", &datetime_constructor, &datetime_destructor, NULL, CLS_DATETIME);
+    VALUE klass = defineNativeClass(vm, "DateTime", &datetime_constructor, &datetime_destructor, NULL, CLS_DATETIME, false);
     defineNativeMethod(vm, klass, &datetime_static_now, "now", 0, true);
     defineNativeMethod(vm, klass, &datetime_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &datetime_year, "year", 0, false);

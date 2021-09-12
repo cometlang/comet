@@ -98,7 +98,7 @@ void thread_mark_contents(VALUE self)
 
 void init_thread(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, thread_destructor, NULL, CLS_THREAD);
+    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, thread_destructor, NULL, CLS_THREAD, true);
     defineNativeMethod(vm, klass, &thread_start, "start", 2, false);
     defineNativeMethod(vm, klass, &thread_join, "join", 0, false);
 }

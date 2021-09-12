@@ -194,7 +194,7 @@ void init_socket(VM *vm)
     }
 #endif
 
-    VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET);
+    VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET, false);
     defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
     defineNativeMethod(vm, klass, &socket_close, "close", 0, false);

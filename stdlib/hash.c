@@ -291,7 +291,7 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL, CLS_HASH);
+    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL, CLS_HASH, false);
     defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
     defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);

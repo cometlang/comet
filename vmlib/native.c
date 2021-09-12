@@ -14,9 +14,9 @@ void defineNativeFunction(VM *vm, const char *name, NativeFn function)
     pop(vm);
 }
 
-VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType)
+VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, bool final)
 {
-    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType));
+    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType, final));
 }
 
 VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
@@ -39,6 +39,13 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
 
         ObjClass *parent_class = AS_CLASS(parent);
 
+        if (parent_class->final)
+        {
+            runtimeError(vm, "Cannot inherit from a final class");
+            return NIL_VAL;
+        }
+
+
         tableAddAll(&parent_class->methods, &klass->methods);
         tableAddAll(&parent_class->staticMethods, &klass->staticMethods);
         for (int i = 0; i < NUM_OPERATORS; i++)
@@ -60,9 +67,16 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
     }
 }
 
-VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name, ClassType classType)
+VALUE defineNativeClass(
+    VM *vm,
+    const char *name,
+    NativeConstructor constructor,
+    NativeDestructor destructor,
+    const char *super_name,
+    ClassType classType,
+    bool final)
 {
-    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType));
+    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType, final));
     return completeNativeClassDefinition(vm, klass, super_name);
 }
 

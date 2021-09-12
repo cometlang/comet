@@ -275,7 +275,7 @@ VALUE set_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count),
 
 void init_set(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable", CLS_SET);
+    VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable", CLS_SET, true);
     defineNativeMethod(vm, klass, &set_add, "add", 1, false);
     defineNativeMethod(vm, klass, &set_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &set_union, "union", 1, false);
@@ -286,7 +286,7 @@ void init_set(VM *vm)
     defineNativeMethod(vm, klass, &set_iterable_count, "count", 0, false);
 
     set_iterator_class = defineNativeClass(
-        vm, "SetIterator", &set_iterator_constructor, &set_iterator_destructor, "Iterator", CLS_ITERATOR);
+        vm, "SetIterator", &set_iterator_constructor, &set_iterator_destructor, "Iterator", CLS_ITERATOR, true);
     defineNativeMethod(vm, set_iterator_class, &set_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, set_iterator_class, &set_iterator_get_next, "get_next", 0, false);
 }

@@ -402,7 +402,7 @@ bool is_a_string(VALUE instance)
 
 void init_string(VM *vm, VALUE obj_klass)
 {
-    string_class = bootstrapNativeClass(vm, "String", string_constructor, string_destructor, CLS_STRING);
+    string_class = bootstrapNativeClass(vm, "String", string_constructor, string_destructor, CLS_STRING, true);
     init_object(vm, obj_klass);
     completeNativeClassDefinition(vm, obj_klass, NULL);
     complete_iterable(vm);
@@ -426,7 +426,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
 
     string_iterator_class = defineNativeClass(
-        vm, "StringIterator", &string_iterator_constructor, &string_iterator_destructor, "Iterator", CLS_ITERATOR);
+        vm, "StringIterator", &string_iterator_constructor, &string_iterator_destructor, "Iterator", CLS_ITERATOR, true);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_get_next, "get_next", 0, false);
 }

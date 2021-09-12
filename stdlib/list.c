@@ -271,7 +271,7 @@ VALUE list_create(VM *vm)
 
 void init_list(VM *vm)
 {
-    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable", CLS_LIST);
+    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, "Iterable", CLS_LIST, true);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
@@ -292,7 +292,7 @@ void init_list(VM *vm)
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
 
     list_iterator_class = defineNativeClass(
-        vm, "ListIterator", &list_iterator_constructor, &list_iterator_destructor, "Iterator", CLS_ITERATOR);
+        vm, "ListIterator", &list_iterator_constructor, &list_iterator_destructor, "Iterator", CLS_ITERATOR, false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_get_next, "get_next", 0, false);
 }

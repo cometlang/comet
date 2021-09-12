@@ -30,7 +30,7 @@ VALUE env_get_value(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
 
 void init_env(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "EnvVars", NULL, NULL, NULL, CLS_ENV);
+    VALUE klass = defineNativeClass(vm, "EnvVars", NULL, NULL, NULL, CLS_ENV, false);
     defineNativeOperator(vm, klass, &env_set_value, 2, OPERATOR_INDEX_ASSIGN);
     defineNativeOperator(vm, klass, &env_get_value, 1, OPERATOR_INDEX);
     Obj *instance = newInstance(vm, AS_CLASS(klass));

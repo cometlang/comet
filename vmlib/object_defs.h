@@ -154,6 +154,7 @@ typedef struct sObjClass
     Value operators[NUM_OPERATORS];
     struct sObjClass *super_;
     ClassType classType;
+    bool final;
 } ObjClass;
 
 typedef void *(*NativeConstructor)(void);

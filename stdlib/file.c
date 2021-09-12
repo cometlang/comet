@@ -204,7 +204,7 @@ VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VAL
 
 void init_file(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE);
+    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE, false);
     defineNativeMethod(vm, klass, &file_static_open, "open", 2, true);
     defineNativeMethod(vm, klass, &file_close, "close", 0, false);
     defineNativeMethod(vm, klass, &file_write, "write", 1, false);

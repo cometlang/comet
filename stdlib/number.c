@@ -196,7 +196,7 @@ bool is_a_number(VALUE instance)
 
 void bootstrap_number(VM *vm)
 {
-    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor, CLS_NUMBER);
+    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor, CLS_NUMBER, false);
 }
 
 void complete_number(VM *vm)

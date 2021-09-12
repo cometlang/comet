@@ -35,12 +35,13 @@ ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method)
     return bound;
 }
 
-static void init_class(ObjClass *klass, const char *name, ClassType classType)
+static void init_class(ObjClass *klass, const char *name, ClassType classType, bool final)
 {
     size_t length = strlen(name) + 1;
     klass->name = ALLOCATE(char, length);
     klass->super_ = NULL;
     klass->classType = classType;
+    klass->final = final;
     strncpy(klass->name, name, length);
     initTable(&klass->methods);
     initTable(&klass->staticMethods);
@@ -50,18 +51,18 @@ static void init_class(ObjClass *klass, const char *name, ClassType classType)
     }
 }
 
-ObjClass *newClass(VM *vm, const char *name, ClassType classType)
+ObjClass *newClass(VM *vm, const char *name, ClassType classType, bool final)
 {
     ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
-    init_class(klass, name, classType);
+    init_class(klass, name, classType, final);
     return klass;
 }
 
-ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType)
+ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, bool final)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(vm, ObjNativeClass, OBJ_NATIVE_CLASS);
     push(vm, OBJ_VAL(klass));
-    init_class((ObjClass *)klass, name, classType);
+    init_class((ObjClass *)klass, name, classType, final);
     klass->constructor = constructor;
     klass->destructor = destructor;
     return klass;

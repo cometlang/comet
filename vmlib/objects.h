@@ -9,8 +9,8 @@
 #include "native.h"
 
 ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method);
-ObjClass *newClass(VM *vm, const char *name, ClassType classType);
-ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType);
+ObjClass *newClass(VM *vm, const char *name, ClassType classType, bool final);
+ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, bool final);
 ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic, Value name);
 ObjClosure *newClosure(VM *vm, ObjFunction *function);
 ObjFunction *newFunction(VM *vm, const char *filename, ObjModule *module);

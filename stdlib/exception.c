@@ -29,14 +29,14 @@ VALUE exception_get_stacktrace(VM *vm, VALUE self)
 
 void init_exception(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, CLS_EXCEPTION);
+    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, CLS_EXCEPTION, false);
     defineNativeMethod(vm, klass, &exception_init, "init", 1, false);
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
-    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION);
-    defineNativeClass(vm, "ArgumentException", NULL, NULL, "Exception", CLS_EXCEPTION);
-    defineNativeClass(vm, "IOException", NULL, NULL, "Exception", CLS_EXCEPTION);
-    defineNativeClass(vm, "SocketException", NULL, NULL, "IOException", CLS_EXCEPTION);
-    defineNativeClass(vm, "TimeoutException", NULL, NULL, "Exception", CLS_EXCEPTION);
-    defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION);
+    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "ArgumentException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "IOException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "SocketException", NULL, NULL, "IOException", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "TimeoutException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
 }

@@ -862,7 +862,7 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_CLASS:
-            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF)));
+            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, false)));
             break;
         case OP_INHERIT:
         {
@@ -875,6 +875,13 @@ static InterpretResult run(VM *vm)
 
             ObjClass *subclass = AS_CLASS(peek(vm, 0));
             ObjClass *superclass = AS_CLASS(super_);
+
+            if (superclass->final)
+            {
+                runtimeError(vm, "Cannot inherit from a final class");
+                return INTERPRET_RUNTIME_ERROR;
+            }
+
             tableAddAll(&superclass->methods, &subclass->methods);
             tableAddAll(&superclass->staticMethods, &subclass->staticMethods);
             for (int i = 0; i < NUM_OPERATORS; i++)

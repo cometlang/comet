@@ -138,7 +138,7 @@ static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
     }
 }
 
-VALUE hash_get(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
@@ -147,7 +147,34 @@ VALUE hash_get(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argumen
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(table->entries, table->capacity, key);
     if (entry == NULL || entry->key == NIL_VAL)
-        return NIL_VAL;  // throw an exception
+    {
+        VALUE str = call_function(key, common_strings[STRING_TO_STRING], 0, NULL);
+        push(vm, str);
+        throw_exception_native(vm, "KeyNotFoundException",
+            "Could not find the key '%s'", string_get_cstr(str));
+        pop(vm);
+        return NIL_VAL;
+    }
+
+    return entry->value;
+}
+
+VALUE hash_get(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (table->count == 0)
+        return false;
+
+    VALUE key = arguments[0];
+    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    if (entry == NULL || entry->key == NIL_VAL)
+    {
+        if (arg_count == 2)
+        {
+            return arguments[1];
+        }
+        return NIL_VAL;
+    }
 
     return entry->value;
 }
@@ -272,6 +299,7 @@ void init_hash(VM *vm)
     defineNativeMethod(vm, klass, &hash_iterable_count, "count", 0, false);
     defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", 0, false);
-    defineNativeOperator(vm, klass, &hash_get, 1, OPERATOR_INDEX);
+    defineNativeMethod(vm, klass, &hash_get, "get", 2, false);
+    defineNativeOperator(vm, klass, &hash_find, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 }

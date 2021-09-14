@@ -18,3 +18,5 @@ Exception(message)
  - `IOException`
  - `SocketException`
  - `TimeoutException`
+ - `KeyNotFoundException`
+ - `IndexOutOfBoundsExcpetion`

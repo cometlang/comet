@@ -3,6 +3,12 @@
 ## File
 inherits [Object](object.md)
 
+## Enum - FOPEN
+ - `READ_ONLY`
+ - `READ_WRITE`
+ - `APPEND`
+ - `BINARY`
+
 ### methods
 - `close()` closes the file
 - `write(value)` writes the value to the file
@@ -11,8 +17,9 @@ inherits [Object](object.md)
 - `flush()` calls the system call `fflush` to ensure the file buffers are written to the physical media
 
 ### static methods
-- `open(path, mode)` opens a file with the given mode string (per the C file modes)
+- `open(path, flags)` opens a file with an FOPEN flag optionally bitwise-or'd with `FOPEN.BINARY` (binary is not implemented correctly and will still attempt to return a string)
 - `exists?(path)` returns a [Boolean](boolean.md) value if the current process can see the existence of the path, per the rules of the OS/filesystem
 - `directory?(path)` returns a [Boolean](boolean.md) if the given path is a directory
 - `file?(path)` returns a [Boolean](boolean.md) if the given path is a regular file
 - `read_all_lines(path)` opens the path for reading as text, returning a [List](list.md) of the individual lines, closing the file when finished
+- `delete(path)` deletes the file at the path 

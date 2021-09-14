@@ -20,6 +20,8 @@ If given an `initial_capactiy` then the list will be pre-allocated to contain th
 - `sort()` returns a sorted shallow copy of the list (not yet implemented)
 - `sort!()` sorts the list in-place, returning `self` (not yet implemented)
 - `filter()` takes a callable object which is called with every item, returning `true` if the item should be part of the list returned.  The list returned is a new object and the initial list is left unchanged.
+- `map(lambda)` returns a list of values as mapped by the lambda, which is called with each item in the list
+- `reduce(initial, lambda)` given an intial value, the lambda is called with the current reduction, each item in the list, and the index in the list, e.g. `list.reduce(0, |current, item, index| { return curent + 1 })`
 
 ### operators
 - `==` compares the contents of the list to another list to see if the contents (and order!) are identical

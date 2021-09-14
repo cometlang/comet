@@ -57,10 +57,12 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `==` logical equivalency
 
 ### Bitwise
-- `|` bitwise or
-- `&` bitwise and
-- `^` bitwise exclusive or
-- `~` bitwise negate
+- `|`  bitwise or
+- `&`  bitwise and
+- `^`  bitwise exclusive or
+- `~`  bitwise negate
+- `<<` bitshift left
+- `>>` bitshift right
 
 ## Variables
 Variables must be declared before use.  Local and global variables are declared using the `var` keyword.  They may be initialized at the point of declaration. All variables in `Comet` are reference-types, so there is only pass-by-reference, and never pass-by-value.  All variables in `Comet` are objects and therefore inherit from [Object](../stdlib/object.md).
@@ -226,6 +228,8 @@ The operators able to be overloaded are as follows:
 - `&` (bitwise and)
 - `^` (bitwise xor)
 - `~` (bitwise negate)
+- `<<` (bitshift left)
+- `>>` (bitshift right)
 - `/` (division)
 - `>` (greater than)
 - `<` (less than)
@@ -284,6 +288,18 @@ var my_lambda = |arg1, arg2[, ...]| {
 my_lambda('this is ', 'a string')
 ```
 
+## Optional arguments
+Every function-like procedure (functions, lambdas, methods, etc) can have default arguments declared by adding an equals sign (`=`) and a constant value as the default.  The only possible default values to an optional argument are as follows:
+`true, false, nil, literal number, literal string, [], {}`  
+an empty list or empty hash (they must be empty) will get a new instance of the list or hash each time the function is called.
+
+```
+function my_function(cool_string='This is a cool string', null=nil, bool=true, num=42, list=[], hash={})
+{
+    print(cool_string, null, bool, num, list, hash)
+}
+```
+
 ## Exception Handling
 An [Exception](../stdlib/exception.md) may be thrown (well, any type may be thrown, but traditionally, it is exceptions that are) via the `throw` keyword.  When an exception is thrown, the interpreter will set a field on it called `stacktrace` which contains the string representation of the stacktrace (separated by newline characters).  If the exception being thrown already contains a field called `stacktrace`, it will be overwritten.
 
@@ -316,8 +332,9 @@ If you have caught an exception and wish to re-throw it, but maintain the previo
 
 ## Imports
 
-Currently, imports are cheap-and-cheerful, and are planned to be changed in the future.  It is possible to import a file through the `import` keyword, followed by a string containing the path to a file, but without its extension. This can be relative or absolute.  e.g. `import '../path/to/file'`
-I say that imports are cheap and cheerful, because all files share a single global scope, meaning that globals are truly global and name collisions are a real possibility.
+Currently, imports are done with a string that represents a path and a variable-naming identifier. e.g.
+`import './module.cmt' as module_var`.  The path can be relative or absolute and needn't include the extension `.cmt`.
+
 
 ## Native Enhancements
 

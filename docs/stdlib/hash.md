@@ -9,6 +9,7 @@ This is known collectively as a Hash, Hash Table, Dictionary and probably other 
 - `add(key, value)` add a value to the hash with key
 - `remove(key)` removes the value and key from the hash
 - `to_string()` returns a String representation of the hash
+- `get(key, default)` returns the value found by `key` otherwise returns the default value if key doesn't have an entry in the hash.
 
 ### operators
 - `==` iterates through the keys and values of each hash and returns true if they have the same contents (or are the same instance)

@@ -1009,6 +1009,8 @@ static InterpretResult run(VM *vm)
             break;
         }
         }
+        if (vm->frameCount == 0)
+            return INTERPRET_RUNTIME_ERROR;
     }
 
 #undef BINARY_OP

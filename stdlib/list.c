@@ -99,6 +99,11 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
         int index = (int)number_get_value(arguments[0]);
+        if (index >= data->count)
+        {
+            throw_exception_native(vm, "IndexOutOfBoundsException", "Index was outside the bounds of the list");
+            return NIL_VAL;
+        }
         return data->entries[index].item;
     }
     return NIL_VAL;

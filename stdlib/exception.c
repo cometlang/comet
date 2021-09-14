@@ -39,4 +39,5 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "SocketException", NULL, NULL, "IOException", CLS_EXCEPTION, false);
     defineNativeClass(vm, "TimeoutException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
     defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
+    defineNativeClass(vm, "IndexOutOfBoundsException", NULL, NULL, "Exception", CLS_EXCEPTION, false);
 }

@@ -3,6 +3,7 @@
 #include "comet_stdlib.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #define TABLE_MAX_LOAD 0.75
 
@@ -189,18 +190,21 @@ static void adjust_capacity(HashTable *table, int capacity)
     }
 
     table->count = 0;
-    for (size_t i = 0; i <= table->capacity; i++)
+    if (table->entries != NULL)
     {
-        HashEntry *entry = &table->entries[i];
-        if (entry == NULL || entry->key == NIL_VAL)
-            continue;
+        for (size_t i = 0; i <= table->capacity; i++)
+        {
+            HashEntry *entry = &table->entries[i];
+            if (entry == NULL || entry->key == NIL_VAL)
+                continue;
 
-        HashEntry *dest = find_entry(entries, capacity, entry->key);
-        dest->key = entry->key;
-        dest->value = entry->value;
-        table->count++;
+            HashEntry *dest = find_entry(entries, capacity, entry->key);
+            dest->key = entry->key;
+            dest->value = entry->value;
+            table->count++;
+        }
+        FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
     }
-    FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
 
     table->entries = entries;
     table->capacity = capacity;

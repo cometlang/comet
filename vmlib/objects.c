@@ -237,9 +237,13 @@ void printObject(Value value)
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
     {
-        if (strcmp(AS_INSTANCE(value)->klass->name, "String") == 0)
+        if (AS_INSTANCE(value)->klass->classType == CLS_STRING)
         {
             printf("\"%s\"", string_get_cstr(value));
+        }
+        else if (AS_INSTANCE(value)->klass->classType == CLS_NUMBER)
+        {
+            printf("%.17g", number_get_value(value));
         }
         else
         {

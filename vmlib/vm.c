@@ -643,7 +643,16 @@ static InterpretResult run(VM *vm)
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
-            if (addGlobal(name, peek(vm, 0)))
+            Value value;
+            if (findModuleVariable(frame->closure->function->module, name, &value))
+            {
+                addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
+            }
+            else if (findGlobal(name, &value))
+            {
+                addGlobal(name, peek(vm, 0));
+            }
+            else
             {
                 runtimeError(vm, "Undefined variable '%s'.", string_get_cstr(name));
                 return INTERPRET_RUNTIME_ERROR;
@@ -852,6 +861,7 @@ static InterpretResult run(VM *vm)
             if (vm->frameCount == 0)
             {
                 pop(vm);
+                push(vm, result);
                 return INTERPRET_OK;
             }
 
@@ -1022,17 +1032,15 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         if (callValue(&frame, method, arg_count) && run(&frame) == INTERPRET_OK)
         {
-            // There is a small window here where the result might be GC'd
-            result = *(frame.stackTop + arg_count);
-            push(&frame, result);
+            result = peek(&frame, 0);
         }
     }
     else if (invoke(&frame, method, arg_count))
     {
-        result = pop(&frame);
+        result = peek(&frame, 0);
     }
-    deregister_thread(&frame);
     incorporateObjects(&frame);
+    deregister_thread(&frame);
     return result;
 }
 

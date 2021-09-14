@@ -180,17 +180,17 @@ VALUE list_map(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 VALUE list_reduce(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    VALUE accumulator = arguments[1];
+    VALUE accumulator = arguments[0];
     push(vm, accumulator);
     VALUE args[3];
-    for (int i = 0; i < data->capacity; i++)
+    for (int i = 0; i < data->count; i++)
     {
         args[0] = accumulator;
         args[1] = data->entries[i].item;
         args[2] = create_number(vm, i);
-        accumulator = call_function(NIL_VAL, arguments[0], 3, args);
+        accumulator = call_function(NIL_VAL, arguments[1], 3, args);
     }
-    return pop(vm);
+    return accumulator;
 }
 
 VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

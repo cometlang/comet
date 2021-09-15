@@ -67,6 +67,18 @@ void initArgv(VM *vm, int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
+    if (argc >= 2)
+    {
+        for (int i = 1; i < argc; i++)
+        {
+            if (strncmp(argv[i], "--version", 9) == 0)
+            {
+                printf("comet programming language, v%d.%d.%d\n",
+                    MAJOR, MINOR, PATCH);
+                return 0;
+            }
+        }
+    }
     initGlobals();
     initVM(&virtualMachine);
     init_stdlib(&virtualMachine);

@@ -59,19 +59,19 @@ void freeVM(VM *vm);
 Value findInternedString(const char *chars, uint32_t hash);
 
 bool internString(Value string);
-void addModule(ObjModule *module, Value filename);
-bool findModule(Value filename, ObjModule **module);
+void addModule(Value module, Value filename);
+bool findModule(Value filename,  Value *module);
 void markGlobals(void);
 void removeWhiteStrings(void);
 
 bool addGlobal(Value name, Value value);
 bool findGlobal(Value name, Value *value);
-bool findModuleVariable(ObjModule *module, Value name, Value *value);
-bool addModuleVariable(ObjModule *module, Value name, Value value);
+bool findModuleVariable(Value module, Value name, Value *value);
+bool addModuleVariable(Value module, Value name, Value value);
 
 VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
 
-InterpretResult interpret(VM *vm, ObjModule *main);
+InterpretResult interpret(VM *vm, Value main);
 void runtimeError(VM *vm, const char *format, ...);
 void defineMethod(VM *vm, Value name, bool isStatic);
 void defineOperator(VM *vm, OPERATOR operator_);

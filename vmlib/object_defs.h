@@ -16,7 +16,6 @@
 #define IS_INSTANCE(value) isObjType(value, OBJ_INSTANCE)
 #define IS_NATIVE_INSTANCE(value) isObjType(value, OBJ_NATIVE_INSTANCE)
 #define IS_NATIVE(value) isObjType(value, OBJ_NATIVE)
-#define IS_MODULE(value) isObjType(value, OBJ_MODULE)
 
 #define AS_BOUND_METHOD(value) ((ObjBoundMethod *)AS_OBJ(value))
 #define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
@@ -27,7 +26,6 @@
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
 #define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
-#define AS_MODULE(value) (((ObjModule *)AS_OBJ(value)))
 
 typedef enum
 {
@@ -41,7 +39,6 @@ typedef enum
     OBJ_NATIVE_INSTANCE,
     OBJ_NATIVE,
     OBJ_UPVALUE,
-    OBJ_MODULE,
 } ObjType;
 
 typedef enum
@@ -66,6 +63,7 @@ typedef enum
     CLS_SOCKET,
     CLS_STRING,
     CLS_THREAD,
+    CLS_MODULE,
     CLS_USER_DEF,
 } ClassType;
 
@@ -103,20 +101,11 @@ struct sObj
 typedef struct
 {
     Obj obj;
-    Table variables;
-    bool initialised;
-    Value main;
-    const char *filename;
-} ObjModule;
-
-typedef struct
-{
-    Obj obj;
     int arity;
     int upvalueCount;
     Chunk chunk;
     Value name;
-    ObjModule *module;
+    Value module;
     uint16_t optionalArguments[MAX_OPTIONAL_ARGS];
     uint8_t optionalArgCount;
 } ObjFunction;

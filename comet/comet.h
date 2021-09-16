@@ -35,4 +35,11 @@ void set_mark_contents(VALUE self);
 void enum_mark_contents(VALUE self);
 void thread_mark_contents(VALUE self);
 
+VALUE module_create(VM *vm, const char *filename);
+bool module_is_initialized(VALUE module);
+void module_set_initialized(VALUE module);
+const char *module_filename(VALUE module);
+void module_set_main(VALUE module, ObjFunction *function);
+ObjFunction *module_get_main(VALUE module);
+
 #endif

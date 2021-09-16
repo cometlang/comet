@@ -15,6 +15,7 @@ void init_datetime(VM *vm);
 void init_functions(VM *vm);
 void init_hash(VM *vm);
 void init_list(VM *vm);
+void init_module(VM *vm);
 void init_nil(VM *vm);
 void init_boolean(VM *vm);
 void init_socket(VM *vm);

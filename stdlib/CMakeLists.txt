@@ -21,6 +21,7 @@ set(SOURCE
   hash.c
   iterable.c
   list.c
+  module.c
   nil.c
   number.c
   object.c

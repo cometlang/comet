@@ -84,7 +84,7 @@ typedef struct
     Scanner *scanner;
     ClassCompiler *currentClass;
     LoopCompiler *currentLoop;
-    ObjModule *currentModule;
+    VALUE currentModule;
     Compiler *currentFunction;
     VM *compilation_thread;
 } Parser;

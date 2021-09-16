@@ -82,7 +82,7 @@ ObjClosure *newClosure(VM *vm, ObjFunction *function)
     return closure;
 }
 
-ObjFunction *newFunction(VM *vm, const char *filename, ObjModule *module)
+ObjFunction *newFunction(VM *vm, const char *filename, VALUE module)
 {
     ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
 
@@ -93,15 +93,6 @@ ObjFunction *newFunction(VM *vm, const char *filename, ObjModule *module)
     function->module = module;
     initChunk(&function->chunk, filename);
     return function;
-}
-
-ObjModule *newModule(VM *vm)
-{
-    ObjModule *module = ALLOCATE_OBJ(vm, ObjModule, OBJ_MODULE);
-    initTable(&module->variables);
-    module->initialised = false;
-    module->main = NIL_VAL;
-    return module;
 }
 
 Obj *newInstance(VM *vm, ObjClass *klass)
@@ -257,9 +248,6 @@ void printObject(Value value)
     case OBJ_UPVALUE:
         printf("upvalue");
         break;
-    case OBJ_MODULE:
-        printf("module: %s", AS_MODULE(value)->filename);
-        break;
     default:
         printf("Unknown object");
     }
@@ -289,8 +277,6 @@ const char *objTypeName(ObjType type)
         return "native function";
     case OBJ_UPVALUE:
         return "upvalue";
-    case OBJ_MODULE:
-        return "module";
     }
 
     return "unknown";

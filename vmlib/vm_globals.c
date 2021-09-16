@@ -63,28 +63,24 @@ bool addGlobal(Value name, Value value)
     return tableSet(&globals, name, value);
 }
 
-bool findModuleVariable(ObjModule *module, Value name, Value *value)
+bool findModuleVariable(Value module, Value name, Value *value)
 {
-    return tableGet(&module->variables, name, value);
+    ObjInstance *instance = AS_INSTANCE(module);
+    return tableGet(&instance->fields, name, value);
 }
 
-bool addModuleVariable(ObjModule *module, Value name, Value value)
+bool addModuleVariable(Value module, Value name, Value value)
 {
-    return tableSet(&module->variables, name, value);
+    ObjInstance *instance = AS_INSTANCE(module);
+    return tableSet(&instance->fields, name, value);
 }
 
-void addModule(ObjModule *module, Value filename)
+void addModule(Value module, Value filename)
 {
-    tableSet(&modules, filename, OBJ_VAL(module));
+    tableSet(&modules, filename, module);
 }
 
-bool findModule(Value filename, ObjModule **module)
+bool findModule(Value filename, Value *module)
 {
-    Value result;
-    if (tableGet(&modules, filename, &result))
-    {
-        *module = AS_MODULE(result);
-        return true;
-    }
-    return false;
+    return tableGet(&modules, filename, module);
 }

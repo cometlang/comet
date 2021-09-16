@@ -27,8 +27,8 @@ static void repl()
             break;
         }
 
-        ObjModule *module = compile(&source, &virtualMachine);
-        if (module == NULL)
+        Value module = compile(&source, &virtualMachine);
+        if (module == NIL_VAL)
         {
             runtimeError(&virtualMachine, "compilation error");
         }
@@ -43,7 +43,7 @@ static void runFile(const char *path)
 {
     Value to_import = copyString(&virtualMachine, path, strlen(path));
     push(&virtualMachine, to_import);
-    ObjModule *main = import_from_file(&virtualMachine, NULL, to_import);
+    Value main = import_from_file(&virtualMachine, NULL, to_import);
     InterpretResult result = interpret(&virtualMachine, main);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);

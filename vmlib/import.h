@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-    ObjModule *import_from_file(VM *vm, const char *relative_to_filename, Value to_import);
+    Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import);
 
 #ifdef __cplusplus
 }

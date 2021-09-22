@@ -55,6 +55,7 @@ typedef enum
     CLS_ITERATOR,
     CLS_LIST,
     CLS_HASH,
+    CLS_MODULE,
     CLS_MUTEX,
     CLS_NIL,
     CLS_NUMBER,
@@ -63,7 +64,6 @@ typedef enum
     CLS_SOCKET,
     CLS_STRING,
     CLS_THREAD,
-    CLS_MODULE,
     CLS_USER_DEF,
 } ClassType;
 

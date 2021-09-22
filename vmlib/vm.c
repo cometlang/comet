@@ -385,7 +385,10 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
             return false;
         }
     }
-    runtimeError(vm, "Operators can only be called on object instances, got '%s'", objTypeName(AS_OBJ(receiver)->type));
+    runtimeError(vm,
+        "The operator '%s' can only be called on object instances, got '%s'",
+        getOperatorString(operator),
+        objTypeName(AS_OBJ(receiver)->type));
     return false;
 }
 

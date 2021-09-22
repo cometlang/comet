@@ -15,11 +15,11 @@
 #include "debug.h"
 #endif
 
-#define GC_HEAP_GROW_FACTOR 2
-#define MINIMUM_GC_MARK 8192
+#define MINIMUM_GC_MARK 32768
 
 size_t _bytes_allocated = 0;
 size_t _next_GC = 1024 * 1024;
+static bool collecting_garbage;
 
 static void collectGarbage(void);
 
@@ -74,7 +74,6 @@ void deregister_thread(VM *vm)
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
-    MUTEX_LOCK(gc_lock);
     _bytes_allocated += newSize - oldSize;
 #if DEBUG_STRESS_GC
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
@@ -82,12 +81,13 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
         collectGarbage();
     }
 #else
-    if (_bytes_allocated > _next_GC)
+    if ((_bytes_allocated > _next_GC) && !collecting_garbage)
     {
+        MUTEX_LOCK(gc_lock);
         collectGarbage();
+        MUTEX_UNLOCK(gc_lock);
     }
 #endif
-    MUTEX_UNLOCK(gc_lock);
     if (newSize == 0)
     {
         free(previous);
@@ -201,6 +201,7 @@ static void blackenObject(Obj *object)
     {
         ObjFunction *function = (ObjFunction *)object;
         markValue(function->name);
+        markValue(function->module);
         markArray(&function->chunk.constants);
         break;
     }
@@ -224,9 +225,15 @@ static void blackenObject(Obj *object)
 static void freeObject(Obj *object)
 {
 #if DEBUG_LOG_GC
-    if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) && strcmp(((ObjInstance *)object)->klass->name, "String") == 0)
+    if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) &&
+        AS_INSTANCE(OBJ_VAL(object))->klass->classType == CLS_STRING)
     {
         printf("%p free String: \"%s\"\n", (void *)object, string_get_cstr(OBJ_VAL(object)));
+    }
+    else if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) &&
+             AS_INSTANCE(OBJ_VAL(object))->klass->classType == CLS_NUMBER)
+    {
+        printf("%p free Number: \"%.17g\"\n", (void *)object, number_get_value(OBJ_VAL(object)));
     }
     else if (IS_INSTANCE(OBJ_VAL(object)) || IS_NATIVE_INSTANCE(OBJ_VAL(object)))
     {
@@ -293,6 +300,7 @@ static void freeObject(Obj *object)
         if (klass->destructor != NULL)
         {
             klass->destructor(instance->data);
+            instance->data = NULL;
         }
         freeTable(&instance->instance.fields);
         FREE(ObjNativeInstance, object);
@@ -309,7 +317,7 @@ static void freeObject(Obj *object)
 
 static void markRoots(VM *vm)
 {
-    for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
+    for (Value *slot = vm->stack; slot <= vm->stackTop; slot++)
     {
         markValue(*slot);
     }
@@ -373,6 +381,7 @@ static void collectGarbage()
     printf("-- gc begin\n");
     size_t before = _bytes_allocated;
 #endif
+    collecting_garbage = true;
 
     for (int i = 0; i < num_threads; i++)
     {
@@ -387,7 +396,8 @@ static void collectGarbage()
         sweep(threads[i]);
     }
 
-    _next_GC = _bytes_allocated * GC_HEAP_GROW_FACTOR;
+    _next_GC = _bytes_allocated + MINIMUM_GC_MARK;
+    collecting_garbage = false;
 #if DEBUG_LOG_GC
     printf("-- gc end\n");
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
@@ -416,6 +426,7 @@ void initializeGarbageCollection()
 #ifdef WIN32
     gc_lock = CreateMutex(NULL, false, NULL);
 #endif
+    collecting_garbage = false;
 }
 
 void freeObjects(VM *vm)

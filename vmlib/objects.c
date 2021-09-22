@@ -115,6 +115,7 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeInstance *instance = ALLOCATE_OBJ(vm, ObjNativeInstance, OBJ_NATIVE_INSTANCE);
+        push(vm, OBJ_VAL(instance));
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
@@ -123,6 +124,7 @@ Obj *newInstance(VM *vm, ObjClass *klass)
         {
             instance->data = native_klass->constructor();
         }
+        pop(vm);
         pop(vm);
         return (Obj *)instance;
     }

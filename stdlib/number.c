@@ -49,6 +49,13 @@ VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
+VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    double result = sqrt(data->num);
+    return create_number(vm, result);
+}
+
 VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
@@ -182,7 +189,9 @@ double number_get_value(VALUE self)
 {
     if (instanceof(self, number_class) == TRUE_VAL)
     {
-        return GET_NATIVE_INSTANCE_DATA(NumberData, self)->num;
+        NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+        if (data != NULL)
+            return data->num;
     }
     return NAN;
 }
@@ -204,6 +213,7 @@ void complete_number(VM *vm)
     completeNativeClassDefinition(vm, number_class, NULL);
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
     defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
+    defineNativeMethod(vm, number_class, &number_square_root, "square_root", 0, false);
     defineNativeOperator(vm, number_class, &number_operator_plus, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, number_class, &number_operator_minus, 1, OPERATOR_MINUS);
     defineNativeOperator(vm, number_class, &number_operator_divide, 1, OPERATOR_DIVISION);

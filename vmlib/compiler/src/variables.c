@@ -198,6 +198,46 @@ void namedVariable(Parser *parser, Token name, bool canAssign)
             emitBytes(parser, setOp, (uint8_t)arg);
             return;
         }
+        else if (match(parser, TOKEN_PLUS_EQUAL))
+        {
+            emitBytes(parser, getOp, (uint8_t)arg);
+            expression(parser);
+            emitByte(parser, OP_ADD);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
+        else if (match(parser, TOKEN_STAR_EQUAL))
+        {
+            emitBytes(parser, getOp, (uint8_t)arg);
+            expression(parser);
+            emitByte(parser, OP_MULTIPLY);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
+        else if (match(parser, TOKEN_MINUS_EQUAL))
+        {
+            emitBytes(parser, getOp, (uint8_t)arg);
+            expression(parser);
+            emitByte(parser, OP_SUBTRACT);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
+        else if (match(parser, TOKEN_SLASH_EQUAL))
+        {
+            emitBytes(parser, getOp, (uint8_t)arg);
+            expression(parser);
+            emitByte(parser, OP_DIVIDE);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
+        else if (match(parser, TOKEN_PERCENT_EQUAL))
+        {
+            emitBytes(parser, getOp, (uint8_t)arg);
+            expression(parser);
+            emitByte(parser, OP_MODULO);
+            emitBytes(parser, setOp, (uint8_t)arg);
+            return;
+        }
     }
 
     emitBytes(parser, getOp, (uint8_t)arg);

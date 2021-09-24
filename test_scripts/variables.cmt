@@ -1,0 +1,21 @@
+var number = 3
+
+number += 2
+assert(number == 5)
+print(number)
+
+number -= 1
+assert(number == 4)
+print(number)
+
+number /= 2
+assert(number == 2)
+print(number)
+
+number *= 3
+assert(number == 6)
+print(number)
+
+number %= 4
+assert(number == 2)
+print(number)

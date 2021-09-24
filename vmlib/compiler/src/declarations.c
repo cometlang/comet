@@ -13,7 +13,7 @@
 static void defineParameterValue(Parser *parser, uint16_t value)
 {
     ObjFunction *func = parser->currentFunction->function;
-    if (func->optionalArgCount == MAX_OPTIONAL_ARGS)
+    if (func->optionalArgCount == MAX_ARGS)
     {
         errorAtCurrent(parser, "Too many optional arguments in one function");
     }

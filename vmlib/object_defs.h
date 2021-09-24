@@ -106,7 +106,7 @@ typedef struct
     Chunk chunk;
     Value name;
     Value module;
-    uint16_t optionalArguments[MAX_OPTIONAL_ARGS];
+    uint16_t optionalArguments[MAX_ARGS];
     uint8_t optionalArgCount;
 } ObjFunction;
 

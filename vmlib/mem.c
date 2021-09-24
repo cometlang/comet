@@ -15,7 +15,8 @@
 #include "debug.h"
 #endif
 
-#define MINIMUM_GC_MARK 32768
+// 128kB
+#define MINIMUM_GC_MARK 131072
 
 size_t _bytes_allocated = 0;
 size_t _next_GC = 1024 * 1024;

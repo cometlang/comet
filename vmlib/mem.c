@@ -1,6 +1,7 @@
 #ifdef WIN32
 #include <Windows.h>
 #else
+#define _GNU_SOURCE
 #include <pthread.h>
 #endif
 #include <stdlib.h>
@@ -38,7 +39,7 @@ static HANDLE gc_lock;
 #define MUTEX_UNLOCK(mut) ReleaseMutex(mut)
 #define MUTEX_DESTROY(mut) CloseHandle(mut)
 #else
-static pthread_mutex_t gc_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t gc_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 #define MUTEX_LOCK(mut) pthread_mutex_lock(&mut)
 #define MUTEX_UNLOCK(mut) pthread_mutex_unlock(&mut)
 #define MUTEX_DESTROY(mut) pthread_mutex_destroy(&mut)
@@ -75,6 +76,7 @@ void deregister_thread(VM *vm)
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
 {
+    MUTEX_LOCK(gc_lock);
     _bytes_allocated += newSize - oldSize;
 #if DEBUG_STRESS_GC
     if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
@@ -84,9 +86,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
 #else
     if ((_bytes_allocated > _next_GC) && !collecting_garbage)
     {
-        MUTEX_LOCK(gc_lock);
         collectGarbage();
-        MUTEX_UNLOCK(gc_lock);
     }
 #endif
     if (newSize == 0)
@@ -94,7 +94,9 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
         free(previous);
         return NULL;
     }
-    return realloc(previous, newSize);
+    void *result = realloc(previous, newSize);
+    MUTEX_UNLOCK(gc_lock);
+    return result;
 }
 
 void markObject(Obj *object)

@@ -119,7 +119,7 @@ static VALUE enum_parse(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE
 {
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     VALUE candidate = arguments[0];
-    if (is_a_string(candidate))
+    if (AS_INSTANCE(candidate)->klass->classType == CLS_STRING)
     {
         for (int i = 0; i < data->array.count; i++)
         {

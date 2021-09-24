@@ -140,13 +140,18 @@ VALUE string_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*a
 
 VALUE string_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
-    if (lhs->length != rhs->length)
-        return FALSE_VAL;
+    VALUE rhs = arguments[0];
+    if (IS_NATIVE_INSTANCE(rhs) &&
+        AS_INSTANCE(rhs)->klass->classType == CLS_STRING)
+    {
+        StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+        StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+        if (lhs->length != rhs->length)
+            return FALSE_VAL;
 
-    if (strncmp(lhs->chars, rhs->chars, lhs->length) == 0)
-        return TRUE_VAL;
+        if (strncmp(lhs->chars, rhs->chars, lhs->length) == 0)
+            return TRUE_VAL;
+    }
     return FALSE_VAL;
 }
 
@@ -393,11 +398,34 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-bool is_a_string(VALUE instance)
+VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    if (instanceof(instance, string_class) == TRUE_VAL)
-        return true;
-    return false;
+    uint64_t index = (int64_t) number_get_value(arguments[0]);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    utf8proc_int32_t current_codepoint;
+    utf8proc_ssize_t remaining = data->length;
+    size_t offset = 0;
+    size_t length = 0;
+    while (offset < data->length)
+    {
+        utf8proc_ssize_t bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *)&data->chars[offset], remaining, &current_codepoint);
+        if (bytes_read == -1)
+            break;
+        offset += bytes_read;
+        remaining -= bytes_read;
+        if (length == index)
+        {
+            char *temp = ALLOCATE(char, 5);
+            utf8proc_ssize_t result_len = utf8proc_encode_char(current_codepoint, (utf8proc_uint8_t *)temp);
+            temp = reallocate(temp, 5, result_len + 1);
+            temp[result_len] = '\0';
+            return string_create(vm, temp, result_len);
+        }
+        length++;
+    }
+    throw_exception_native(vm, "IndexOutOfBoundsException", "%ld was not a valid string index", index);
+    return NIL_VAL;
 }
 
 void init_string(VM *vm, VALUE obj_klass)
@@ -424,6 +452,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
+    defineNativeOperator(vm, string_class, &string_get_at, 1, OPERATOR_INDEX);
 
     string_iterator_class = defineNativeClass(
         vm, "StringIterator", &string_iterator_constructor, &string_iterator_destructor, "Iterator", CLS_ITERATOR, true);

@@ -30,3 +30,17 @@ print("Iteration complete")
 
 print("This has an\nescaped newline in it")
 print("This has an \\ escaped escape in it")
+
+var ooooo = utf8_string[10]
+print(ooooo)
+assert(ooooo == "ü")
+
+try
+{
+    utf8_string[42]
+    assert(false)
+}
+catch (IndexOutOfBoundsException)
+{
+    print("Correctly out of bounds")
+}

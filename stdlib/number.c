@@ -56,6 +56,28 @@ VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
     return create_number(vm, result);
 }
 
+VALUE number_ceiling(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    double result = ceil(data->num);
+    return create_number(vm, result);
+}
+
+VALUE number_floor(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    double result = floor(data->num);
+    return create_number(vm, result);
+}
+
+VALUE number_even_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    if (((int64_t)data->num) & 1)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
@@ -214,6 +236,10 @@ void complete_number(VM *vm)
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
     defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
     defineNativeMethod(vm, number_class, &number_square_root, "square_root", 0, false);
+    defineNativeMethod(vm, number_class, &number_ceiling, "ceiling", 0, false);
+    defineNativeMethod(vm, number_class, &number_floor, "floor", 0, false);
+    defineNativeMethod(vm, number_class, &number_even_p, "even?", 0, false);
+
     defineNativeOperator(vm, number_class, &number_operator_plus, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, number_class, &number_operator_minus, 1, OPERATOR_MINUS);
     defineNativeOperator(vm, number_class, &number_operator_divide, 1, OPERATOR_DIVISION);

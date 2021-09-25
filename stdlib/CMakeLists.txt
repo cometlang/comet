@@ -20,7 +20,7 @@ set(SOURCE
   functions.c
   hash.c
   iterable.c
-  list.c
+  list.cpp
   module.c
   nil.c
   number.c

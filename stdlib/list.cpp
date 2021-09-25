@@ -1,9 +1,16 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <sstream>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
-#include <stdlib.h>
-#include <stdio.h>
 
 typedef struct list_node
 {
@@ -231,9 +238,21 @@ VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString(vm, "Native List Instance", 20);
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    std::stringstream stream;
+    stream << "[";
+    for (int i = 0; i < data->count; i++)
+    {
+        VALUE str = call_function(data->entries[i].item, common_strings[STRING_TO_STRING], 0, NULL);
+        stream << string_get_cstr(str);
+        if (i != data->count - 1)
+            stream << ", ";
+    }
+    stream << "]";
+    std::string result = stream.str();
+    return copyString(vm, result.c_str(), result.length());
 }
 
 VALUE list_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -301,3 +320,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_iterator_class, &list_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_get_next, "get_next", 0, false);
 }
+
+#ifdef __cplusplus
+}
+#endif

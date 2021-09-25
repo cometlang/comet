@@ -18,7 +18,7 @@ set(SOURCE
   exception.c
   file_common.c
   functions.c
-  hash.c
+  hash.cpp
   iterable.c
   list.cpp
   module.c

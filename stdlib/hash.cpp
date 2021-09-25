@@ -1,9 +1,16 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+#include <sstream>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
-#include <stdlib.h>
-#include <stdio.h>
 
 #define TABLE_MAX_LOAD 0.75
 
@@ -290,7 +297,26 @@ void hash_mark_contents(VALUE self)
 
 VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return copyString(vm, "A Hash Instance", 15);
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    std::stringstream stream;
+    stream << "{";
+    size_t count = 0;
+    for (size_t i = 0; i <= table->capacity; i++)
+    {
+        HashEntry *entry = &table->entries[i];
+        if (entry->key != NIL_VAL)
+        {
+            VALUE key_str = call_function(entry->key, common_strings[STRING_TO_STRING], 0, NULL);
+            VALUE value_str = call_function(entry->value, common_strings[STRING_TO_STRING], 0, NULL);
+            stream << string_get_cstr(key_str) << ": " << string_get_cstr(value_str);
+            if (count != table->count - 1)
+                stream << ", ";
+            count++;
+        }
+    }
+    stream << "}";
+    std::string result = stream.str();
+    return copyString(vm, result.c_str(), result.length());
 }
 
 void init_hash(VM *vm)
@@ -307,3 +333,7 @@ void init_hash(VM *vm)
     defineNativeOperator(vm, klass, &hash_find, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 }
+
+#ifdef __cplusplus
+}
+#endif

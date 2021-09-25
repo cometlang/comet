@@ -268,6 +268,8 @@ static void literal_hash(Parser *parser, bool canAssign)
         do {
             emitByte(parser, OP_DUP_TOP);
             match(parser, TOKEN_EOL);
+            if (check(parser, TOKEN_RIGHT_BRACE)) // hanging comma
+                break;
             expression(parser);
             consume(parser, TOKEN_COLON, "':' expected between key and value of a literal hash");
             match(parser, TOKEN_EOL);

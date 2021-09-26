@@ -34,7 +34,7 @@ void file_destructor(void *data)
     FREE(FileData, file_data);
 }
 
-static const char *translate_flags_to_mode(VALUE flags)
+static const char* translate_flags_to_mode(VALUE flags)
 {
     uint64_t flag_value = enumvalue_get_value(flags);
     bool include_bin = (flag_value & FOPEN_BINARY);

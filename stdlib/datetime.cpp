@@ -5,8 +5,6 @@
 #include <date/date.h>
 #include <date/tz.h>
 
-extern "C" {
-
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
@@ -44,6 +42,8 @@ static date::hh_mm_ss<milliseconds> get_time(VALUE self)
     date::year_month_day ymd{dp};
     return date::hh_mm_ss{date::floor<milliseconds>(local - dp)};
 }
+
+extern "C" {
 
 static VALUE datetime_year(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {

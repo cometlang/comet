@@ -33,11 +33,11 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
     string current_dir;
     if (relative_to_filename == NULL)
     {
-        current_dir = filesystem::current_path();
+        current_dir = filesystem::current_path().string();
     }
     else
     {
-        current_dir = filesystem::path(relative_to_filename).parent_path();
+        current_dir = filesystem::path(relative_to_filename).parent_path().string();
     }
     filesystem::path candidate = filesystem::path(current_dir) / filesystem::path(string(to_import_path));
     if (!filesystem::exists(candidate))
@@ -46,7 +46,7 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
     }
     filesystem::path absolute_path = filesystem::canonical(candidate);
 
-    const char *full_path = absolute_path.c_str();
+    const char *full_path = absolute_path.string().c_str();
     Value full_path_val = copyString(vm, full_path, strlen(full_path));
     push(vm, full_path_val);
 

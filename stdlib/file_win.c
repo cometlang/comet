@@ -1,6 +1,3 @@
-#include "comet.h"
-#include "comet_stdlib.h"
-
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -8,9 +5,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "comet.h"
+#include "comet_stdlib.h"
+#include "file_common.h"
+
 typedef struct fileData
 {
     HANDLE fp;
+    bool is_binary;
 } FileData;
 
 void* file_constructor(void)
@@ -31,19 +33,41 @@ void file_destructor(void* data)
     FREE(FileData, file_data);
 }
 
+static uint64_t translate_flags_to_mode(VALUE flags)
+{
+    uint64_t flag_value = enumvalue_get_value(flags);
+    if (flag_value & FOPEN_READ_ONLY)
+    {
+        return GENERIC_READ;
+    }
+    else if (flag_value & FOPEN_READ_WRITE)
+    {
+        return GENERIC_READ | GENERIC_WRITE;
+    }
+    else if (flag_value & FOPEN_APPEND)
+    {
+        return FILE_APPEND_DATA;
+    }
+    return GENERIC_READ;
+}
+
+
 VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
 {
     ObjNativeInstance* instance = (ObjNativeInstance*)newInstance(vm, AS_CLASS(klass));
+    FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(instance));
     const char* path = string_get_cstr(arguments[0]);
-    const char* mode = string_get_cstr(arguments[1]);
-    HANDLE fp = CreateFileW(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    uint64_t mode = translate_flags_to_mode(arguments[1]);
+    HANDLE fp = CreateFileW(path, mode, FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
     if (fp == INVALID_HANDLE_VALUE)
     {
         // GC will take care of the instance
         throw_exception_native(vm, "IOException", strerror(errno));
         return NIL_VAL;
     }
-    ((FileData*)instance->data)->fp = fp;
+    uint64_t flag_value = enumvalue_get_value(arguments[1]);
+    data->fp = fp;
+    data->is_binary = (bool)(flag_value & FOPEN_BINARY);
     return OBJ_VAL(instance);
 }
 
@@ -79,7 +103,8 @@ VALUE file_read(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
     ReadFile(data->fp, buffer, fileSize, &bytesRead, NULL);
     buffer[bytesRead] = '\0';
 
-    return takeString(vm, buffer, fileSize);
+    // If data->is_binary, create a ByteSequence, otherwise takeString
+    return takeString(vm, buffer, bytesRead + 1);
 }
 
 VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

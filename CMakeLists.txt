@@ -10,7 +10,8 @@ else()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -ggdb3 -Wall -Wextra -Werror")
 endif (WIN32)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 20 CACHE INTERNAL "Set C++ standard to C++20")
+set(CMAKE_C_STANDARD 17 CACHE INTERNAL "Set C standard to C17")
 set(CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS}")
 
 find_package(Threads REQUIRED)

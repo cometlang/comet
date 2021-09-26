@@ -44,9 +44,9 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
     {
         candidate += string(file_extenstion);
     }
-    filesystem::path absolute_path = filesystem::canonical(candidate);
+    string absolute_path = filesystem::canonical(candidate).string();
 
-    const char *full_path = absolute_path.string().c_str();
+    const char *full_path = absolute_path.c_str();
     Value full_path_val = copyString(vm, full_path, strlen(full_path));
     push(vm, full_path_val);
 

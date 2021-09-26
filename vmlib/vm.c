@@ -1027,7 +1027,6 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         result = peek(&frame, 0);
     }
-    incorporateObjects(&frame);
     deregister_thread(&frame);
     return result;
 }

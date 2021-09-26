@@ -409,21 +409,6 @@ static void collectGarbage()
 #endif
 }
 
-void incorporateObjects(VM *vm)
-{
-    MUTEX_LOCK(gc_lock);
-    VM *main_thread = threads[0];
-    Obj *object = vm->objects;
-    while (object != NULL)
-    {
-        Obj *next = object->next;
-        object->next = main_thread->objects;
-        main_thread->objects = object;
-        object = next;
-    }
-    MUTEX_UNLOCK(gc_lock);
-}
-
 void initializeGarbageCollection()
 {
 #ifdef WIN32

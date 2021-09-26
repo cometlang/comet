@@ -9,3 +9,7 @@ print(inherits)
 print(instance.hash())
 print(instance.to_string())
 assert(instance.nil?() == false)
+
+class final FinalClass
+{
+}

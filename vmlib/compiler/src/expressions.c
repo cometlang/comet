@@ -417,6 +417,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_TRY]              = {NULL,         NULL,      PREC_NONE},
     [TOKEN_CATCH]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_THROW]            = {NULL,         NULL,      PREC_NONE},
+    [TOKEN_FINAL]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_FINALLY]          = {NULL,         NULL,      PREC_NONE},
     [TOKEN_PRIVATE]          = {NULL,         NULL,      PREC_NONE},
     [TOKEN_PROTECTED]        = {NULL,         NULL,      PREC_NONE},

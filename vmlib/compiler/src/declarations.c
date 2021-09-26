@@ -121,12 +121,15 @@ void operator_(Parser *parser)
 
 void classDeclaration(Parser *parser)
 {
+    bool isFinal = match(parser, TOKEN_FINAL);
+
     consume(parser, TOKEN_IDENTIFIER, "Expect class name.");
     Token className = parser->previous;
     uint8_t nameConstant = identifierConstant(parser, &parser->previous);
     declareVariable(parser);
 
     emitBytes(parser, OP_CLASS, nameConstant);
+    emitByte(parser, isFinal);
     defineVariable(parser, nameConstant);
 
     ClassCompiler classCompiler;

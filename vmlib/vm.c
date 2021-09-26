@@ -857,8 +857,11 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_CLASS:
-            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, false)));
+        {
+            bool final = READ_BYTE();
+            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, final)));
             break;
+        }
         case OP_INHERIT:
         {
             Value super_ = peek(vm, 1);

@@ -70,6 +70,7 @@ char *token_strings[NUM_TOKENS] =
     [TOKEN_CATCH] = "catch",
     [TOKEN_THROW] = "throw",
     [TOKEN_FINALLY] = "finally",
+    [TOKEN_FINAL] = "final",
     [TOKEN_PRIVATE] = "private",
     [TOKEN_PROTECTED] = "protected",
     [TOKEN_PUBLIC] = "public",

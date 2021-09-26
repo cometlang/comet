@@ -167,7 +167,11 @@ static TokenType_t identifierType(Scanner *scanner)
             case 'a':
                 return checkKeyword(scanner, 2, 3, "lse", TOKEN_FALSE);
             case 'i':
-                return checkKeyword(scanner, 2, 5, "nally", TOKEN_FINALLY);
+            {
+                if (checkKeyword(scanner, 2, 5, "nally", TOKEN_FINALLY) == TOKEN_FINALLY)
+                    return TOKEN_FINALLY;
+                return checkKeyword(scanner, 2, 3, "nal", TOKEN_FINAL);
+            }
             case 'o':
             {
                 if (scanner->current - scanner->start > 3)

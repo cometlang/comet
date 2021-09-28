@@ -20,7 +20,7 @@
 #define MINIMUM_GC_MARK 131072
 
 size_t _bytes_allocated = 0;
-size_t _next_GC = 1024 * 1024;
+size_t _next_GC = MINIMUM_GC_MARK;
 static bool collecting_garbage;
 
 static void collectGarbage(void);
@@ -399,7 +399,7 @@ static void collectGarbage()
         sweep(threads[i]);
     }
 
-    _next_GC = _bytes_allocated + MINIMUM_GC_MARK;
+    _next_GC = _bytes_allocated * 2;
     collecting_garbage = false;
 #if DEBUG_LOG_GC
     printf("-- gc end\n");

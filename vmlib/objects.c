@@ -58,13 +58,21 @@ ObjClass *newClass(VM *vm, const char *name, ClassType classType, bool final)
     return klass;
 }
 
-ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, bool final)
+ObjNativeClass *newNativeClass(
+    VM *vm,
+    const char *name,
+    NativeConstructor constructor,
+    NativeDestructor destructor,
+    ClassType classType,
+    size_t allocSize,
+    bool final)
 {
     ObjNativeClass *klass = ALLOCATE_OBJ(vm, ObjNativeClass, OBJ_NATIVE_CLASS);
     push(vm, OBJ_VAL(klass));
     init_class((ObjClass *)klass, name, classType, final);
     klass->constructor = constructor;
     klass->destructor = destructor;
+    klass->allocSize = allocSize == 0 ? sizeof(ObjNativeInstance) : allocSize;
     return klass;
 }
 
@@ -114,15 +122,17 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     }
     case OBJ_NATIVE_CLASS:
     {
-        ObjNativeInstance *instance = ALLOCATE_OBJ(vm, ObjNativeInstance, OBJ_NATIVE_INSTANCE);
+        ObjNativeClass *native_klass = (ObjNativeClass *)klass;
+        ObjNativeInstance *instance = (ObjNativeInstance *) allocateObject(vm,
+            native_klass->allocSize,
+            OBJ_NATIVE_INSTANCE);
         push(vm, OBJ_VAL(instance));
         instance->instance.klass = klass;
         initTable(&instance->instance.fields);
-        ObjNativeClass *native_klass = (ObjNativeClass *)klass;
         push(vm, OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {
-            instance->data = native_klass->constructor();
+            native_klass->constructor(instance);
         }
         pop(vm);
         pop(vm);
@@ -237,6 +247,13 @@ void printObject(Value value)
         else if (AS_INSTANCE(value)->klass->classType == CLS_NUMBER)
         {
             printf("%.17g", number_get_value(value));
+        }
+        else if (AS_INSTANCE(value)->klass->classType == CLS_BOOLEAN)
+        {
+            if (bool_is_falsey(value))
+                printf("false");
+            else
+                printf("true");
         }
         else
         {

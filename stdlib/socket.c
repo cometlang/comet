@@ -22,20 +22,11 @@ static VALUE socket_type;
 static VALUE address_family;
 
 typedef struct {
+    ObjNativeInstance obj;
     int sock_fd;
     int address_family;
     int sock_type;
 } SocketData;
-
-void *socket_constructor(void)
-{
-    return ALLOCATE(SocketData, 1);
-}
-
-void socket_destructor(void *data)
-{
-    FREE(SocketData, data);
-}
 
 VALUE socket_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
@@ -160,8 +151,8 @@ VALUE socket_accept(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNU
     int connection_fd = accept(data->sock_fd, &peer, &peer_len);
     if (connection_fd > 0)
     {
-        ObjNativeInstance *connection = (ObjNativeInstance *) newInstance(vm, AS_INSTANCE(self)->klass);
-        SocketData *conn_data = (SocketData *) connection->data;
+        VALUE connection = OBJ_VAL(newInstance(vm, AS_INSTANCE(self)->klass));
+        SocketData *conn_data = GET_NATIVE_INSTANCE_DATA(SocketData, connection);
         conn_data->address_family = peer.sa_family;
         conn_data->sock_fd = connection_fd;
         conn_data->sock_type = data->sock_type;
@@ -194,7 +185,7 @@ void init_socket(VM *vm)
     }
 #endif
 
-    VALUE klass = defineNativeClass(vm, "Socket", &socket_constructor, &socket_destructor, NULL, CLS_SOCKET, false);
+    VALUE klass = defineNativeClass(vm, "Socket", NULL, NULL, NULL, CLS_SOCKET, sizeof(SocketData), false);
     defineNativeMethod(vm, klass, &socket_init, "init", 2, false);
     defineNativeMethod(vm, klass, &socket_open, "open", 2, true);
     defineNativeMethod(vm, klass, &socket_close, "close", 0, false);

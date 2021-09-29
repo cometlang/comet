@@ -4,23 +4,18 @@
 static VALUE klass;
 
 typedef struct {
+    ObjNativeInstance obj;
     const char *filename;
     bool initialized;
     ObjFunction *main;
 } module_data_t;
 
-static void *module_constructor(void)
+static void module_constructor(void *instanceData)
 {
-    module_data_t *data = ALLOCATE(module_data_t, 1);
+    module_data_t *data = (module_data_t *)instanceData;
     data->filename = NULL;
     data->initialized = false;
     data->main = NULL;
-    return data;
-}
-
-static void module_destructor(void *data)
-{
-    FREE(module_data_t, data);
 }
 
 bool module_is_initialized(VALUE module)
@@ -55,12 +50,13 @@ ObjFunction *module_get_main(VALUE module)
 
 VALUE module_create(VM *vm, const char *filename)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *) newInstance(vm, AS_CLASS(klass));
-    ((module_data_t *)instance->data)->filename = filename;
-    return OBJ_VAL(instance);
+    VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(klass)));
+    module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, instance);
+    data->filename = filename;
+    return instance;
 }
 
 void init_module(VM *vm)
 {
-    klass = defineNativeClass(vm, "Module", &module_constructor, &module_destructor, "Object", CLS_MODULE, true);
+    klass = defineNativeClass(vm, "Module", &module_constructor, NULL, "Object", CLS_MODULE, sizeof(module_data_t), true);
 }

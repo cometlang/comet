@@ -12,19 +12,9 @@
 using namespace std::chrono;
 
 typedef struct {
+    ObjNativeInstance obj;
     date::zoned_time<nanoseconds> point;
 } DateTimeData;
-
-static void *datetime_constructor(void)
-{
-    DateTimeData *data = ALLOCATE(DateTimeData, 1);
-    return data;
-}
-
-static void datetime_destructor(void *data)
-{
-    FREE(DateTimeData, data);
-}
 
 static date::year_month_day get_ymd(VALUE self)
 {
@@ -128,7 +118,7 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
 
 void init_datetime(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "DateTime", &datetime_constructor, &datetime_destructor, NULL, CLS_DATETIME, false);
+    VALUE klass = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
     defineNativeMethod(vm, klass, &datetime_static_now, "now", 0, true);
     defineNativeMethod(vm, klass, &datetime_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &datetime_year, "year", 0, false);

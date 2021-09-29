@@ -10,6 +10,9 @@
 #define FREE(type, pointer) \
     reallocate(pointer, sizeof(type), 0)
 
+#define FREE_NATIVE_INSTANCE(pointer) \
+    reallocate(pointer, ((ObjNativeClass *)((ObjInstance *) pointer)->klass)->allocSize, 0)
+
 #define GROW_CAPACITY(capacity) \
     ((capacity) < 8 ? 8 : (capacity)*2)
 

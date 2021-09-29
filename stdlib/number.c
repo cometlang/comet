@@ -8,16 +8,10 @@
 
 static VALUE number_class;
 
-void *number_constructor()
+void number_constructor(void *instanceData)
 {
-    NumberData *data = (NumberData *) ALLOCATE(NumberData, 1);
+    NumberData *data = (NumberData *) instanceData;
     data->num = 0;
-    return data;
-}
-
-void number_destructor(void *data)
-{
-    FREE(NumberData, data);
 }
 
 VALUE number_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -227,7 +221,7 @@ bool is_a_number(VALUE instance)
 
 void bootstrap_number(VM *vm)
 {
-    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, &number_destructor, CLS_NUMBER, false);
+    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, NULL, CLS_NUMBER, sizeof(NumberData), false);
 }
 
 void complete_number(VM *vm)

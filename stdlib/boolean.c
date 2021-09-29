@@ -1,19 +1,31 @@
+#include <stdio.h>
+
 #include "cometlib.h"
 #include "comet_stdlib.h"
 
-ObjNativeInstance boolean_true;
-ObjNativeInstance boolean_false;
+typedef struct {
+    ObjNativeInstance obj;
+    bool value;
+} BooleanData_t;
+
+static BooleanData_t _true;
+static BooleanData_t _false;
+
+ObjNativeInstance *boolean_true = (ObjNativeInstance *) &_true;
+ObjNativeInstance *boolean_false = (ObjNativeInstance *) &_false;
+
 static VALUE bool_class;
 
 VALUE boolean_init(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
+    BooleanData_t *data = GET_NATIVE_INSTANCE_DATA(BooleanData_t, self);
     if (arg_count == 1 && !bool_is_falsey(arguments[0]))
     {
-        AS_NATIVE_INSTANCE(self)->data = (void *) true;
+        data->value = true;
     }
     else
     {
-        AS_NATIVE_INSTANCE(self)->data = (void *) false;
+        data->value = false;
     }
 
     return NIL_VAL;
@@ -21,8 +33,8 @@ VALUE boolean_init(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 
 VALUE boolean_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    bool value = (bool) AS_NATIVE_INSTANCE(self)->data;
-    if (value)
+    BooleanData_t *data = GET_NATIVE_INSTANCE_DATA(BooleanData_t, self);
+    if (data->value)
         return copyString(vm, "true", 4);
     return copyString(vm, "false", 5);
 }
@@ -32,13 +44,13 @@ VALUE boolean_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
     return NIL_VAL;
 }
 
-static void init_instance(VM *vm, ObjNativeInstance *instance, ObjClass *klass, bool value)
+static void init_instance(VM *vm, BooleanData_t *instance, ObjClass *klass, bool value)
 {
-    instance->instance.obj.type = OBJ_NATIVE_INSTANCE;
-    instance->instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
-    instance->data = (void *) value;
-    instance->instance.klass = klass;
-    initTable(&instance->instance.fields);
+    instance->obj.instance.obj.type = OBJ_NATIVE_INSTANCE;
+    instance->obj.instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
+    instance->obj.instance.klass = klass;
+    instance->value = value;
+    initTable(&instance->obj.instance.fields);
     if (value)
         push(vm, copyString(vm, "true", 4));
     else
@@ -50,7 +62,8 @@ static void init_instance(VM *vm, ObjNativeInstance *instance, ObjClass *klass, 
 bool bool_get_value(VALUE value)
 {
     DEBUG_ASSERT(instanceof(value, bool_class));
-    return (bool) AS_NATIVE_INSTANCE(value)->data;
+    BooleanData_t *data = GET_NATIVE_INSTANCE_DATA(BooleanData_t, value);
+    return (bool)data->value;
 }
 
 bool bool_is_falsey(VALUE value)
@@ -65,10 +78,10 @@ bool bool_is_falsey(VALUE value)
 
 void init_boolean(VM *vm)
 {
-    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, CLS_BOOLEAN, false);
+    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, CLS_BOOLEAN, sizeof(BooleanData_t), false);
     defineNativeMethod(vm, bool_class, &boolean_init, "init", 1, false);
     defineNativeMethod(vm, bool_class, &boolean_to_string, "to_string", 0, false);
     defineNativeMethod(vm, bool_class, &boolean_parse, "parse", 1, true);
-    init_instance(vm, &boolean_true, AS_CLASS(bool_class), true);
-    init_instance(vm, &boolean_false, AS_CLASS(bool_class), false);
+    init_instance(vm, &_true, AS_CLASS(bool_class), true);
+    init_instance(vm, &_false, AS_CLASS(bool_class), false);
 }

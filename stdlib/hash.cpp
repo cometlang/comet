@@ -24,29 +24,25 @@ typedef struct hash_entry
 
 typedef struct
 {
+    ObjNativeInstance obj;
     int count;
     size_t capacity;
     HashEntry *entries;
 } HashTable;
 
 typedef struct {
+    ObjNativeInstance obj;
     HashTable *table;
     int index;
     int values_returned;
 } HashIterator;
 
-void *hash_iterator_constructor(void)
+void hash_iterator_constructor(void *instanceData)
 {
-    HashIterator *iter = ALLOCATE(HashIterator, 1);
+    HashIterator *iter = (HashIterator *)instanceData;
     iter->table = NULL;
     iter->index = 0;
     iter->values_returned = 0;
-    return iter;
-}
-
-void hash_iterator_destructor(void *iter)
-{
-    FREE(HashIterator, iter);
 }
 
 VALUE hash_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -96,20 +92,18 @@ VALUE hash_iterable_count(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSE
     return create_number(vm, table->count);
 }
 
-void *hash_constructor(void)
+void hash_constructor(void *instanceData)
 {
-    HashTable *table = ALLOCATE(HashTable, 1);
+    HashTable *table = (HashTable *)instanceData;
     table->count = 0;
     table->capacity = -1;
     table->entries = NULL;
-    return table;
 }
 
 void hash_destructor(void *data)
 {
     HashTable *table = (HashTable *)data;
     FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
-    FREE(HashTable, table);
 }
 
 static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
@@ -321,7 +315,7 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL, CLS_HASH, false);
+    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, NULL, CLS_HASH, sizeof(HashTable), false);
     defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
     defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);

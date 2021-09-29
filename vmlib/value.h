@@ -28,8 +28,8 @@ typedef uint64_t Value;
 #define VALUE Value
 
 #define NIL_VAL (OBJ_VAL(&nil_instance))
-#define TRUE_VAL (OBJ_VAL(&boolean_true))
-#define FALSE_VAL (OBJ_VAL(&boolean_false))
+#define TRUE_VAL (OBJ_VAL(boolean_true))
+#define FALSE_VAL (OBJ_VAL(boolean_false))
 
 typedef struct _vm VM;
 

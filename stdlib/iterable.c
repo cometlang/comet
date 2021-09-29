@@ -36,8 +36,8 @@ VALUE iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
 
 void bootstrap_iterable(VM *vm)
 {
-    iterable_klass = bootstrapNativeClass(vm, "Iterable", NULL, NULL, CLS_ITERABLE, false);
-    iterator_klass = bootstrapNativeClass(vm, "Iterator", NULL, NULL, CLS_ITERATOR, false);
+    iterable_klass = bootstrapNativeClass(vm, "Iterable", NULL, NULL, CLS_ITERABLE, 0, false);
+    iterator_klass = bootstrapNativeClass(vm, "Iterator", NULL, NULL, CLS_ITERATOR, 0, false);
 }
 
 void complete_iterable(VM *vm)

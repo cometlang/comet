@@ -302,11 +302,10 @@ static void freeObject(Obj *object)
         ObjNativeClass *klass = (ObjNativeClass *)instance->instance.klass;
         if (klass->destructor != NULL)
         {
-            klass->destructor(instance->data);
-            instance->data = NULL;
+            klass->destructor(instance);
         }
         freeTable(&instance->instance.fields);
-        FREE(ObjNativeInstance, object);
+        FREE_NATIVE_INSTANCE(object);
         break;
     }
     case OBJ_NATIVE:

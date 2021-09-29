@@ -12,6 +12,7 @@
 #endif
 
 typedef struct {
+    ObjNativeInstance obj;
 #ifdef WIN32
     HANDLE thread_handle;
     DWORD thread_id;
@@ -23,19 +24,13 @@ typedef struct {
     VALUE arg;
 } ThreadData;
 
-void *thread_constructor(void)
+void thread_constructor(void *instanceData)
 {
-    ThreadData *data = ALLOCATE(ThreadData, 1);
+    ThreadData *data = (ThreadData *)instanceData;
     data->start_routine = NIL_VAL;
     data->arg = NIL_VAL;
     data->self = NIL_VAL;
     data->thread_id = -1;
-    return data;
-}
-
-void thread_destructor(void UNUSED(*data))
-{
-    FREE(ThreadData, data);
 }
 
 void *thread_runner(void *arg)
@@ -98,7 +93,7 @@ void thread_mark_contents(VALUE self)
 
 void init_thread(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, thread_destructor, NULL, CLS_THREAD, true);
+    VALUE klass = defineNativeClass(vm, "Thread", thread_constructor, NULL, NULL, CLS_THREAD, sizeof(ThreadData), true);
     defineNativeMethod(vm, klass, &thread_start, "start", 2, false);
     defineNativeMethod(vm, klass, &thread_join, "join", 0, false);
 }

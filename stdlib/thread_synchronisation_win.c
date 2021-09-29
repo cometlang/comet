@@ -6,23 +6,22 @@
 #include <Windows.h>
 
 typedef struct {
+    ObjNativeInstance obj;
     CONDITION_VARIABLE cond_var;
     CRITICAL_SECTION critical_section;
 } CondVarData;
 
-void* cond_var_constructor(void)
+void cond_var_constructor(void *instanceData)
 {
-    CondVarData* data = ALLOCATE(CondVarData, 1);
+    CondVarData* data = (CondVarData *)instanceData;
     InitializeConditionVariable(&data->cond_var);
     InitializeCriticalSection(&data->critical_section);
-    return data;
 }
 
 void cond_var_destructor(void* data)
 {
     CondVarData* cond_var = (CondVarData*)data;
     DeleteCriticalSection(&cond_var->critical_section);
-    FREE(CondVarData, cond_var);
 }
 
 VALUE cond_var_signal_one(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments)) { return NIL_VAL; }
@@ -31,21 +30,20 @@ VALUE cond_var_wait(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNU
 VALUE cond_var_timed_wait(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments)) { return NIL_VAL; }
 
 typedef struct {
+    ObjNativeInstance obj;
     HANDLE mutex;
 } MutexData;
 
-void* mutex_constructor(void)
+void mutex_constructor(void *instanceData)
 {
-    MutexData* data = ALLOCATE(MutexData, 1);
+    MutexData* data = (MutexData *)instanceData;
     data->mutex = CreateMutex(NULL, FALSE, NULL);
-    return data;
 }
 
 void mutex_destructor(void* data)
 {
     MutexData* cond_var = (MutexData*)data;
     CloseHandle(cond_var->mutex);
-    FREE(MutexData, data);
 }
 
 VALUE mutex_lock(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

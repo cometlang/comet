@@ -12,15 +12,15 @@
 
 typedef struct fileData
 {
+    ObjNativeInstance obj;
     FILE *fp;
     VALUE open_flags;
 } FileData;
 
-void *file_constructor(void)
+void file_constructor(void *instanceData)
 {
-    FileData *data = ALLOCATE(FileData, 1);
+    FileData *data = (FileData *)instanceData;
     data->fp = NULL;
-    return (void *)data;
 }
 
 void file_destructor(void *data)
@@ -31,7 +31,6 @@ void file_destructor(void *data)
         fflush(file_data->fp);
         fclose(file_data->fp);
     }
-    FREE(FileData, file_data);
 }
 
 static const char* translate_flags_to_mode(VALUE flags)
@@ -204,7 +203,7 @@ VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VAL
 
 void init_file(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE, false);
+    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE, sizeof(FileData), false);
     defineNativeMethod(vm, klass, &file_static_open, "open", 2, true);
     defineNativeMethod(vm, klass, &file_close, "close", 0, false);
     defineNativeMethod(vm, klass, &file_write, "write", 1, false);

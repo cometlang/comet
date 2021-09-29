@@ -146,7 +146,7 @@ typedef struct sObjClass
     bool final;
 } ObjClass;
 
-typedef void *(*NativeConstructor)(void);
+typedef void (*NativeConstructor)(void *data);
 typedef void(*NativeDestructor)(void *data);
 typedef Value (*NativeMethod)(VM *vm, Value receiver, int argCount, Value *args);
 
@@ -155,6 +155,7 @@ typedef struct sNativeClass
     ObjClass klass;
     NativeConstructor constructor;
     NativeDestructor destructor;
+    size_t allocSize;
 } ObjNativeClass;
 
 typedef struct sNativeMethod
@@ -176,7 +177,6 @@ typedef struct
 typedef struct
 {
     ObjInstance instance;
-    void *data;
 } ObjNativeInstance;
 
 typedef struct
@@ -187,7 +187,7 @@ typedef struct
 } ObjBoundMethod;
 
 extern ObjNativeInstance nil_instance;
-extern ObjNativeInstance boolean_true;
-extern ObjNativeInstance boolean_false;
+extern ObjNativeInstance *boolean_true;
+extern ObjNativeInstance *boolean_false;
 
 #endif

@@ -2,6 +2,7 @@
 
 ## Hash
 inherits [Iterable](iterable.md)
+final
 
 This is known collectively as a Hash, Hash Table, Dictionary and probably other names.  It can be instantiated with a literal `{}` or statically initalized with `{key: value, ...}`
 

@@ -2,6 +2,7 @@
 
 ## Thread
 inherits [Object](object.md)
+final
 
 This is a real Thread with all the problems and performance that come with that.  See also [Thread Synchronisation](thread_synchronisation.md)
 

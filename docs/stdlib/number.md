@@ -5,6 +5,7 @@ inherits [Object](object.md)
 
 ### methods
 - `to_string()` returns a [String](string.md) representing the number
+- `square_root()` returns the square root of the number
 
 ### static methods
 - `parse()` takes a string and parses it into a `Number`.  Returns [nil](nil.md) if the string couldn't be parsed into a number.

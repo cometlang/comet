@@ -2,6 +2,7 @@
 
 ## List
 inherits [Iterable](iterable.md)
+final
 
 This is technically an ArrayList, i.e. the memory is contiguous which makes indexing faster, at the cost of adding to the list might trigger a reallocation and that performance will linearly degrade as the list size increases.  It can be instantiated with a literal `[]` or statically initialized with `[value, "some string", ...]`
 

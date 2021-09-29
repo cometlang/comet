@@ -2,6 +2,7 @@
 
 ## Nil
 inherits [Iterable](iterable.md)
+final
 
 Nil is a special class with exactly one instance - it cannot be instantiated
 

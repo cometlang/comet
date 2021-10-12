@@ -4,31 +4,37 @@ on: [push]
 
 jobs:
   build:
-
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
     - name: build-test
-      run: |
-        mkdir build
-        cd build
-        cmake ../
-        make
-        make test
+      shell: bash
+      run: cmake -B build -S . -DCMAKE_SYSTEM_VERSION="10.0.20348.0"
+    - run: cmake --build build --target all --target test
+      if: ${{ runner.os == 'Linux' }}
+    - run: cmake --build build --target ALL_BUILD --target RUN_TESTS
+      if: ${{ runner.os == 'Windows' }}
 
   build-release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
     - name: build
-      run: |
-        mkdir release
-        cd release
-        cmake -DCMAKE_BUILD_TYPE=Release ../
-        make
+      shell: bash
+      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0"
+    - run: cmake --build release --target all
+      if: ${{ runner.os == 'Linux' }}
+    - run: cmake --build release --target ALL_BUILD --target RUN_TESTS
+      if: ${{ runner.os == 'Windows' }}

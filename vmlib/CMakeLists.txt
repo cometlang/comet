@@ -20,8 +20,6 @@ set(VM_SOURCE
 chunk.c
 chunk.h
 common.h
-debug.c
-debug.h
 import.cpp
 import.h
 mem.c

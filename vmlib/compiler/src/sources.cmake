@@ -1,6 +1,7 @@
 set(COMPILER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/compiler.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/constants.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/debug.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/declarations.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/emitter.c
     ${CMAKE_CURRENT_SOURCE_DIR}/src/expressions.c

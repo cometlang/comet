@@ -57,6 +57,14 @@ VALUE fn_sleep(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
     return NIL_VAL;
 }
 
+#if DEBUG_TRACE_EXECUTION
+VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
+{
+    toggle_stack_printing();
+    return NIL_VAL;
+}
+#endif
+
 void init_functions(VM *vm)
 {
     defineNativeFunction(vm, "clock", &clockNative);
@@ -64,4 +72,7 @@ void init_functions(VM *vm)
     defineNativeFunction(vm, "assert", &assertNative);
     defineNativeFunction(vm, "callable?", &callable_p);
     defineNativeFunction(vm, "sleep", &fn_sleep);
+#if DEBUG_TRACE_EXECUTION
+    defineNativeFunction(vm, "toggle_stack_printing", &fn_print_stack);
+#endif
 }

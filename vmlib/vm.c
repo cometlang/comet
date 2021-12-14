@@ -17,6 +17,15 @@
 static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
 
+#if DEBUG_TRACE_EXECUTION
+static bool _print_stack = false;
+
+void toggle_stack_printing(void)
+{
+    _print_stack = !_print_stack;
+}
+#endif
+
 static bool create_instance(VM *vm, ObjClass *klass, int argCount)
 {
     Obj *obj_instance = newInstance(vm, klass);
@@ -562,16 +571,19 @@ static InterpretResult run(VM *vm)
     {
         uint8_t instruction;
 #if DEBUG_TRACE_EXECUTION
-        disassembleInstruction(&frame->closure->function->chunk,
-                               (int)(frame->ip - frame->closure->function->chunk.code));
-        printf("          ");
-        for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
+        if (_print_stack)
         {
-            printf("[ ");
-            printObject(*slot);
-            printf(" ]");
+            disassembleInstruction(&frame->closure->function->chunk,
+                                (int)(frame->ip - frame->closure->function->chunk.code));
+            printf("          ");
+            for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
+            {
+                printf("[ ");
+                printObject(*slot);
+                printf(" ]");
+            }
+            printf("\n");
         }
-        printf("\n");
 #endif
         switch (instruction = READ_BYTE())
         {

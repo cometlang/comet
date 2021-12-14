@@ -83,4 +83,8 @@ Value popMany(VM *vm, int count);
 
 void throw_exception_native(VM *vm, const char *exception_type_name, const char *message_format, ...);
 
+#if DEBUG_TRACE_EXECUTION
+void toggle_stack_printing(void);
+#endif
+
 #endif

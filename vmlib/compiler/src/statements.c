@@ -116,12 +116,11 @@ void foreachStatement(Parser *parser)
     consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after 'foreach' condition.");
 
     Token iter_var_name = syntheticToken("");
-    addLocal(parser, iter_var_name);
+    int ex_var = addLocal(parser, iter_var_name);
     markInitialized(parser);
-    uint8_t ex_var = resolveLocal(parser, parser->currentFunction, &iter_var_name);
 
     syntheticMethodCall(parser, "iterator");
-    defineVariable(parser, ex_var);
+    emitBytes(parser, OP_SET_LOCAL, (uint8_t) ex_var);
 
     LoopCompiler loop;
     loop.startAddress = getCurrentOffset(parser->currentFunction);

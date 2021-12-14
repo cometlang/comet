@@ -104,17 +104,20 @@ int resolveUpvalue(Compiler *compiler, Parser *parser, Token *name)
     return UNRESOLVED_VARIABLE_INDEX;
 }
 
-void addLocal(Parser *parser, Token name)
+int addLocal(Parser *parser, Token name)
 {
     if (parser->currentFunction->localCount == MAX_VAR_COUNT)
     {
         error(parser, "Too many local variables in function.");
-        return;
+        return UNRESOLVED_VARIABLE_INDEX;
     }
-    Local *local = &parser->currentFunction->locals[parser->currentFunction->localCount++];
+    int result = parser->currentFunction->localCount;
+    Local *local = &parser->currentFunction->locals[result];
+    parser->currentFunction->localCount++;
     local->name = name;
     local->depth = UNINITIALIZED_SCOPE;
     local->isCaptured = false;
+    return result;
 }
 
 void declareVariable(Parser *parser)

@@ -119,6 +119,5 @@ bool check(Parser *parser, TokenType_t type);
 bool match(Parser *parser, TokenType_t type);
 void error(Parser *parser, const char *message);
 void errorAtCurrent(Parser *parser, const char *message);
-int addLocal(Parser *parser, Token name);
 
 #endif

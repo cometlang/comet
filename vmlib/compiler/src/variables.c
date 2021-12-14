@@ -111,13 +111,13 @@ int addLocal(Parser *parser, Token name)
         error(parser, "Too many local variables in function.");
         return UNRESOLVED_VARIABLE_INDEX;
     }
-    int result = parser->currentFunction->localCount;
-    Local *local = &parser->currentFunction->locals[result];
+    int localIndex = parser->currentFunction->localCount;
+    Local *local = &parser->currentFunction->locals[localIndex];
     parser->currentFunction->localCount++;
     local->name = name;
     local->depth = UNINITIALIZED_SCOPE;
     local->isCaptured = false;
-    return result;
+    return localIndex;
 }
 
 void declareVariable(Parser *parser)

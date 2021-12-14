@@ -14,5 +14,6 @@ void namedVariable(Parser *parser, Token name, bool canAssign);
 void variable(Parser *parser, bool canAssign);
 int resolveUpvalue(Compiler *compiler, Parser *parser, Token *name);
 int resolveLocal(Parser *parser, Compiler *compiler, Token *name);
+int addLocal(Parser *parser, Token name);
 
 #endif

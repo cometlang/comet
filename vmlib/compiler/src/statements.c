@@ -97,7 +97,7 @@ static void syntheticMethodCall(Parser *parser, const char *method_name)
     Token methodNameToken = syntheticToken(method_name);
     uint8_t constant = identifierConstant(parser, &methodNameToken);
     emitBytes(parser, OP_INVOKE, constant);
-    emitByte(parser, 0);
+    emitByte(parser, 0); // zero arguments
 }
 
 void foreachStatement(Parser *parser)
@@ -111,16 +111,14 @@ void foreachStatement(Parser *parser)
     defineVariable(parser, loop_var);
 
     consume(parser, TOKEN_IN, "Expect 'in' keyword in foreach loop");
-
     expression(parser);
+    syntheticMethodCall(parser, "iterator");
     consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after 'foreach' condition.");
 
     Token iter_var_name = syntheticToken("");
-    int ex_var = addLocal(parser, iter_var_name);
+    int iter_var = addLocal(parser, iter_var_name);
+    emitBytes(parser, OP_SET_LOCAL, (uint8_t) iter_var);
     markInitialized(parser);
-
-    syntheticMethodCall(parser, "iterator");
-    emitBytes(parser, OP_SET_LOCAL, (uint8_t) ex_var);
 
     LoopCompiler loop;
     loop.startAddress = getCurrentOffset(parser->currentFunction);
@@ -129,21 +127,20 @@ void foreachStatement(Parser *parser)
     loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
 
-    emitBytes(parser, OP_GET_LOCAL, ex_var);
+    emitBytes(parser, OP_GET_LOCAL, iter_var);
     syntheticMethodCall(parser, "has_next?");
     loop.exitAddress = emitJump(parser, OP_JUMP_IF_FALSE);
     emitByte(parser, OP_POP);
 
-    emitBytes(parser, OP_GET_LOCAL, ex_var);
+    emitBytes(parser, OP_GET_LOCAL, iter_var);
     syntheticMethodCall(parser, "get_next");
     int variable = resolveLocal(parser, parser->currentFunction, &loop_var_name);
     emitBytes(parser, OP_SET_LOCAL, (uint8_t) variable);
-
-    statement(parser);
     emitByte(parser, OP_POP);
 
-    emitLoop(parser);
+    statement(parser);
 
+    emitLoop(parser);
     patchJump(parser, loop.exitAddress);
     endScope(parser);
     parser->currentLoop = parser->currentLoop->enclosing;
@@ -249,9 +246,8 @@ void tryStatement(Parser *parser)
         if (match(parser, TOKEN_AS))
         {
             consume(parser, TOKEN_IDENTIFIER, "Expect identifier for exception instance");
-            addLocal(parser, parser->previous);
+            uint8_t ex_var = addLocal(parser, parser->previous);
             markInitialized(parser);
-            uint8_t ex_var = resolveLocal(parser, parser->currentFunction, &parser->previous);
             emitBytes(parser, OP_SET_LOCAL, ex_var);
         }
         consume(parser, TOKEN_RIGHT_PAREN, "Expect ')' after catch statement");
@@ -324,7 +320,6 @@ void nextStatement(Parser *parser)
         emitByte(parser, OP_POP);
     }
 
-    emitByte(parser, OP_POP);
     // Jump to top of current innermost loop.
     emitLoop(parser);
 }

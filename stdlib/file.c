@@ -155,9 +155,12 @@ VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_cou
     return FALSE_VAL;
 }
 
-VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_read_all_lines(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     FILE *fp = fopen(string_get_cstr(arguments[0]), "r");
+    if (fp == NULL) {
+        throw_exception_native(vm, "IOException", strerror(errno));
+    }
 
     fseek(fp, 0L, SEEK_END);
     size_t fileSize = ftell(fp);
@@ -170,7 +173,7 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     VALUE result = list_create(vm);
     push(vm, result);
 
-    uint32_t index = 0;
+    size_t index = 0;
     char *current = buffer;
     while (index < fileSize)
     {
@@ -179,10 +182,17 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
         {
             line_end = buffer + fileSize;
         }
-        int length = line_end - current;
-        VALUE string = copyString(vm, current, length);
-        list_add(vm, result, 1, &string);
-        index += length;
+        if (line_end > current)
+        {
+            size_t length = line_end - current;
+            VALUE string = copyString(vm, current, length);
+            list_add(vm, result, 1, &string);
+            index += length;
+        }
+        else
+        {
+            index++;
+        }
         current = line_end + 1;
     }
 

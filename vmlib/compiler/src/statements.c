@@ -164,6 +164,7 @@ void ifStatement(Parser *parser)
     patchJump(parser, thenJump);
     emitByte(parser, OP_POP);
 
+    match(parser, TOKEN_EOL);
     if (match(parser, TOKEN_ELSE))
         statement(parser);
     patchJump(parser, elseJump);

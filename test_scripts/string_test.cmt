@@ -21,7 +21,7 @@ print("this is a string...".ends_with?('not this'))
 print("this is a string...".starts_with?('this'))
 print("this is a string...".starts_with?('not this'))
 
-print("this;is;a;string;that;should;be;split".split(';'))
+print("this;is;a;string;;that;should;be;split".split(';'))
 
 print("Iteration start")
 foreach(var char in utf8_string)
@@ -44,3 +44,5 @@ catch (IndexOutOfBoundsException)
 {
     print("Correctly out of bounds")
 }
+
+print("String test passed!")

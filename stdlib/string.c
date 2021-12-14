@@ -8,7 +8,7 @@
 
 #include "utf8proc.h"
 
-VALUE string_iterator_class;
+static VALUE string_iterator_class;
 
 typedef struct
 {
@@ -258,10 +258,17 @@ VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     int offset = 0;
     while (string != NULL)
     {
-        int length = string - previous;
-        VALUE part = copyString(vm, previous, length);
-        list_add(vm, list, 1, &part);
-        offset += length + separator->length;
+        if (string > previous)
+        {
+            int length = string - previous;
+            VALUE part = copyString(vm, previous, length);
+            list_add(vm, list, 1, &part);
+            offset += length + separator->length;
+        }
+        else
+        {
+            offset++;
+        }
         previous = string + separator->length;
         string = strstr(&data->chars[offset], separator->chars);
     }

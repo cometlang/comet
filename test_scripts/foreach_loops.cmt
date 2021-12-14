@@ -1,9 +1,12 @@
+var str = "T H I S"
+foreach(var char in str)
 {
-    var str = "T H I S"
-    foreach(var char in str)
+    if (char == ' ')
     {
-        if (char == ' ')
-            next
+        next
+    }
+    else
+    {
         print(char)
     }
 }

@@ -67,6 +67,18 @@ VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
     return copyString(vm, string, string_len);
 }
 
+VALUE cls_to_string(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+#ifdef WIN32
+#define string_len 256
+#else
+    size_t string_len = strlen(AS_CLASS(klass)->name) + strlen(" class") + 1;
+#endif
+    char string[string_len];
+    snprintf(string, string_len, "%s class", AS_CLASS(klass)->name);
+    return copyString(vm, string, string_len);
+}
+
 VALUE obj_nil_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     return FALSE_VAL;
@@ -85,6 +97,8 @@ void init_object(VM *vm, VALUE klass)
 {
     defineNativeMethod(vm, klass, &obj_hash, "hash", 0, false);
     defineNativeMethod(vm, klass, &obj_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, klass, &obj_to_string, "class_name", 0, false);
+    defineNativeMethod(vm, klass, &cls_to_string, "to_string", 0, true);
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
     defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
     defineNativeMethod(vm, klass, &obj_methods, "methods", 0, false);

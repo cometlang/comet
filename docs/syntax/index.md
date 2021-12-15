@@ -41,14 +41,14 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `-` subtraction
 - `/` division
 - `%` modulo    
-(the += operators are not yet implemented, though they should be accepted by the lexer)
+(each of these can be used with = for self-assignment, e.g. `a += 1`)
 
 ### Comparison
 - `>` greater than
 - `<` less than
 - `>=` greater than or equal to
 - `<=` less than or equal to
-- `instanceof` compares an instance to see if it is an instance of the given class, including its inheritance hierarchy
+- `instanceof` compares an instance to see if it is an instance of the given class, including its inheritance hierarchy, e.g. `a instanceof Number`
 
 ### Logical
 - `&&` logical and
@@ -114,8 +114,8 @@ Is the same as writing:
 var iterator = things.iterator()
 while (iterator.has_next?())
 {
-    ...
     var thing = iterator.get_next()
+    ...
 }
 ```
 
@@ -152,7 +152,7 @@ function my_function(parameter, other_parameter)
 ```
 
 ## Classes
-Classes are declared using the `class` keyword and must be uniquely named - i.e. Comet does not support open classes.  They may optionally provide a constructor, methods and operator overloads.  If no parent class is given, they will implicitly inherit from `Object`.
+Classes are declared using the `class` keyword and must be uniquely named - i.e. Comet does not support open classes.  They may optionally provide a constructor, methods and operator overloads.  If no parent class is given, they will implicitly inherit from `Object` (more on that later).
 
 Method declarations do not use a keyword, but start with the name of the method itself.  Methods, operators and the constructor implicitly have access to the `self` variable referring to the current instance.  Those same things also have access to the `super` variable referring to the parent or base class.
 

@@ -19,3 +19,9 @@ those APIs into a more naturally comet style.
   - Python's dogmatic approach to whitespace means that many useful constructs just aren't reasonable to implement
   - C#'s empty `throw;` statement is often forgotten
   - JavaScript's many exceptions to the rule make programming it very error-prone
+  - Java's verbose syntax make it very unfriendly to programmers and keyboards alike
+  - C++'s compilation rules and templating system make reasoning about programs very challenging
+
+## Drawbacks
+- Currently, the math operations are _very_ slow.  Because of how operator overloading is implemented, all math operations incur the cost of an object function call with virtual method resolution.
+- The garbage collection is pretty basic, naive and slow.  For every garbage collection, we iterate through every object in the system, which is _much_ more than necessary.  A relatively straight forward improvement would be to implement a generational system.  Also, all memory operations on all threads come to a halt when the GC is running (which essentially means all execution stops).

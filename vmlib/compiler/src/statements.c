@@ -143,6 +143,7 @@ void foreachStatement(Parser *parser)
     emitLoop(parser);
     patchJump(parser, loop.exitAddress);
     endScope(parser);
+    emitByte(parser, OP_POP); // This feels weird, like I shouldn't need to do it.
     parser->currentLoop = parser->currentLoop->enclosing;
 }
 

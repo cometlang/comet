@@ -9,7 +9,12 @@ var utf8_upper = utf8_string.to_upper()
 print("Upper: ", utf8_upper)
 print("Lower: ", utf8_upper.to_lower())
 
-print("this is" + " a string")
+#assert(("this is" + " a string") == 'this is a string')
+var concat = 'this'
+concat += ' is '
+concat += 'a string'
+print("'", concat, "'")
+assert(concat == 'this is a string')
 
 print("   'left trimmed'".left_trim())
 print("'right trimmed'   ".right_trim())

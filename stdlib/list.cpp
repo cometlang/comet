@@ -83,25 +83,24 @@ VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_add_all(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_union(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     ListData *other = GET_NATIVE_INSTANCE_DATA(ListData, arguments[0]);
+    VALUE result = list_create(vm);
+    push(vm, result);
+    ListData *result_data = GET_NATIVE_INSTANCE_DATA(ListData, result);
+    result_data->capacity = data->count + other->count;
+    result_data->entries = ALLOCATE(list_node_t, result_data->capacity);
+    for (int i = 0; i < data->count; i++)
+    {
+        result_data->entries[result_data->count++].item = data->entries[i].item;
+    }
     for (int i = 0; i < other->count; i++)
     {
-        if (data->capacity == data->count)
-        {
-            int new_capacity = GROW_CAPACITY(data->capacity);
-            data->entries = GROW_ARRAY(data->entries, list_node_t, data->capacity, new_capacity);
-            for (int i = data->capacity; i < new_capacity; i++)
-            {
-                data->entries[i].item = NIL_VAL;
-            }
-            data->capacity = new_capacity;
-        }
-        data->entries[data->count++].item = other->entries[i].item;
+        result_data->entries[result_data->count++].item = other->entries[i].item;
     }
-    return NIL_VAL;
+    return pop(vm);
 }
 
 VALUE list_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -309,7 +308,6 @@ void init_list(VM *vm)
     list_class = defineNativeClass(vm, "List", list_constructor, NULL, "Iterable", CLS_LIST, sizeof(ListData), true);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
-    defineNativeMethod(vm, list_class, &list_add_all, "add_all", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
     defineNativeMethod(vm, list_class, &list_pop, "pop", 0, false);
     defineNativeMethod(vm, list_class, &list_iterable_contains_q, "contains?", 1, false);
@@ -326,6 +324,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_length, "count", 0, false);
     defineNativeOperator(vm, list_class, &list_get_at, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
+    defineNativeOperator(vm, list_class, &list_union, 1, OPERATOR_PLUS);
 
     list_iterator_class = defineNativeClass(
         vm, "ListIterator", &list_iterator_constructor, NULL, "Iterator", CLS_ITERATOR, sizeof(ListIteratorData), false);

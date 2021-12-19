@@ -57,7 +57,7 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
         module = compile(source, vm);
         if (module == NIL_VAL)
         {
-            runtimeError(vm, "Failed to import %s\n", full_path);
+            runtimeError(vm, "Compilation failed for %s\n", full_path);
         }
         else
         {

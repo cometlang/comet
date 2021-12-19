@@ -1,4 +1,4 @@
-# print "This should not be shown";
+# print("This should not be shown")
 var test = []
 test.add("hi")
 print(test[0])
@@ -24,7 +24,7 @@ var filtered_list = ['a', 1, 'a', '2', 3, 'a'].filter(|item| {
 
 print(filtered_list)
 
-foreach(var item in filtered_list)
-{
-    print(item)
-}
+var sum = [1, 2, 3, 4, 5].reduce(0, |accumulator, item, index| {
+    return accumulator + item
+})
+assert(sum == 15)

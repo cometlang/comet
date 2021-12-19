@@ -83,7 +83,7 @@ VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE list_union(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     ListData *other = GET_NATIVE_INSTANCE_DATA(ListData, arguments[0]);
@@ -167,6 +167,9 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
 
 VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    // I think implementing Timsort is going to be a good option here.
+    // It's stable and minimises the number of comparisons, which is relatively expensive to
+    // do, as I have to spin up a fibre to do it.
     return NIL_VAL;
 }
 
@@ -175,7 +178,7 @@ VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE result = list_create(vm);
     push(vm, result);
-    for (int i = 0; i < data->capacity; i++)
+    for (int i = 0; i < data->count; i++)
     {
         VALUE status = call_function(NIL_VAL, arguments[0], 1, &data->entries[i].item);
         if (status == TRUE_VAL)
@@ -191,7 +194,7 @@ VALUE list_map(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE result = list_create(vm);
     push(vm, result);
-    for (int i = 0; i < data->capacity; i++)
+    for (int i = 0; i < data->count; i++)
     {
         VALUE mapped_val = call_function(NIL_VAL, arguments[0], 1, &data->entries[i].item);
         list_add(vm, result, 1, &mapped_val);
@@ -203,16 +206,19 @@ VALUE list_reduce(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE accumulator = arguments[0];
-    push(vm, accumulator);
     VALUE args[3];
+    push(vm, accumulator);
     for (int i = 0; i < data->count; i++)
     {
         args[0] = accumulator;
         args[1] = data->entries[i].item;
         args[2] = create_number(vm, i);
+        push(vm, args[2]);
         accumulator = call_function(NIL_VAL, arguments[1], 3, args);
+        popMany(vm, 2);
+        push(vm, accumulator);
     }
-    return accumulator;
+    return pop(vm);
 }
 
 VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
@@ -308,6 +314,7 @@ void init_list(VM *vm)
     list_class = defineNativeClass(vm, "List", list_constructor, NULL, "Iterable", CLS_LIST, sizeof(ListData), true);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
+    defineNativeMethod(vm, list_class, &list_add, "append", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
     defineNativeMethod(vm, list_class, &list_pop, "pop", 0, false);
     defineNativeMethod(vm, list_class, &list_iterable_contains_q, "contains?", 1, false);

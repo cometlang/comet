@@ -175,7 +175,7 @@ VALUE file_static_read_all_lines(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_cou
 
     size_t index = 0;
     char *current = buffer;
-    while (index < fileSize)
+    while (index < bytesRead)
     {
         char *line_end = strchr(current, '\n');
         if (line_end == NULL)
@@ -189,9 +189,15 @@ VALUE file_static_read_all_lines(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_cou
             list_add(vm, result, 1, &string);
             index += length;
         }
+        else if (current == line_end)
+        {
+            VALUE string = copyString(vm, "", 0);
+            list_add(vm, result, 1, &string);
+            index++;
+        }
         else
         {
-            index++;
+            break;
         }
         current = line_end + 1;
     }

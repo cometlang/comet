@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 static Value clockNative(VM *vm, int UNUSED(argCount), Value UNUSED(*args))
 {
@@ -57,6 +58,14 @@ VALUE fn_sleep(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
     return NIL_VAL;
 }
 
+VALUE fn_exit(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
+{
+    // I should probably make more of an attempt to clean up
+    // resources (threads?) but for now, we'll leave that to the OS
+    int exit_status = (int) number_get_value(args[0]);
+    exit(exit_status);
+}
+
 #if DEBUG_TRACE_EXECUTION
 VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
 {
@@ -72,6 +81,7 @@ void init_functions(VM *vm)
     defineNativeFunction(vm, "assert", &assertNative);
     defineNativeFunction(vm, "callable?", &callable_p);
     defineNativeFunction(vm, "sleep", &fn_sleep);
+    defineNativeFunction(vm, "exit", &fn_exit);
 #if DEBUG_TRACE_EXECUTION
     defineNativeFunction(vm, "toggle_stack_printing", &fn_print_stack);
 #endif

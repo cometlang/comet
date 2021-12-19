@@ -34,3 +34,6 @@
 
 ## sleep
 - `sleep(time)` stops the execution of the current thread for at least the fractional seconds provided.
+
+## exit
+- `exit(exit_status)` simple wrapper for the C function to exit the program with the given return code.  Makes no attempt to clean anything up.

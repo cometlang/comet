@@ -271,12 +271,3 @@ Value compile(const SourceFile *source, VM *thread)
     return parser.hadError ? NIL_VAL : function->module;
 }
 
-void markCompilerRoots(void)
-{
-    // Compiler *compiler = current;
-    // while (compiler != NULL)
-    // {
-    //     markObject((Obj *)compiler->function);
-    //     compiler = compiler->enclosing;
-    // }
-}

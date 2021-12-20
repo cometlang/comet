@@ -390,7 +390,6 @@ static void collectGarbage()
         markRoots(threads[i]);
     }
     markGlobals();
-    markCompilerRoots();
     traceReferences();
     removeWhiteStrings();
     for (int i = 0; i < num_threads; i++)

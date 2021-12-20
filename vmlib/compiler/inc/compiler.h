@@ -9,6 +9,5 @@
 
 Value compile(const SourceFile* source, VM *thread);
 SourceFile *readSourceFile(const char *path);
-void markCompilerRoots(void);
 
 #endif

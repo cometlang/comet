@@ -306,7 +306,17 @@ static void literal_list(Parser *parser, bool canAssign)
 static void subscript(Parser *parser, bool UNUSED(canAssign))
 {
     uint8_t argCount = argumentList(parser, TOKEN_RIGHT_SQ_BRACKET);
-    emitBytes(parser, OP_INDEX, argCount);
+    if (canAssign && match(parser, TOKEN_EQUAL)) {
+        if (argCount != 1) {
+            errorAtCurrent(parser, "Eactly 1 index argument is required for assignment");
+        } else {
+            expression(parser);
+            emitBytes(parser, OP_INDEX_ASSIGN, argCount + 1);
+        }
+    }
+    else {
+        emitBytes(parser, OP_INDEX, argCount);
+    }
 }
 
 static void lambda(Parser *parser, bool UNUSED(canAssign))

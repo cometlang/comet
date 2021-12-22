@@ -387,6 +387,11 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
+        if (AS_INSTANCE(arguments[0])->klass->classType != CLS_STRING)
+        {
+            throw_exception_native(vm, "ArgumentException", "Can only append strings to a string");
+            return NIL_VAL;
+        }
         StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
         StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
         char *new_string = ALLOCATE(char, (lhs->length + rhs->length) + 1);

@@ -118,7 +118,10 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
         int index = (int)number_get_value(arguments[0]);
         if (index >= data->count)
         {
-            throw_exception_native(vm, "IndexOutOfBoundsException", "Index was outside the bounds of the list");
+            throw_exception_native(
+                vm,
+                "IndexOutOfBoundsException",
+                "Index (%d) was outside the bounds of the list", index);
             return NIL_VAL;
         }
         return data->entries[index].item;
@@ -131,8 +134,13 @@ VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *a
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     int index = (int) number_get_value(arguments[0]);
 
-    // If the index is larger than the current count, what do?
-    // Probably throw an exception, except I can't do that yet...
+    if (index >= data->count) {
+        throw_exception_native(
+                vm,
+                "IndexOutOfBoundsException",
+                "Index (%d) was outside the bounds of the list", index);
+        return NIL_VAL;
+    }
     data->entries[index].item = arguments[1];
     return NIL_VAL;
 }

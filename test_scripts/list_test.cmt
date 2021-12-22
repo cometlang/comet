@@ -27,4 +27,9 @@ print(filtered_list)
 var sum = [1, 2, 3, 4, 5].reduce(0, |accumulator, item, index| {
     return accumulator + item
 })
-assert(sum == 15)
+assert(sum == 15, 'Sum must be 15')
+
+var subscript = List(3)
+subscript[2] = 0
+subscript[2] += 1
+assert(subscript[2] == 1, 'subscript should be 1')

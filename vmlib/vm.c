@@ -951,6 +951,12 @@ static InterpretResult run(VM *vm)
             push(vm, peek(vm, 0));
             break;
         }
+        case OP_DUP_TWO:
+        {
+            push(vm, peek(vm, 1));
+            push(vm, peek(vm, 1));
+            break;
+        }
         case OP_INSTANCEOF:
         {
             VALUE rhs = pop(vm);
@@ -1037,6 +1043,10 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
         {
             result = peek(&frame, 0);
         }
+    }
+    else if (IS_NATIVE_METHOD(method))
+    {
+        result = AS_NATIVE_METHOD(method)->function(&frame, receiver, arg_count, arguments);
     }
     else if (invoke(&frame, method, arg_count))
     {

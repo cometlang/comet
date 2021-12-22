@@ -303,15 +303,37 @@ static void literal_list(Parser *parser, bool canAssign)
     emitByte(parser, OP_POP);
 }
 
+static void emitSubscriptAssignOpInstructions(Parser *parser, OpCode operation)
+{
+    emitByte(parser, OP_DUP_TWO);
+    emitBytes(parser, OP_INDEX, 1);
+    expression(parser);
+    emitByte(parser, operation);
+    emitBytes(parser, OP_INDEX_ASSIGN, 2);
+}
+
 static void subscript(Parser *parser, bool UNUSED(canAssign))
 {
     uint8_t argCount = argumentList(parser, TOKEN_RIGHT_SQ_BRACKET);
-    if (canAssign && match(parser, TOKEN_EQUAL)) {
-        if (argCount != 1) {
-            errorAtCurrent(parser, "Eactly 1 index argument is required for assignment");
-        } else {
+    if (argCount != 1) {
+        error(parser, "Subscript requires exactly one argument");
+    }
+    if (canAssign)
+    {
+        if (match(parser, TOKEN_EQUAL)) {
             expression(parser);
             emitBytes(parser, OP_INDEX_ASSIGN, argCount + 1);
+        } else if (match(parser, TOKEN_PLUS_EQUAL)) {
+            emitSubscriptAssignOpInstructions(parser, OP_ADD);
+        } else if (match(parser, TOKEN_MINUS_EQUAL)) {
+            emitSubscriptAssignOpInstructions(parser, OP_SUBTRACT);
+        } else if (match(parser, TOKEN_STAR_EQUAL)) {
+            emitSubscriptAssignOpInstructions(parser, OP_MULTIPLY);
+        } else if (match(parser, TOKEN_SLASH_EQUAL)) {
+            emitSubscriptAssignOpInstructions(parser, OP_DIVIDE);
+        }
+        else {
+            emitBytes(parser, OP_INDEX, argCount);
         }
     }
     else {

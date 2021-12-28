@@ -165,10 +165,13 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE contains = arguments[0];
+    VALUE compare_func = AS_INSTANCE(contains)->klass->operators[OPERATOR_EQUALS];
     for (int i = 0; i < data->count; i++)
     {
-        if (valuesEqual(data->entries[i].item, contains))
+        VALUE result = call_function(contains, compare_func, 1, &data->entries[i].item);
+        if (result == TRUE_VAL) {
             return TRUE_VAL;
+        }
     }
     return FALSE_VAL;
 }

@@ -116,7 +116,7 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
         int index = (int)number_get_value(arguments[0]);
-        if (index >= data->count)
+        if (index >= data->count || index < 0)
         {
             throw_exception_native(
                 vm,

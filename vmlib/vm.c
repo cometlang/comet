@@ -141,16 +141,17 @@ Value getStackTrace(VM *vm)
 
 void throw_exception_native(VM *vm, const char *exception_type_name, const char *message_format, ...)
 {
-    Value type_name = copyString(vm, exception_type_name, strlen(exception_type_name));
+    va_list args;
+    va_start(args, message_format);
+    char* message = make_message(message_format, args);
+    push(vm, string_create(vm, message, strlen(message)));
+    va_end(args);
+    push(vm, copyString(vm, exception_type_name, strlen(exception_type_name)));
     Value exception_type = NIL_VAL;
-    if (findGlobal(type_name, &exception_type))
+    if (findGlobal(peek(vm, 0), &exception_type))
     {
-        va_list args;
-        va_start(args, message_format);
-        char *message = make_message(message_format, args);
-        push(vm, string_create(vm, message, strlen(message)));
+        pop(vm);
         create_instance(vm, AS_CLASS(exception_type), 1);
-        va_end(args);
         exception_set_stacktrace(vm, peek(vm, 0), getStackTrace(vm));
         propagateException(vm);
     }

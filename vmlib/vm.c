@@ -1030,30 +1030,31 @@ static InterpretResult run(VM *vm)
 
 VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
 {
-    VM frame;
-    initVM(&frame);
-    push(&frame, receiver);
+    VM *frame = ALLOCATE(VM, 1);
+    initVM(frame);
+    push(frame, receiver);
     VALUE result = NIL_VAL;
     for (int i = 0; i < arg_count; i++)
     {
-        push(&frame, arguments[i]);
+        push(frame, arguments[i]);
     }
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method) || IS_FUNCTION(method))
     {
-        if (callValue(&frame, method, arg_count) && run(&frame) == INTERPRET_OK)
+        if (callValue(frame, method, arg_count) && run(frame) == INTERPRET_OK)
         {
-            result = peek(&frame, 0);
+            result = peek(frame, 0);
         }
     }
     else if (IS_NATIVE_METHOD(method))
     {
-        result = AS_NATIVE_METHOD(method)->function(&frame, receiver, arg_count, arguments);
+        result = AS_NATIVE_METHOD(method)->function(frame, receiver, arg_count, arguments);
     }
-    else if (invoke(&frame, method, arg_count))
+    else if (invoke(frame, method, arg_count))
     {
-        result = peek(&frame, 0);
+        result = peek(frame, 0);
     }
-    deregister_thread(&frame);
+    deregister_thread(frame);
+    FREE(VM, frame);
     return result;
 }
 

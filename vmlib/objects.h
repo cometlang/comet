@@ -22,6 +22,7 @@ ObjUpvalue *newUpvalue(VM *vm, Value *slot);
 void printObject(Value value);
 const char *objTypeName(ObjType type);
 const char *getOperatorString(OPERATOR operator_);
+const char* getClassNameFromInstance(VALUE instance);
 OPERATOR getOperatorFromToken(TokenType_t token);
 
 static inline bool isObjType(Value value, ObjType type)

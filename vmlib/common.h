@@ -12,7 +12,7 @@
 #define MAX_VAR_COUNT (UINT8_MAX + 1)
 #define MAX_HANDLER_FRAMES (UINT8_MAX)
 #define DEBUG_ASSERT_ENABLED (1)
-#define MAX_ARGS (16)
+#define MAX_ARGS (UINT8_MAX)
 
 #ifndef UNUSED
 # ifdef WIN32
@@ -34,6 +34,14 @@ typedef struct {
 # define DEBUG_ASSERT(x) assert(x)
 #else
 # define DEBUG_ASSERT(x)
+#endif
+
+#ifndef max
+#define max(a,b) (((a) > (b)) ? (a) : (b))
+#endif
+
+#ifndef min
+#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #endif 

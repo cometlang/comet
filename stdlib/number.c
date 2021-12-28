@@ -50,6 +50,13 @@ VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
     return create_number(vm, result);
 }
 
+VALUE number_abs(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    NumberData* data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
+    double result = fabs(data->num);
+    return create_number(vm, result);
+}
+
 VALUE number_ceiling(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
@@ -233,6 +240,7 @@ void complete_number(VM *vm)
     defineNativeMethod(vm, number_class, &number_ceiling, "ceiling", 0, false);
     defineNativeMethod(vm, number_class, &number_floor, "floor", 0, false);
     defineNativeMethod(vm, number_class, &number_even_p, "even?", 0, false);
+    defineNativeMethod(vm, number_class, &number_abs, "absolute_value", 0, false);
 
     defineNativeOperator(vm, number_class, &number_operator_plus, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, number_class, &number_operator_minus, 1, OPERATOR_MINUS);

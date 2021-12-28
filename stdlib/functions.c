@@ -19,6 +19,7 @@ static VALUE printNative(VM UNUSED(*vm), int arg_count, VALUE *args)
         printf("%s", string_get_cstr(string));
     }
     printf("\n");
+    fflush(stdout);
     return NIL_VAL;
 }
 

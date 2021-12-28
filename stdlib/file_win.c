@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <strsafe.h>
 
 #include "comet.h"
 #include "comet_stdlib.h"
@@ -16,23 +17,24 @@ typedef struct fileData
     bool is_binary;
 } FileData;
 
-void file_constructor(void *instanceData)
+void file_constructor(void* instanceData)
 {
-    FileData* data = (FileData *) instanceData;
-    data->fp = NULL;
+    FileData* data = (FileData*)instanceData;
+    data->fp = INVALID_HANDLE_VALUE;
 }
 
 void file_destructor(void* data)
 {
     FileData* file_data = (FileData*)data;
-    if (file_data->fp != NULL)
+    if (file_data->fp != INVALID_HANDLE_VALUE)
     {
         fflush(file_data->fp);
         fclose(file_data->fp);
     }
 }
 
-static uint64_t translate_flags_to_mode(VALUE flags)
+
+static DWORD translate_flags_to_mode(VALUE flags)
 {
     uint64_t flag_value = enumvalue_get_value(flags);
     if (flag_value & FOPEN_READ_ONLY)
@@ -56,12 +58,14 @@ VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argume
     ObjNativeInstance* instance = (ObjNativeInstance*)newInstance(vm, AS_CLASS(klass));
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(instance));
     const char* path = string_get_cstr(arguments[0]);
-    uint64_t mode = translate_flags_to_mode(arguments[1]);
-    HANDLE fp = CreateFileW(path, mode, FILE_SHARE_WRITE, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+    DWORD mode = translate_flags_to_mode(arguments[1]);
+    DWORD creationDisposition = OPEN_EXISTING;
+    if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES && (mode & (FOPEN_READ_WRITE | FOPEN_APPEND)))
+        creationDisposition = CREATE_NEW;
+    HANDLE fp = CreateFile(path, mode, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
     if (fp == INVALID_HANDLE_VALUE)
     {
-        // GC will take care of the instance
-        throw_exception_native(vm, "IOException", strerror(errno));
+        throw_exception_native(vm, "IOException", "Couldn't open file '%s'", path);
         return NIL_VAL;
     }
     uint64_t flag_value = enumvalue_get_value(arguments[1]);
@@ -73,10 +77,10 @@ VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argume
 VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
-    if (data->fp != NULL)
+    if (data->fp != INVALID_HANDLE_VALUE)
     {
         CloseHandle(data->fp);
-        data->fp = NULL;
+        data->fp = INVALID_HANDLE_VALUE;
     }
     return NIL_VAL;
 }
@@ -94,12 +98,18 @@ VALUE file_read(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
 
-    DWORD fileSize = 0;
-    GetFileSize(data->fp, &fileSize);
+    LARGE_INTEGER fileSize_struct = { 0 };
+    GetFileSizeEx(data->fp, &fileSize_struct);
+    LONGLONG fileSize = fileSize_struct.QuadPart;
 
     char* buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
     DWORD bytesRead = 0;
-    ReadFile(data->fp, buffer, fileSize, &bytesRead, NULL);
+    bool success = ReadFile(data->fp, buffer, fileSize, &bytesRead, NULL);
+    if (!success) {
+        FILE_NAME_INFO info = {0};
+        GetFileInformationByHandleEx(data->fp, FileNameInfo, &info, sizeof(info));
+        throw_exception_native(vm, "IOException", "Couldn't read file '%s'\n", info.FileName);
+    }
     buffer[bytesRead] = '\0';
 
     // If data->is_binary, create a ByteSequence, otherwise takeString
@@ -119,10 +129,9 @@ VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
 
 VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE* arguments)
 {
-    struct stat statbuf;
-    if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
-        return TRUE_VAL;
-    return FALSE_VAL;
+    if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES)
+        return FALSE_VAL;
+    return TRUE_VAL;
 }
 
 VALUE file_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE* arguments)
@@ -151,28 +160,56 @@ VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_cou
 
 VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    FILE* fp = fopen(string_get_cstr(arguments[0]), string_get_cstr(arguments[1]));
+    const char* path = string_get_cstr(arguments[0]);
+    HANDLE fp = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
-    fseek(fp, 0L, SEEK_END);
-    size_t fileSize = ftell(fp);
-    rewind(fp);
+    if (fp == INVALID_HANDLE_VALUE) {
+        throw_exception_native(vm, "IOException", "Couldn't open file '%s'\n", path);
+        return NIL_VAL;
+    }
+
+    LARGE_INTEGER fileSize_struct = {0};
+    GetFileSizeEx(fp, &fileSize_struct);
+    DWORD fileSize = fileSize_struct.LowPart;
 
     char* buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
-    size_t bytesRead = fread(buffer, sizeof(char), fileSize, fp);
+    DWORD bytesRead = 0;
+    bool success = ReadFile(fp, buffer, fileSize, &bytesRead, NULL);
+    if (!success) {
+        CloseHandle(fp);
+        throw_exception_native(vm, "IOException", "Couldn't read file '%s'\n", path);
+    }
     buffer[bytesRead] = '\0';
 
     VALUE result = list_create(vm);
     push(vm, result);
 
-    uint32_t index = 0;
+    size_t index = 0;
     char* current = buffer;
-    while (index < fileSize)
+    while (index < bytesRead)
     {
         char* line_end = strchr(current, '\n');
-        int length = line_end - current;
-        VALUE string = copyString(vm, current, length);
-        list_add(vm, result, 1, &string);
-        index += length;
+        if (line_end == NULL)
+        {
+            line_end = buffer + fileSize;
+        }
+        if (line_end > current)
+        {
+            size_t length = line_end - current;
+            VALUE string = copyString(vm, current, length);
+            list_add(vm, result, 1, &string);
+            index += length;
+        }
+        else if (current == line_end)
+        {
+            VALUE string = copyString(vm, "", 0);
+            list_add(vm, result, 1, &string);
+            index++;
+        }
+        else
+        {
+            break;
+        }
         current = line_end + 1;
     }
 

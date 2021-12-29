@@ -160,6 +160,24 @@ VALUE string_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
     return self;
 }
 
+static bool is_whitespace(const utf8proc_int32_t character)
+{
+    const uint8_t as_char = (const char)character;
+    if (character <= 0xff &&
+        (as_char == '\n' || as_char == '\r' || as_char == '\t' || as_char == '\v' || as_char == 0x85))
+    {
+        return true;
+    }
+    const utf8proc_property_t* prop = utf8proc_get_property(character);
+    if (prop->category == UTF8PROC_CATEGORY_ZS ||
+        prop->category == UTF8PROC_CATEGORY_ZL ||
+        prop->category == UTF8PROC_CATEGORY_ZP)
+    {
+        return true;
+    }
+    return false;
+}
+
 VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
@@ -182,9 +200,7 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
     {
         if (!found_non_whitespace)
         {
-            const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
-            if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
-                found_non_whitespace = true;
+            found_non_whitespace = !is_whitespace(intermediate[i]);
         }
         if (found_non_whitespace)
         {
@@ -216,8 +232,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     int i = intermediate_length - 1;
     for (; i >= 0; i--)
     {
-        const utf8proc_property_t *prop = utf8proc_get_property(intermediate[i]);
-        if (prop->bidi_class != UTF8PROC_BIDI_CLASS_WS)
+        if (!is_whitespace(intermediate[i]))
             break;
     }
     int output_offset = 0;

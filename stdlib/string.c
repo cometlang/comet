@@ -247,14 +247,26 @@ VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return NIL_VAL;
 }
 
-VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE string_split(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     VALUE list = list_create(vm);
     push(vm, list);
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    StringData *separator = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+    const char* separator_chars = NULL;
+    size_t separator_length = 0;
+    if (arg_count == 0)
+    {
+        separator_chars = " ";
+        separator_length = 1;
+    }
+    else
+    {
+        StringData *separator = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+        separator_chars = separator->chars;
+        separator_length = separator->length;
+    }
     const char *previous = data->chars;
-    const char *string = strstr(data->chars, separator->chars);
+    const char *string = strstr(data->chars, separator_chars);
     int offset = 0;
     while (string != NULL)
     {
@@ -263,14 +275,14 @@ VALUE string_split(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
             int length = string - previous;
             VALUE part = copyString(vm, previous, length);
             list_add(vm, list, 1, &part);
-            offset += length + separator->length;
+            offset += length + separator_length;
         }
         else
         {
             offset++;
         }
-        previous = string + separator->length;
-        string = strstr(&data->chars[offset], separator->chars);
+        previous = string + separator_length;
+        string = strstr(&data->chars[offset], separator_chars);
     }
     VALUE part = copyString(vm, previous, data->length - offset);
     list_add(vm, list, 1, &part);
@@ -447,7 +459,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_trim_right, "right_trim", 0, false);
     defineNativeMethod(vm, string_class, &string_trim, "trim", 0, false);
     defineNativeMethod(vm, string_class, &string_find, "find", 1, false);
-    defineNativeMethod(vm, string_class, &string_split, "split", 1, false);
+    defineNativeMethod(vm, string_class, &string_split, "split", 0, false);
     defineNativeMethod(vm, string_class, &string_replace, "replace", 2, false);
     defineNativeMethod(vm, string_class, &string_starts_with_q, "starts_with?", 1, false);
     defineNativeMethod(vm, string_class, &string_ends_with_q, "ends_with?", 1, false);

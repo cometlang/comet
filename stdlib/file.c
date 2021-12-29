@@ -10,13 +10,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-typedef struct fileData
-{
-    ObjNativeInstance obj;
-    FILE *fp;
-    VALUE open_flags;
-} FileData;
-
 void file_constructor(void *instanceData)
 {
     FileData *data = (FileData *)instanceData;
@@ -212,23 +205,7 @@ VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VAL
     int result = unlink(string_get_cstr(arguments[0]));
     if (result != 0)
     {
-        runtimeError(vm, "Could not delete file: %s\n", strerror(errno));
+        throw_exception_native(vm, "IOException", "Could not delete file: %s\n", strerror(errno));
     }
     return NIL_VAL;
-}
-
-void init_file(VM *vm)
-{
-    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE, sizeof(FileData), false);
-    defineNativeMethod(vm, klass, &file_static_open, "open", 2, true);
-    defineNativeMethod(vm, klass, &file_close, "close", 0, false);
-    defineNativeMethod(vm, klass, &file_write, "write", 1, false);
-    defineNativeMethod(vm, klass, &file_read, "read", 0, false);
-    defineNativeMethod(vm, klass, &file_sync, "sync", 0, false);
-    defineNativeMethod(vm, klass, &file_flush, "flush", 0, false);
-    defineNativeMethod(vm, klass, &file_static_exists_q, "exists?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_file_q, "file?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", 1, true);
-    defineNativeMethod(vm, klass, &file_static_delete, "delete", 1, true);
 }

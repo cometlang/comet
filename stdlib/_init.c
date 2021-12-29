@@ -13,7 +13,6 @@ void init_stdlib(VM *vm)
     init_boolean(vm);
     init_exception(vm);
     init_file(vm);
-    init_file_common(vm);
     init_module(vm);
     init_functions(vm);
     init_list(vm);

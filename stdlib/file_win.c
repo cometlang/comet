@@ -10,13 +10,6 @@
 #include "comet_stdlib.h"
 #include "file_common.h"
 
-typedef struct fileData
-{
-    ObjNativeInstance obj;
-    HANDLE fp;
-    bool is_binary;
-} FileData;
-
 void file_constructor(void* instanceData)
 {
     FileData* data = (FileData*)instanceData;
@@ -127,6 +120,17 @@ VALUE file_flush(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
     return NIL_VAL;
 }
 
+VALUE file_sync(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
+    bool result = FlushFileBuffers(data->fp);
+    if (!result)
+    {
+        throw_exception_native(vm, "IOException", "Unable to flush file");
+    }
+    return NIL_VAL;
+}
+
 VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE* arguments)
 {
     if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES)
@@ -218,17 +222,13 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     return pop(vm);
 }
 
-void init_file(VM* vm)
+VALUE file_static_delete(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
 {
-    VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, "Object", CLS_FILE, sizeof(FileData), false);
-    defineNativeMethod(vm, klass, &file_static_open, "open", 2, true);
-    defineNativeMethod(vm, klass, &file_close, "close", 0, false);
-    defineNativeMethod(vm, klass, &file_write, "write", 1, false);
-    defineNativeMethod(vm, klass, &file_read, "read", 0, false);
-    defineNativeMethod(vm, klass, &file_flush, "sync", 0, false); // Windows doesn't really have the "sync" concept, so do our best.
-    defineNativeMethod(vm, klass, &file_flush, "flush", 0, false);
-    defineNativeMethod(vm, klass, &file_static_exists_q, "exists?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_file_q, "file?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", 1, true);
+    const char* filename = string_get_cstr(arguments[0]);
+    bool result = DeleteFileA(filename);
+    if (!result)
+    {
+        throw_exception_native(vm, "IOException", "Could not delete file %s\n", filename);
+    }
+    return NIL_VAL;
 }

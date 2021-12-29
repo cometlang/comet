@@ -445,6 +445,15 @@ VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
     return NIL_VAL;
 }
 
+VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
+{
+    StringData* data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    const char* string = strstr(data->chars, string_get_cstr(arguments[0]));
+    if (string != NULL)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -464,6 +473,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_starts_with_q, "starts_with?", 1, false);
     defineNativeMethod(vm, string_class, &string_ends_with_q, "ends_with?", 1, false);
     defineNativeMethod(vm, string_class, &string_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, string_class, &string_iterable_contains_q, "contains?", 0, false);
     defineNativeMethod(vm, string_class, &string_to_lower, "to_lower", 0, false);
     defineNativeMethod(vm, string_class, &string_to_upper, "to_upper", 0, false);
     defineNativeMethod(vm, string_class, &string_to_string, "to_string", 0, false);

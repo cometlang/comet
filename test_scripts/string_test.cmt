@@ -8,8 +8,9 @@ print(utf8_string.length())
 var utf8_upper = utf8_string.to_upper()
 print("Upper: ", utf8_upper)
 print("Lower: ", utf8_upper.to_lower())
+assert(utf8_string.contains?('ü'))
 
-#assert(("this is" + " a string") == 'this is a string')
+assert(("this is" + " a string") == 'this is a string')
 var concat = 'this'
 concat += ' is '
 concat += 'a string'
@@ -43,7 +44,7 @@ assert(ooooo == "ü")
 try
 {
     utf8_string[42]
-    assert(false)
+    assert(false, 'should not get here - exception should be thrown')
 }
 catch (IndexOutOfBoundsException)
 {

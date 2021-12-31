@@ -26,6 +26,8 @@ static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
         } while (match(parser, TOKEN_COMMA));
     }
 
+    match(parser, TOKEN_EOL);
+
     if (closingToken == TOKEN_RIGHT_PAREN)
         consume(parser, closingToken, "Expect ')' after arguments.");
     else if (closingToken == TOKEN_RIGHT_SQ_BRACKET)
@@ -120,17 +122,46 @@ static void call(Parser *parser, bool UNUSED(canAssign))
     emitBytes(parser, OP_CALL, argCount);
 }
 
+static void emitPropertyAssignOpInstructions(Parser *parser, OpCode operation, uint8_t name)
+{
+    emitByte(parser, OP_DUP_TOP);
+    emitBytes(parser, OP_GET_PROPERTY, name);
+    expression(parser);
+    emitByte(parser, operation);
+    emitBytes(parser, OP_SET_PROPERTY, name);
+}
+
 static void dot(Parser *parser, bool canAssign)
 {
     consume(parser, TOKEN_IDENTIFIER, "Expect property name after '.'.");
     uint8_t name = identifierConstant(parser, &parser->previous);
 
-    if (canAssign && match(parser, TOKEN_EQUAL))
+    if (canAssign)
     {
-        expression(parser);
-        emitBytes(parser, OP_SET_PROPERTY, name);
+        if (match(parser, TOKEN_EQUAL)) {
+            expression(parser);
+            emitBytes(parser, OP_SET_PROPERTY, name);
+            return;
+        }
+        else if (match(parser, TOKEN_PLUS_EQUAL)) {
+            emitPropertyAssignOpInstructions(parser, OP_ADD, name);
+            return;
+        }
+        else if (match(parser, TOKEN_MINUS_EQUAL)) {
+            emitPropertyAssignOpInstructions(parser, OP_SUBTRACT, name);
+            return;
+        }
+        else if (match(parser, TOKEN_STAR_EQUAL)) {
+            emitPropertyAssignOpInstructions(parser, OP_MULTIPLY, name);
+            return;
+        }
+        else if (match(parser, TOKEN_SLASH_EQUAL)) {
+            emitPropertyAssignOpInstructions(parser, OP_DIVIDE, name);
+            return;
+        }
     }
-    else if (match(parser, TOKEN_LEFT_PAREN))
+
+    if (match(parser, TOKEN_LEFT_PAREN))
     {
         uint8_t argCount = argumentList(parser, TOKEN_RIGHT_PAREN);
         emitBytes(parser, OP_INVOKE, name);

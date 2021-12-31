@@ -14,6 +14,9 @@ static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
     {
         do
         {
+            if (match(parser, TOKEN_EOL) && check(parser, closingToken))
+                break;
+
             expression(parser);
             if (argCount == MAX_ARGS)
             {
@@ -23,8 +26,13 @@ static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
         } while (match(parser, TOKEN_COMMA));
     }
 
-    // Need to sort out a string for the closing token
-    consume(parser, closingToken, "Expect ')' after arguments.");
+    if (closingToken == TOKEN_RIGHT_PAREN)
+        consume(parser, closingToken, "Expect ')' after arguments.");
+    else if (closingToken == TOKEN_RIGHT_SQ_BRACKET)
+        consume(parser, closingToken, "Expect ']' after arguments.");
+    else
+        errorAtCurrent(parser, "Unexpected closing token in an argument list.");
+
     return argCount;
 }
 

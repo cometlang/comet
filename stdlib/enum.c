@@ -20,7 +20,6 @@ typedef struct {
 } EnumIterator;
 
 typedef struct {
-    ObjNativeInstance obj;
     NumberData num;
     VALUE name;
 } EnumValueData;

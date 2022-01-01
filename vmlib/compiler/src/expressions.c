@@ -48,6 +48,21 @@ static void and_(Parser *parser, bool UNUSED(canAssign))
     patchJump(parser, endJump);
 }
 
+static void ternary(Parser* parser, bool UNUSED(canAssign))
+{
+    match(parser, TOKEN_EOL);
+    int elseJump = emitJump(parser, OP_JUMP_IF_FALSE);
+    emitByte(parser, OP_POP);
+    expression(parser);
+    int endJump = emitJump(parser, OP_JUMP);
+    consume(parser, TOKEN_COLON, "Expect ':' in a ternary operation");
+    match(parser, TOKEN_EOL);
+    patchJump(parser, elseJump);
+    emitByte(parser, OP_POP);
+    expression(parser);
+    patchJump(parser, endJump);
+}
+
 static void binary(Parser *parser, bool UNUSED(canAssign))
 {
     // Remember the operator.
@@ -437,6 +452,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_EOL]              = {NULL,         NULL,      PREC_NONE},
     [TOKEN_VBAR]             = {lambda,       binary,    PREC_BITWISE_OR},
     [TOKEN_PERCENT]          = {NULL,         binary,    PREC_FACTOR},
+    [TOKEN_QUESTION_MARK]    = {NULL,         ternary,   PREC_TERNARY},
     // One or two character tokens.
     [TOKEN_BANG]             = {unary,        NULL,      PREC_UNARY},
     [TOKEN_BANG_EQUAL]       = {NULL,         binary,    PREC_EQUALITY},

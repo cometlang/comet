@@ -25,6 +25,7 @@ typedef enum
 {
     PREC_NONE,
     PREC_ASSIGNMENT,  // =
+    PREC_TERNARY,     // ? :
     PREC_OR,          // ||
     PREC_AND,         // &&
     PREC_EQUALITY,    // == !=

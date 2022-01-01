@@ -407,6 +407,8 @@ Token scanToken(Scanner *scanner)
         return makeToken(scanner, TOKEN_COLON);
     case '%':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_PERCENT_EQUAL : TOKEN_PERCENT);
+    case '?':
+        return makeToken(scanner, TOKEN_QUESTION_MARK);
     case '|':
         return makeToken(scanner, match(scanner, '|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
     case '&':

@@ -13,10 +13,6 @@ typedef struct sObj Obj;
 
 typedef uint64_t Value;
 
-#define IS_NIL(v)     ((v) == NIL_VAL)
-#define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
-#define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
-
 // The triple casting is necessary here to satisfy some compilers:
 // 1. (uintptr_t) Convert the pointer to a number of the right size.
 // 2. (uint64_t)  Pad it up to 64 bits in 32-bit builds.
@@ -30,6 +26,10 @@ typedef uint64_t Value;
 #define NIL_VAL (OBJ_VAL(&nil_instance))
 #define TRUE_VAL (OBJ_VAL(boolean_true))
 #define FALSE_VAL (OBJ_VAL(boolean_false))
+
+#define IS_NIL(v)     ((v) == NIL_VAL)
+#define IS_OBJ(v)     (((v) & (QNAN | SIGN_BIT)) == (QNAN | SIGN_BIT))
+#define AS_OBJ(v)     ((Obj*)(uintptr_t)((v) & ~(SIGN_BIT | QNAN)))
 
 typedef struct _vm VM;
 

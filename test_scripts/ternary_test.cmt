@@ -1,0 +1,7 @@
+var a = true ? 'pass' : 'fail'
+assert(a == 'pass')
+
+var b = false ? 'fail' : 'pass'
+assert(b == 'pass')
+
+print('Ternary test passed!')

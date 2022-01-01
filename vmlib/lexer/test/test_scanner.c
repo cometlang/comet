@@ -21,6 +21,7 @@ char *token_strings[NUM_TOKENS] =
     [TOKEN_EOL] = "\n",
     [TOKEN_VBAR] = "|",
     [TOKEN_PERCENT] = "%",
+    [TOKEN_QUESTION_MARK] = "?",
     [TOKEN_BANG] = "!",
     [TOKEN_BANG_EQUAL] = "!=",
     [TOKEN_EQUAL] = "=",

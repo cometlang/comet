@@ -1,6 +1,16 @@
 #include "comet.h"
 #include "cometlib.h"
 
+void init_comet(VM* vm)
+{
+    initGlobals();
+    initVM(vm);
+    init_stdlib(vm);
+    common_strings[STRING_INIT] = copyString(vm, "init", 4);
+    common_strings[STRING_HASH] = copyString(vm, "hash", 4);
+    common_strings[STRING_TO_STRING] = copyString(vm, "to_string", 9);
+}
+
 void init_stdlib(VM *vm)
 {
     VALUE obj_klass = bootstrapNativeClass(vm, "Object", NULL, NULL, CLS_OBJECT, 0, false);

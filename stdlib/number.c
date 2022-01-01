@@ -114,7 +114,7 @@ VALUE number_operator_modulo(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *a
     return create_number(vm, (int64_t) lhs->num % (int64_t) rhs->num);
 }
 
-VALUE number_operator_greater_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_operator_greater_than(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
@@ -123,7 +123,7 @@ VALUE number_operator_greater_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSE
     return FALSE_VAL;
 }
 
-VALUE number_operator_greater_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_operator_greater_equal(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
@@ -132,7 +132,7 @@ VALUE number_operator_greater_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUS
     return FALSE_VAL;
 }
 
-VALUE number_operator_less_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_operator_less_than(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
@@ -141,7 +141,7 @@ VALUE number_operator_less_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(a
     return FALSE_VAL;
 }
 
-VALUE number_operator_less_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE number_operator_less_equal(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
@@ -150,7 +150,7 @@ VALUE number_operator_less_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(
     return FALSE_VAL;
 }
 
-VALUE number_operator_equals(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
+VALUE number_operator_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
     NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
     NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);

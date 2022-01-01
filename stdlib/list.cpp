@@ -176,12 +176,126 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
     return FALSE_VAL;
 }
 
-VALUE list_sort(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static void insertion_sort(VM *vm, const ListData *data, int left, int right)
 {
-    // I think implementing Timsort is going to be a good option here.
-    // It's stable and minimises the number of comparisons, which is relatively expensive to
-    // do, as I have to spin up a fibre to do it.
-    return NIL_VAL;
+    for (int i = left + 1; i <= right; i++)
+    {
+        VALUE temp = data->entries[i].item;
+        if (!IS_INSTANCE(temp) && !IS_NATIVE_INSTANCE(temp))
+        {
+            throw_exception_native(vm, "ArgumentException", "Can't sort a list containing a '%s'", objTypeName(AS_OBJ(temp)->type));
+            return;
+        }
+        VALUE compare_func = AS_INSTANCE(temp)->klass->operators[OPERATOR_LESS_EQUAL];
+        if (compare_func == NIL_VAL)
+        {
+            throw_exception_native(
+                vm,
+                "ArgumentException",
+                "%s doesn't implement <= as required for sorting",
+                getClassNameFromInstance(temp));
+            return;
+        }
+        int j = i - 1;
+        while (j >= left)
+        {
+            VALUE result = call_function(temp, compare_func, 1, &data->entries[j].item);
+            if (result == TRUE_VAL)
+            {
+                data->entries[j + 1].item = data->entries[j].item;
+            }
+            else
+            {
+                break;
+            }
+            j--;
+        }
+        data->entries[j + 1].item = temp;
+    }
+}
+
+static void merge_sorted_runs(ListData* data, int l, int m, int r)
+{
+    // Original array is broken into two parts - left and right array
+    int len1 = m - l + 1, len2 = r - m;
+    VALUE* left = ALLOCATE(VALUE, len1);
+    VALUE* right = ALLOCATE(VALUE, len2);
+    for (int i = 0; i < len1; i++)
+        left[i] = data->entries[l + i].item;
+    for (int i = 0; i < len2; i++)
+        right[i] = data->entries[m + 1 + i].item;
+
+    int i = 0;
+    int j = 0;
+    int k = l;
+
+    // After comparing, we merge those two arrays into a larger sub array
+    while (i < len1 && j < len2)
+    {
+        VALUE compare_func = AS_INSTANCE(left[i])->klass->operators[OPERATOR_LESS_EQUAL];
+        VALUE result = call_function(left[i], compare_func, 1, &right[j]);
+        if (result == TRUE_VAL)
+        {
+            data->entries[k].item = left[i];
+            i++;
+        }
+        else
+        {
+            data->entries[k].item = right[j];
+            j++;
+        }
+        k++;
+    }
+
+    // Copy remaining elements of left, if any
+    while (i < len1)
+    {
+        data->entries[k].item = left[i];
+        k++;
+        i++;
+    }
+
+    // Copy remaining element of right, if any
+    while (j < len2)
+    {
+        data->entries[k].item = right[j];
+        k++;
+        j++;
+    }
+
+    FREE_ARRAY(VALUE, left, len1);
+    FREE_ARRAY(VALUE, right, len2);
+}
+
+static constexpr int RUN = 32;
+
+VALUE list_sort(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    for (int i = 0; i < data->count; i += RUN)
+        insertion_sort(vm, data, i, min((i + RUN - 1), (data->count - 1)));
+
+    // Start merging from size RUN (or 32).
+    // It will merge to form size 64, then 128, 256 and so on...
+    for (int size = RUN; size < data->count; size = 2 * size)
+    {
+        // pick starting point of left sub array. We are going to merge
+        // arr[left..left+size-1] and arr[left+size, left+2*size-1]
+        // After every merge, we increase left by 2*size
+        for (int left = 0; left < data->count; left += 2 * size)
+        {
+            // find ending point of left sub array mid+1 is
+            // the starting point of right sub array
+            int mid = left + size - 1;
+            int right = min((left + 2 * size - 1), (data->count - 1));
+
+            // merge sub array arr[left.....mid] and arr[mid+1....right]
+            if (mid < right)
+                merge_sorted_runs(data, left, mid, right);
+        }
+    }
+
+    return self;
 }
 
 VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
@@ -340,6 +454,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_length, "size", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "length", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "count", 0, false);
+    defineNativeMethod(vm, list_class, &list_sort, "sort", 0, false);
     defineNativeOperator(vm, list_class, &list_get_at, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
     defineNativeOperator(vm, list_class, &list_union, 1, OPERATOR_PLUS);

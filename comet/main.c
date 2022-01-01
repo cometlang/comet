@@ -79,12 +79,7 @@ int main(int argc, const char **argv)
             }
         }
     }
-    initGlobals();
-    initVM(&virtualMachine);
-    init_stdlib(&virtualMachine);
-    common_strings[STRING_INIT] = copyString(&virtualMachine, "init", 4);
-    common_strings[STRING_HASH] = copyString(&virtualMachine, "hash", 4);
-    common_strings[STRING_TO_STRING] = copyString(&virtualMachine, "to_string", 9);
+    init_comet(&virtualMachine);
 
     initArgv(&virtualMachine, argc, argv);
 

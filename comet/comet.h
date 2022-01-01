@@ -10,6 +10,7 @@ extern "C" {
 #include "native.h"
 #include "mem.h"
 
+    void init_comet(VM* vm);
     void init_stdlib(VM* vm);
 
     VALUE obj_hash(VM* vm, VALUE self, int arg_count, VALUE* arguments);
@@ -32,6 +33,7 @@ extern "C" {
 
     VALUE list_create(VM* vm);
     VALUE list_add(VM* vm, VALUE self, int arg_count, VALUE* arguments);
+    VALUE list_get_at(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 
     void hash_mark_contents(VALUE self);
     void list_mark_contents(VALUE self);

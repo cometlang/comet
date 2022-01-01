@@ -301,6 +301,11 @@ const char *objTypeName(ObjType type)
     return "unknown";
 }
 
+const char* getClassNameFromInstance(VALUE instance)
+{
+    return AS_INSTANCE(instance)->klass->name;
+}
+
 const char *getOperatorString(OPERATOR operator)
 {
     switch (operator)

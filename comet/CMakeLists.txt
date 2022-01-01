@@ -14,7 +14,10 @@ install(TARGETS comet
         LIBRARY DESTINATION lib)
 
 if (NOT VERSION)
-SET(VERSION debug)
+set (git_cmd "git")
+execute_process(COMMAND "git" "describe" "--tags"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  OUTPUT_VARIABLE VERSION)
 endif()
 
 target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})

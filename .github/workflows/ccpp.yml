@@ -31,9 +31,12 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: recursive
+    - name: Get the version
+      id: get_version
+      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: build
       shell: bash
-      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0"
+      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0" -DVERSION=${{ steps.get_version.outputs.VERSION }}
     - run: cmake --build release --target all
       if: ${{ runner.os == 'Linux' }}
     - name: Release-Linux

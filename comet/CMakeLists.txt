@@ -13,4 +13,8 @@ install(TARGETS comet
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib)
 
-target_compile_definitions(comet PRIVATE MAJOR=0 MINOR=1 PATCH=0)
+if (NOT VERSION)
+SET(VERSION debug)
+endif()
+
+target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})

@@ -9,6 +9,9 @@
 #include "compiler.h"
 #include "import.h"
 
+#define stringify(s) #s
+#define stringify_value(s) stringify(s)
+
 static VM virtualMachine;
 
 static void repl()
@@ -73,8 +76,7 @@ int main(int argc, const char **argv)
         {
             if (strncmp(argv[i], "--version", 9) == 0)
             {
-                printf("comet programming language, v%d.%d.%d\n",
-                    MAJOR, MINOR, PATCH);
+                printf("comet programming language, %s\n", stringify_value(VERSION_STRING));
                 return 0;
             }
         }

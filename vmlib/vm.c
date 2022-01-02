@@ -134,7 +134,8 @@ Value getStackTrace(VM *vm)
             lineno,
             function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
-    stacktrace = GROW_ARRAY(stacktrace, char, maxStacktraceLength, index);
+    stacktrace[index] = '\0';
+    stacktrace = GROW_ARRAY(stacktrace, char, maxStacktraceLength, index+1);
     return takeString(vm, stacktrace, index);
 #undef MAX_LINE_LENGTH
 }
@@ -297,9 +298,9 @@ static bool callValue(VM *vm, Value callee, int argCount)
         }
 
         default:
+            // Non-callable object type.
             printObject(callee);
             printf("\nObj type: %s\n", objTypeName(OBJ_TYPE(callee)));
-            // Non-callable object type.
             break;
         }
     }

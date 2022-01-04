@@ -24,7 +24,7 @@ void block(Parser *parser)
 void expressionStatement(Parser *parser)
 {
     expression(parser);
-    if (!check(parser, TOKEN_EOF))
+    if (!check(parser, TOKEN_EOF) && !check(parser, TOKEN_RIGHT_BRACE))
     {
         consume(parser, TOKEN_EOL, "Only one statement per line allowed");
     }
@@ -194,7 +194,10 @@ void returnStatement(Parser *parser)
             error(parser, "Cannot return a value from an initializer.");
         }
         expression(parser);
-        consume(parser, TOKEN_EOL, "Only one statement per line allowed");
+        if (!check(parser, TOKEN_RIGHT_BRACE))
+        {
+            consume(parser, TOKEN_EOL, "Only one statement per line allowed");
+        }
         emitByte(parser, OP_RETURN);
     }
 }
@@ -327,6 +330,7 @@ void nextStatement(Parser *parser)
 {
     if (parser->currentLoop == NULL) {
         error(parser, "Can't use 'next' outside of a loop.");
+        return;
     }
 
     // Discard any locals created inside the loop.
@@ -344,6 +348,7 @@ static void breakStatement(Parser *parser)
 {
     if (parser->currentLoop == NULL) {
         error(parser, "Can't use 'break' outside of a loop.");
+        return;
     }
 
     if (parser->currentLoop->breakJump != UNINITALISED_ADDRESS)

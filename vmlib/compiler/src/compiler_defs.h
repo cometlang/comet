@@ -19,6 +19,7 @@ typedef struct LoopCompiler
     int startAddress;
     int exitAddress;
     int loopScopeDepth;
+    int breakJump;
 } LoopCompiler;
 
 typedef enum

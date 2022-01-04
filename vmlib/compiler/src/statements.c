@@ -50,9 +50,10 @@ void forStatement(Parser *parser)
     consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
     LoopCompiler loop;
     loop.startAddress = getCurrentOffset(parser->currentFunction);
-    loop.exitAddress = -1;
+    loop.exitAddress = UNINITALISED_ADDRESS;
     loop.enclosing = parser->currentLoop;
     loop.loopScopeDepth = parser->currentFunction->scopeDepth;
+    loop.breakJump = UNINITALISED_ADDRESS;
     parser->currentLoop = &loop;
 
     if (!match(parser, TOKEN_SEMI_COLON))
@@ -82,7 +83,11 @@ void forStatement(Parser *parser)
 
     emitLoop(parser);
 
-    if (loop.exitAddress != -1)
+    if (loop.breakJump != UNINITALISED_ADDRESS)
+    {
+        patchJump(parser, loop.breakJump);
+    }
+    if (loop.exitAddress != UNINITALISED_ADDRESS)
     {
         patchJump(parser, loop.exitAddress);
         emitByte(parser, OP_POP); // Condition.
@@ -122,7 +127,8 @@ void foreachStatement(Parser *parser)
 
     LoopCompiler loop;
     loop.startAddress = getCurrentOffset(parser->currentFunction);
-    loop.exitAddress = -1;
+    loop.exitAddress = UNINITALISED_ADDRESS;
+    loop.breakJump = UNINITALISED_ADDRESS;
     loop.enclosing = parser->currentLoop;
     loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
@@ -142,6 +148,10 @@ void foreachStatement(Parser *parser)
 
     emitLoop(parser);
     patchJump(parser, loop.exitAddress);
+    if (loop.breakJump != UNINITALISED_ADDRESS)
+    {
+        patchJump(parser, loop.breakJump);
+    }
     endScope(parser);
     emitByte(parser, OP_POP); // This feels weird, like I shouldn't need to do it.
     parser->currentLoop = parser->currentLoop->enclosing;
@@ -193,8 +203,9 @@ void whileStatement(Parser *parser)
 {
     LoopCompiler loop;
     loop.startAddress = getCurrentOffset(parser->currentFunction);
-    loop.exitAddress = -1;
+    loop.exitAddress = UNINITALISED_ADDRESS;
     loop.enclosing = parser->currentLoop;
+    loop.breakJump = UNINITALISED_ADDRESS;
     loop.loopScopeDepth = parser->currentFunction->scopeDepth;
     parser->currentLoop = &loop;
     consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after 'while'.");
@@ -209,6 +220,10 @@ void whileStatement(Parser *parser)
     emitLoop(parser);
 
     patchJump(parser, loop.exitAddress);
+    if (loop.breakJump != UNINITALISED_ADDRESS)
+    {
+        patchJump(parser, loop.breakJump);
+    }
     emitByte(parser, OP_POP);
     parser->currentLoop = parser->currentLoop->enclosing;
 }
@@ -325,6 +340,20 @@ void nextStatement(Parser *parser)
     emitLoop(parser);
 }
 
+static void breakStatement(Parser *parser)
+{
+    if (parser->currentLoop == NULL) {
+        error(parser, "Can't use 'break' outside of a loop.");
+    }
+
+    if (parser->currentLoop->breakJump != UNINITALISED_ADDRESS)
+    {
+        error(parser, "Only one break statement per loop is supported.");
+    }
+
+    parser->currentLoop->breakJump = emitJump(parser, OP_JUMP);
+}
+
 void statement(Parser *parser)
 {
     match(parser, TOKEN_EOL);
@@ -373,6 +402,9 @@ void statement(Parser *parser)
     else if (match(parser, TOKEN_NEXT))
     {
         nextStatement(parser);
+    }
+    else if (match(parser, TOKEN_BREAK)) {
+        breakStatement(parser);
     }
     else
     {

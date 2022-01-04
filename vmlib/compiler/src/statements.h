@@ -3,6 +3,8 @@
 
 #include "compiler_defs.h"
 
+#define UNINITALISED_ADDRESS -1
+
 void block(Parser *parser);
 
 void expressionStatement(Parser *parser);

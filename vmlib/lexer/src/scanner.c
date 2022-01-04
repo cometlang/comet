@@ -135,6 +135,8 @@ static TokenType_t identifierType(Scanner *scanner)
     {
     case 'a':
         return checkKeyword(scanner, 1, 1, "s", TOKEN_AS);
+    case 'b':
+        return checkKeyword(scanner, 1, 4, "reak", TOKEN_BREAK);
     case 'c':
         if (scanner->current - scanner->start > 1)
         {

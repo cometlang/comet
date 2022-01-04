@@ -46,6 +46,7 @@ char *token_strings[NUM_TOKENS] =
     [TOKEN_STRING] = "'a string'",
     [TOKEN_NUMBER] = "123456",
     [TOKEN_AS] = "as",
+    [TOKEN_BREAK] = "break",
     [TOKEN_CLASS] = "class",
     [TOKEN_ELSE] = "else",
     [TOKEN_ENUM] = "enum",

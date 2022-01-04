@@ -31,7 +31,7 @@ VALUE nil_iterable_empty_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_co
 
 VALUE nil_iterable_iterator(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    return OBJ_VAL(newInstance(vm, AS_CLASS(nil_iterator_class)));
 }
 
 VALUE nil_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))

@@ -64,9 +64,11 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `<<` bitshift left
 - `>>` bitshift right
 
+### Ternary
+- `? :` - a compact if-statement.  Must have both portions of the statement, but can be split onto multiple lines if desired.
+
 ## Variables
 Variables must be declared before use.  Local and global variables are declared using the `var` keyword.  They may be initialized at the point of declaration. All variables in `Comet` are reference-types, so there is only pass-by-reference, and never pass-by-value.  All variables in `Comet` are objects and therefore inherit from [Object](../stdlib/object.md).
-
 
 ```
 var my_variable = 'This super cool string'

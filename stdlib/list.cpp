@@ -116,13 +116,16 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
         int index = (int)number_get_value(arguments[0]);
-        if (index >= data->count || index < 0)
+        if (index >= data->count)
         {
             throw_exception_native(
                 vm,
                 "IndexOutOfBoundsException",
                 "Index (%d) was outside the bounds of the list", index);
             return NIL_VAL;
+        }
+        if (index < 0) {
+            index = data->count + index;
         }
         return data->entries[index].item;
     }
@@ -396,7 +399,7 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALU
     return copyString(vm, result.c_str(), result.length());
 }
 
-VALUE list_length(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE list_length(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     return create_number(vm, (double) data->count);

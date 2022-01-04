@@ -4,18 +4,14 @@
 
 
 // Taken directly from the strtol manpage:
-char *make_message(const char *fmt, ...)
+char *make_message(const char *fmt, va_list ap)
 {
     int n = 0;
     size_t size = 0;
     char *p = NULL;
-    va_list ap;
 
     /* Determine required size */
-
-    va_start(ap, fmt);
     n = vsnprintf(p, size, fmt, ap);
-    va_end(ap);
 
     if (n < 0)
         return NULL;
@@ -27,9 +23,7 @@ char *make_message(const char *fmt, ...)
     if (p == NULL)
         return NULL;
 
-    va_start(ap, fmt);
     n = vsnprintf(p, size, fmt, ap);
-    va_end(ap);
 
     if (n < 0) {
         free(p);

@@ -453,7 +453,7 @@ static bool invoke(VM *vm, Value name, int argCount)
                 vm,
                 "MethodNotFoundException",
                 "Unable to call '%s' on object of type '%s'",
-                string_get_cstr(method), instance->klass->name);
+                string_get_cstr(name), instance->klass->name);
                 return false;
         }
 

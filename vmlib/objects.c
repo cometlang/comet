@@ -226,7 +226,7 @@ void printObject(Value value)
         printf("%s Class", AS_CLASS(value)->name);
         break;
     case OBJ_NATIVE_METHOD:
-        printf("<fn %s>", string_get_cstr(AS_NATIVE_METHOD(value)->name));
+        printf("<native method %s>", string_get_cstr(AS_NATIVE_METHOD(value)->name));
         break;
     case OBJ_BOUND_METHOD:
         printFunction(AS_BOUND_METHOD(value)->method->function);

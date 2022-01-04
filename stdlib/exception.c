@@ -40,4 +40,5 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "TimeoutException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "IndexOutOfBoundsException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "MethodNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
 }

@@ -93,11 +93,15 @@ static bool propagateException(VM *vm)
         }
         vm->frameCount--;
     }
-    printf("Unhandled %s\n", AS_INSTANCE(exception)->klass->name);
+    printf("Unhandled %s", AS_INSTANCE(exception)->klass->name);
     VALUE message = exception_get_message(vm, exception, 0, NULL);
     if (message != NIL_VAL)
     {
-        printf("%s\n", string_get_cstr(message));
+        printf(": %s\n", string_get_cstr(message));
+    }
+    else
+    {
+        printf("\n");
     }
     Value stacktrace = exception_get_stacktrace(vm, exception);
     if (stacktrace == NIL_VAL)
@@ -443,12 +447,25 @@ static bool invoke(VM *vm, Value name, int argCount)
         }
 
         Value method = findMethod(instance->klass, name);
-        if (IS_BOUND_METHOD(method) || IS_CLOSURE(method))
+        if (method == NIL_VAL)
+        {
+            throw_exception_native(
+                vm,
+                "MethodNotFoundException",
+                "Unable to call '%s' on object of type '%s'",
+                string_get_cstr(method), instance->klass->name);
+                return false;
+        }
+
+        if (IS_BOUND_METHOD(method))
+        {
+            return call(vm, AS_BOUND_METHOD(method)->method, argCount);
+        }
+        else if (IS_CLOSURE(method))
         {
             return call(vm, AS_CLOSURE(method), argCount);
         }
-
-        if (IS_NATIVE_METHOD(method))
+        else if (IS_NATIVE_METHOD(method))
         {
             return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(method), argCount);
         }
@@ -552,6 +569,10 @@ static CallFrame *updateFrame(VM *vm)
 
 static InterpretResult run(VM *vm)
 {
+    // No work to do
+    if (vm->frameCount == 0)
+        return INTERPRET_OK;
+
     CallFrame *frame = updateFrame(vm);
 
 #define READ_BYTE() (*frame->ip++)
@@ -1050,9 +1071,13 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         result = AS_NATIVE_METHOD(method)->function(frame, receiver, arg_count, arguments);
     }
-    else if (invoke(frame, method, arg_count))
+    else if (invoke(frame, method, arg_count) && run(frame) == INTERPRET_OK)
     {
         result = peek(frame, 0);
+    }
+    else
+    {
+        runtimeError(frame, "Invoke of method failed\n");
     }
     deregister_thread(frame);
     FREE(VM, frame);

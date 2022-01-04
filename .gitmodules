@@ -1,3 +1,6 @@
 [submodule "date"]
 	path = date
 	url = https://github.com/HowardHinnant/date
+[submodule "utf8proc"]
+	path = utf8proc
+	url = https://github.com/JuliaStrings/utf8proc

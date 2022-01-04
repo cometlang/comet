@@ -110,6 +110,12 @@ VALUE list_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
     return data->entries[data->count].item;
 }
 
+VALUE list_peek(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    ListData* data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    return data->entries[data->count - 1].item;
+}
+
 VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     if (arg_count == 1)
@@ -445,6 +451,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_add, "append", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "push", 1, false);
     defineNativeMethod(vm, list_class, &list_pop, "pop", 0, false);
+    defineNativeMethod(vm, list_class, &list_peek, "peek", 0, false);
     defineNativeMethod(vm, list_class, &list_iterable_contains_q, "contains?", 1, false);
     defineNativeMethod(vm, list_class, &list_iterable_empty_q, "empty?", 0, false);
     defineNativeMethod(vm, list_class, &list_iterable_iterator, "iterator", 0, false);

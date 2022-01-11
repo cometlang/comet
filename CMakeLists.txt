@@ -5,10 +5,10 @@ enable_language(CXX)
 enable_testing()
 
 if (WIN32)
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-else()
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+elseif (CMAKE_BUILD_TYPE MATCHES DEBUG)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -ggdb3 -Wall -Wextra -Werror")
-endif (WIN32)
+endif ()
 
 set(CMAKE_CXX_STANDARD 20 CACHE INTERNAL "Set C++ standard to C++20")
 set(CMAKE_C_STANDARD 11 CACHE INTERNAL "Set C standard to C11")

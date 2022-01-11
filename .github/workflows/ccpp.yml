@@ -44,10 +44,10 @@ jobs:
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
       with:
         files: ${{github.workspace}}/release/comet/comet
-    - run: cmake --build release --target ALL_BUILD --target RUN_TESTS
+    - run: cmake --build release --target ALL_BUILD --target RUN_TESTS --config Release
       if: ${{ runner.os == 'Windows' }}
     - name: Release-Windows
       uses: softprops/action-gh-release@v1
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
       with:
-        files: ${{github.workspace}}\release\comet\Debug\comet.exe
+        files: ${{github.workspace}}\release\comet\Release\comet.exe

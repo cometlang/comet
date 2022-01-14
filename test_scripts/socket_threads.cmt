@@ -2,7 +2,7 @@ var condition = ConditionVariable()
 
 function client(arg)
 {
-    var client = Socket(ADDRESS_FAMILY.IPv6, SOCKET_TYPE.TCP)
+    var client = Socket(SOCKET_TYPE.TCP, ADDRESS_FAMILY.IPv6)
     condition.signal_one()
     client.connect("::1", 8008)
     var contents = client.read()
@@ -11,7 +11,7 @@ function client(arg)
     client.close()
 }
 
-var server = Socket(ADDRESS_FAMILY.IPv6, SOCKET_TYPE.TCP)
+var server = Socket(SOCKET_TYPE.TCP, ADDRESS_FAMILY.IPv6)
 server.bind("::1", 8008)
 server.listen(1)
 

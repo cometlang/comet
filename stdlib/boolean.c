@@ -16,21 +16,6 @@ ObjNativeInstance *boolean_false = (ObjNativeInstance *) &_false;
 
 static VALUE bool_class;
 
-VALUE boolean_init(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
-{
-    BooleanData_t *data = GET_NATIVE_INSTANCE_DATA(BooleanData_t, self);
-    if (arg_count == 1 && !bool_is_falsey(arguments[0]))
-    {
-        data->value = true;
-    }
-    else
-    {
-        data->value = false;
-    }
-
-    return NIL_VAL;
-}
-
 VALUE boolean_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     BooleanData_t *data = GET_NATIVE_INSTANCE_DATA(BooleanData_t, self);
@@ -78,8 +63,7 @@ bool bool_is_falsey(VALUE value)
 
 void init_boolean(VM *vm)
 {
-    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, CLS_BOOLEAN, sizeof(BooleanData_t), false);
-    defineNativeMethod(vm, bool_class, &boolean_init, "init", 1, false);
+    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, CLS_BOOLEAN, sizeof(BooleanData_t), true);
     defineNativeMethod(vm, bool_class, &boolean_to_string, "to_string", 0, false);
     defineNativeMethod(vm, bool_class, &boolean_parse, "parse", 1, true);
     init_instance(vm, &_true, AS_CLASS(bool_class), true);

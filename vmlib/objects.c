@@ -105,9 +105,9 @@ ObjFunction *newFunction(VM *vm, const char *filename, VALUE module)
 
 Obj *newInstance(VM *vm, ObjClass *klass)
 {
-    if (klass->classType == CLS_NIL)
+    if (klass->classType == CLS_NIL || klass->classType == CLS_BOOLEAN)
     {
-        runtimeError(vm, "Can't instantiate Nil\n");
+        runtimeError(vm, "Can't instantiate %s\n", klass->name);
         return NULL;
     }
     Obj *obj = (Obj *)klass;

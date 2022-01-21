@@ -48,6 +48,7 @@ extern "C" {
     void module_set_main(VALUE module, ObjFunction* function);
     ObjFunction* module_get_main(VALUE module);
 
+    VALUE duration_create(VM *vm, int64_t count);
 #ifdef __cplusplus
 }
 #endif

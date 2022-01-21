@@ -48,7 +48,7 @@ void forStatement(Parser *parser)
         expressionStatement(parser);
     }
     consume(parser, TOKEN_SEMI_COLON, "Expect ';' after loop intializer.");
-    LoopCompiler loop;
+    LoopCompiler loop = {0};
     loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = UNINITALISED_ADDRESS;
     loop.enclosing = parser->currentLoop;
@@ -125,7 +125,7 @@ void foreachStatement(Parser *parser)
     emitBytes(parser, OP_SET_LOCAL, (uint8_t) iter_var);
     markInitialized(parser);
 
-    LoopCompiler loop;
+    LoopCompiler loop = {0};
     loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = UNINITALISED_ADDRESS;
     loop.breakJump = UNINITALISED_ADDRESS;
@@ -204,7 +204,7 @@ void returnStatement(Parser *parser)
 
 void whileStatement(Parser *parser)
 {
-    LoopCompiler loop;
+    LoopCompiler loop = {0};
     loop.startAddress = getCurrentOffset(parser->currentFunction);
     loop.exitAddress = UNINITALISED_ADDRESS;
     loop.enclosing = parser->currentLoop;

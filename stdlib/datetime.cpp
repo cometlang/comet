@@ -116,6 +116,14 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
     return copyString(vm, date_string.c_str(), date_string.length());
 }
 
+static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
+    DateTimeData *rhs = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(arguments[0]));
+    auto difference = data->point.get_local_time() - rhs->point.get_local_time();
+    return duration_create(vm, difference.count());
+}
+
 void init_datetime(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
@@ -128,6 +136,8 @@ void init_datetime(VM *vm)
     defineNativeMethod(vm, klass, &datetime_minutes, "minutes", 0, false);
     defineNativeMethod(vm, klass, &datetime_seconds, "seconds", 0, false);
     defineNativeMethod(vm, klass, &datetime_milliseconds, "milliseconds", 0, false);
+
+    defineNativeOperator(vm, klass, &datetime_operator_minus, 1, OPERATOR_MINUS);
 }
 
 }

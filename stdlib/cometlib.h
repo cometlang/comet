@@ -14,6 +14,7 @@ extern "C" {
     void init_exception(VM* vm);
     void init_file(VM* vm);
     void init_datetime(VM* vm);
+    void init_duration(VM *vm);
     void init_functions(VM* vm);
     void init_hash(VM* vm);
     void init_list(VM* vm);

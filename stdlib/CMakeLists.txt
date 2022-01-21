@@ -13,6 +13,7 @@ set(SOURCE
   _init.c
   boolean.c
   datetime.cpp
+  duration.cpp
   enum.c
   env.c
   exception.c

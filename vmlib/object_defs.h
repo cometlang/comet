@@ -27,6 +27,8 @@
 #define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
 
+#define IS_INSTANCE_OF_STDLIB_TYPE(value, classType) isObjOfStdlibClassType(value, classType)
+
 typedef enum
 {
     OBJ_BOUND_METHOD,

@@ -8,6 +8,7 @@
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
+#include "datetime.hpp"
 
 using namespace std::chrono;
 
@@ -33,7 +34,23 @@ static date::hh_mm_ss<milliseconds> get_time(VALUE self)
     return date::hh_mm_ss{date::floor<milliseconds>(local - dp)};
 }
 
+date::zoned_time<std::chrono::nanoseconds> datetime_get_value(VALUE datetime)
+{
+    DateTimeData *date = GET_NATIVE_INSTANCE_DATA(DateTimeData, datetime);
+    return date->point;
+}
+
 extern "C" {
+
+static VALUE datetime_class;
+
+VALUE create_datetime(VM *vm, std::chrono::time_point<date::local_t, std::chrono::nanoseconds> time_point, const date::time_zone *time_zone)
+{
+    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(datetime_class));
+    DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(instance));
+    data->point = date::zoned_time<std::chrono::nanoseconds>{time_zone, time_point};
+    return OBJ_VAL(instance);
+}
 
 static VALUE datetime_year(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
@@ -119,25 +136,32 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
 static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
-    DateTimeData *rhs = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(arguments[0]));
-    auto difference = data->point.get_local_time() - rhs->point.get_local_time();
-    return duration_create(vm, difference.count());
+    if (IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_DATETIME)) {
+        DateTimeData *rhs = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(arguments[0]));
+        auto difference = data->point.get_local_time() - rhs->point.get_local_time();
+        return duration_create(vm, difference.count());
+    }
+    else if (IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_DURATION)) {
+        std::chrono::nanoseconds duration_value = duration_get_value(arguments[0]);
+        return create_datetime(vm, data->point.get_local_time() - duration_value, data->point.get_time_zone());
+    }
+    return NIL_VAL;
 }
 
 void init_datetime(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
-    defineNativeMethod(vm, klass, &datetime_static_now, "now", 0, true);
-    defineNativeMethod(vm, klass, &datetime_to_string, "to_string", 0, false);
-    defineNativeMethod(vm, klass, &datetime_year, "year", 0, false);
-    defineNativeMethod(vm, klass, &datetime_month, "month", 0, false);
-    defineNativeMethod(vm, klass, &datetime_day, "day", 0, false);
-    defineNativeMethod(vm, klass, &datetime_hours, "hours", 0, false);
-    defineNativeMethod(vm, klass, &datetime_minutes, "minutes", 0, false);
-    defineNativeMethod(vm, klass, &datetime_seconds, "seconds", 0, false);
-    defineNativeMethod(vm, klass, &datetime_milliseconds, "milliseconds", 0, false);
+    datetime_class = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
+    defineNativeMethod(vm, datetime_class, &datetime_static_now, "now", 0, true);
+    defineNativeMethod(vm, datetime_class, &datetime_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_year, "year", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_month, "month", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_day, "day", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_hours, "hours", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_minutes, "minutes", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_seconds, "seconds", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_milliseconds, "milliseconds", 0, false);
 
-    defineNativeOperator(vm, klass, &datetime_operator_minus, 1, OPERATOR_MINUS);
+    defineNativeOperator(vm, datetime_class, &datetime_operator_minus, 1, OPERATOR_MINUS);
 }
 
 }

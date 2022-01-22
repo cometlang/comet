@@ -30,4 +30,10 @@ static inline bool isObjType(Value value, ObjType type)
     return IS_OBJ(value) && AS_OBJ(value)->type == type;
 }
 
+static inline bool isObjOfStdlibClassType(Value value, ClassType type)
+{
+    return (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value)) &&
+        AS_INSTANCE(value)->klass->classType == type;
+}
+
 #endif

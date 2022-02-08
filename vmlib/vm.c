@@ -180,7 +180,10 @@ void runtimeError(VM *vm, const char *format, ...)
 void initVM(VM *vm)
 {
     resetStack(vm);
-    vm->objects = NULL;
+    vm->generation_0 = NULL;
+    vm->generation_1 = NULL;
+    vm->generation_2 = NULL;
+    vm->gc_count = 0;
 
     register_thread(vm);
 }

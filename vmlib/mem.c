@@ -38,6 +38,9 @@ static Obj *generation_0;
 static Obj *generation_1;
 static Obj *generation_2;
 
+#if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
+static uint64_t total_gc_clocks;
+#endif
 
 #ifdef WIN32
 static HANDLE gc_lock;
@@ -437,9 +440,10 @@ static void sweep()
 
 static void collectGarbage()
 {
-#if DEBUG_LOG_GC
+#if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
     printf("-- gc begin\n");
     size_t before = _bytes_allocated;
+    clock_t start = clock();
 #endif
     collecting_garbage = true;
 
@@ -454,11 +458,14 @@ static void collectGarbage()
 
     _next_GC = _bytes_allocated * 2;
     collecting_garbage = false;
-#if DEBUG_LOG_GC
+#if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
+    clock_t end = clock();
+    total_gc_clocks += (end - start);
     printf("-- gc end\n");
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
            before - _bytes_allocated, before, _bytes_allocated,
            _next_GC);
+    printf("   GC lasted %lu clocks\n", end - start);
 #endif
 }
 
@@ -493,6 +500,9 @@ void freeObjects()
 
 void finalizeGarbageCollection(void)
 {
+#if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
+    printf("GC ran %u times, for a total of %lu clocks (%lu)\n", gc_count, total_gc_clocks, CLOCKS_PER_SEC);
+#endif
     FREE_ARRAY(Obj*, grey_stack, grey_capacity);
     grey_stack = NULL;
     grey_count = 0;

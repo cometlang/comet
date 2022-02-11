@@ -11,8 +11,8 @@
 #include "compiler.h"
 #include "comet.h"
 
-#if DEBUG_LOG_GC
 #include <stdio.h>
+#if DEBUG_LOG_GC
 #include "debug.h"
 #endif
 
@@ -347,10 +347,9 @@ static void traceReferences()
     }
 }
 
-static void sweep(VM *vm)
+static Obj *sweep_object_list(Obj *object, Obj **base)
 {
     Obj *previous = NULL;
-    Obj *object = vm->objects;
     while (object != NULL)
     {
         if (object->isMarked)
@@ -370,12 +369,48 @@ static void sweep(VM *vm)
             }
             else
             {
-                vm->objects = object;
+                *base = object;
             }
 
             freeObject(unreached);
         }
     }
+    if (previous != NULL)
+    {
+        return previous->next != NULL ? previous->next : previous;
+    }
+    return *base;
+}
+
+static void sweep(VM *vm)
+{
+    if (vm->gc_count != 0)
+    {
+        if (vm->gc_count % 11 == 0)
+        {
+            sweep_object_list(vm->generation_2, &vm->generation_2);
+        }
+        if (vm->gc_count % 7 == 0)
+        {
+            Obj *end = sweep_object_list(vm->generation_1, &vm->generation_1);
+            if (end != NULL)
+            {
+                end->next = vm->generation_2;
+                vm->generation_2 = vm->generation_1;
+                vm->generation_1 = NULL;
+            }
+        }
+    }
+
+    Obj *end = sweep_object_list(vm->generation_0, &vm->generation_0);
+    if (end != NULL)
+    {
+        end->next = vm->generation_1;
+        vm->generation_1 = vm->generation_0;
+        vm->generation_0 = NULL;
+    }
+
+    vm->gc_count++;
 }
 
 static void collectGarbage()
@@ -416,15 +451,21 @@ void initializeGarbageCollection()
     collecting_garbage = false;
 }
 
-void freeObjects(VM *vm)
+static void free_object_list(Obj *object)
 {
-    Obj *object = vm->objects;
     while (object != NULL)
     {
         Obj *next = object->next;
         freeObject(object);
         object = next;
     }
+}
+
+void freeObjects(VM *vm)
+{
+    free_object_list(vm->generation_0);
+    free_object_list(vm->generation_1);
+    free_object_list(vm->generation_2);
 }
 
 void finalizeGarbageCollection(void)

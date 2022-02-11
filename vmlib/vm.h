@@ -32,7 +32,10 @@ struct _vm
     Value stack[STACK_MAX];
     Value *stackTop;
     ObjUpvalue *openUpvalues;
-    Obj *objects;
+    int gc_count;
+    Obj *generation_0;
+    Obj *generation_1;
+    Obj *generation_2;
 };
 
 typedef enum

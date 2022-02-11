@@ -16,8 +16,8 @@ static Obj *allocateObject(VM *vm, size_t size, ObjType type)
     object->type = type;
     object->isMarked = false;
 
-    object->next = vm->objects;
-    vm->objects = object;
+    object->next = vm->generation_0;
+    vm->generation_0 = object;
 
 #if DEBUG_LOG_GC
     printf("%p allocate %ld for %s\n", (void *)object, size, objTypeName(type));

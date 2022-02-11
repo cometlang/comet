@@ -382,15 +382,6 @@ static Obj *sweep_object_list(Obj *object, Obj **base)
     return *base;
 }
 
-static void unmark_object_list(Obj *object)
-{
-    while (object != NULL)
-    {
-        object->isMarked = false;
-        object = object->next;
-    }
-}
-
 static void sweep(VM *vm)
 {
     if (vm->gc_count != 0)
@@ -418,8 +409,6 @@ static void sweep(VM *vm)
         vm->generation_1 = vm->generation_0;
         vm->generation_0 = NULL;
     }
-    unmark_object_list(vm->generation_1);
-    unmark_object_list(vm->generation_2);
 
     vm->gc_count++;
 }

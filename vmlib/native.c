@@ -7,7 +7,7 @@
 
 void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 {
-    push(vm, OBJ_VAL(newNativeFunction(vm, function)));
+    push(vm, OBJ_VAL(newNativeFunction(function)));
     push(vm, copyString(vm, name, (int)strlen(name)));
     addGlobal(peek(vm, 0), peek(vm, 1));
     pop(vm);
@@ -86,7 +86,7 @@ void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *
     Value name_string = copyString(vm, name, strlen(name));
     push(vm, name_string);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, isStatic, name_string)));
+    push(vm, OBJ_VAL(newNativeMethod(function, arity, isStatic, name_string)));
     defineMethod(vm, name_string, isStatic);
     pop(vm);
     pop(vm);
@@ -98,7 +98,7 @@ void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, uint8_t ar
     Value op_method_name = copyString(vm, op_method_chars, strlen(op_method_chars));
     push(vm, op_method_name);
     push(vm, klass);
-    push(vm, OBJ_VAL(newNativeMethod(vm, function, arity, false, op_method_name)));
+    push(vm, OBJ_VAL(newNativeMethod(function, arity, false, op_method_name)));
     defineOperator(vm, operator);
     pop(vm);
     pop(vm);

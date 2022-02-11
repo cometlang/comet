@@ -26,8 +26,9 @@
 void register_thread(VM *vm);
 void deregister_thread(VM *vm);
 void *reallocate(void *previous, size_t oldSize, size_t newSize);
+Obj *allocateObject(size_t size, ObjType type);
 void markObject(Obj* object);
 void markValue(Value value);
-void freeObjects(VM *vm);
+void freeObjects();
 void finalizeGarbageCollection(void);
 #endif

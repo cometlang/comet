@@ -180,11 +180,6 @@ void runtimeError(VM *vm, const char *format, ...)
 void initVM(VM *vm)
 {
     resetStack(vm);
-    vm->generation_0 = NULL;
-    vm->generation_1 = NULL;
-    vm->generation_2 = NULL;
-    vm->gc_count = 0;
-
     register_thread(vm);
 }
 
@@ -488,7 +483,7 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
         return false;
     }
 
-    ObjBoundMethod *bound = newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(method));
+    ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
     pop(vm); // Instance.
     push(vm, OBJ_VAL(bound));
     return true;
@@ -508,7 +503,7 @@ static ObjUpvalue *captureUpvalue(VM *vm, Value *local)
     if (upvalue != NULL && upvalue->location == local)
         return upvalue;
 
-    ObjUpvalue *createdUpvalue = newUpvalue(vm, local);
+    ObjUpvalue *createdUpvalue = newUpvalue(local);
     createdUpvalue->next = upvalue;
     if (prevUpvalue == NULL)
     {
@@ -855,7 +850,7 @@ static InterpretResult run(VM *vm)
         case OP_CLOSURE:
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
-            ObjClosure *closure = newClosure(vm, function);
+            ObjClosure *closure = newClosure(function);
             push(vm, OBJ_VAL(closure));
             for (int i = 0; i < closure->upvalueCount; i++)
             {
@@ -897,7 +892,7 @@ static InterpretResult run(VM *vm)
         case OP_CLASS:
         {
             bool final = READ_BYTE();
-            push(vm, OBJ_VAL(newClass(vm, string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, final)));
+            push(vm, OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, final)));
             break;
         }
         case OP_INHERIT:
@@ -1027,7 +1022,7 @@ static InterpretResult run(VM *vm)
                 {
                     module_set_initialized(imported);
                     ObjFunction *mod_main = module_get_main(imported);
-                    ObjClosure *closure = newClosure(vm, mod_main);
+                    ObjClosure *closure = newClosure(mod_main);
                     push(vm, OBJ_VAL(closure));
                     callValue(vm, OBJ_VAL(closure), 0);
                     frame = updateFrame(vm);
@@ -1095,7 +1090,7 @@ InterpretResult interpret(VM *vm, Value main)
     push(vm, main);
     module_set_initialized(main);
     ObjFunction *main_func = module_get_main(main);
-    ObjClosure *closure = newClosure(vm, main_func);
+    ObjClosure *closure = newClosure(main_func);
     pop(vm);
     push(vm, OBJ_VAL(closure));
     callValue(vm, OBJ_VAL(closure), 0);

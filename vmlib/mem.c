@@ -33,6 +33,12 @@ static Obj **grey_stack;
 static int grey_capacity = 0;
 static int grey_count = 0;
 
+static uint32_t gc_count;
+static Obj *generation_0;
+static Obj *generation_1;
+static Obj *generation_2;
+
+
 #ifdef WIN32
 static HANDLE gc_lock;
 #define MUTEX_LOCK(mut) WaitForSingleObject(mut, INFINITE)
@@ -98,6 +104,22 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     void *result = realloc(previous, newSize);
     MUTEX_UNLOCK(gc_lock);
     return result;
+}
+
+Obj *allocateObject(size_t size, ObjType type)
+{
+    Obj *object = (Obj *)reallocate(NULL, 0, size);
+    object->type = type;
+    object->isMarked = false;
+
+    object->next = generation_0;
+    generation_0 = object;
+
+#if DEBUG_LOG_GC
+    printf("%p allocate %ld for %s\n", (void *)object, size, objTypeName(type));
+#endif
+
+    return object;
 }
 
 void markObject(Obj *object)
@@ -382,35 +404,35 @@ static Obj *sweep_object_list(Obj *object, Obj **base)
     return *base;
 }
 
-static void sweep(VM *vm)
+static void sweep()
 {
-    if (vm->gc_count != 0)
+    if (gc_count != 0)
     {
-        if (vm->gc_count % 11 == 0)
+        if (gc_count % 11 == 0)
         {
-            sweep_object_list(vm->generation_2, &vm->generation_2);
+            sweep_object_list(generation_2, &generation_2);
         }
-        if (vm->gc_count % 7 == 0)
+        if (gc_count % 7 == 0)
         {
-            Obj *end = sweep_object_list(vm->generation_1, &vm->generation_1);
+            Obj *end = sweep_object_list(generation_1, &generation_1);
             if (end != NULL)
             {
-                end->next = vm->generation_2;
-                vm->generation_2 = vm->generation_1;
-                vm->generation_1 = NULL;
+                end->next = generation_2;
+                generation_2 = generation_1;
+                generation_1 = NULL;
             }
         }
     }
 
-    Obj *end = sweep_object_list(vm->generation_0, &vm->generation_0);
+    Obj *end = sweep_object_list(generation_0, &generation_0);
     if (end != NULL)
     {
-        end->next = vm->generation_1;
-        vm->generation_1 = vm->generation_0;
-        vm->generation_0 = NULL;
+        end->next = generation_1;
+        generation_1 = generation_0;
+        generation_0 = NULL;
     }
 
-    vm->gc_count++;
+    gc_count++;
 }
 
 static void collectGarbage()
@@ -428,10 +450,7 @@ static void collectGarbage()
     markGlobals();
     traceReferences();
     removeWhiteStrings();
-    for (int i = 0; i < num_threads; i++)
-    {
-        sweep(threads[i]);
-    }
+    sweep();
 
     _next_GC = _bytes_allocated * 2;
     collecting_garbage = false;
@@ -449,6 +468,10 @@ void initializeGarbageCollection()
     gc_lock = CreateMutex(NULL, false, NULL);
 #endif
     collecting_garbage = false;
+    gc_count = 0;
+    generation_0 = NULL;
+    generation_1 = NULL;
+    generation_2 = NULL;
 }
 
 static void free_object_list(Obj *object)
@@ -461,11 +484,11 @@ static void free_object_list(Obj *object)
     }
 }
 
-void freeObjects(VM *vm)
+void freeObjects()
 {
-    free_object_list(vm->generation_0);
-    free_object_list(vm->generation_1);
-    free_object_list(vm->generation_2);
+    free_object_list(generation_0);
+    free_object_list(generation_1);
+    free_object_list(generation_2);
 }
 
 void finalizeGarbageCollection(void)

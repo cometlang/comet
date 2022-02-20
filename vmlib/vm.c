@@ -370,23 +370,23 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
 static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator)
 {
-    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
+    if (IS_NATIVE_INSTANCE(receiver) || IS_INSTANCE(receiver))
     {
         ObjInstance *instance = AS_INSTANCE(receiver);
         Value operator_callable = instance->klass->operators[operator];
-        if (IS_NIL(operator_callable))
-        {
-            runtimeError(vm, "Operator '%s' is not defined for class '%s'.",
-                getOperatorString(operator), instance->klass->name);
-            return false;
-        }
-        else if (IS_NATIVE_METHOD(operator_callable))
+        if (IS_NATIVE_METHOD(operator_callable))
         {
             return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(operator_callable), argCount);
         }
         else if (IS_CLOSURE(operator_callable))
         {
             return call(vm, AS_CLOSURE(operator_callable), argCount);
+        }
+        else if (IS_NIL(operator_callable))
+        {
+            runtimeError(vm, "Operator '%s' is not defined for class '%s'.",
+                getOperatorString(operator), instance->klass->name);
+            return false;
         }
         else
         {
@@ -403,11 +403,6 @@ static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator
         getOperatorString(operator),
         objTypeName(AS_OBJ(receiver)->type));
     return false;
-}
-
-static bool callBinaryOperator(VM *vm, OPERATOR operator)
-{
-    return callOperator(vm, peek(vm, 1), 1, operator);
 }
 
 static bool invoke(VM *vm, Value name, int argCount)
@@ -578,14 +573,14 @@ static InterpretResult run(VM *vm)
     (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_CONSTANT() \
     (frame->closure->function->chunk.constants.values[READ_BYTE()])
-#define BINARY_OP(operator)                          \
-    do                                               \
-    {                                                \
-        if (!callBinaryOperator(vm, operator))       \
-        {                                            \
-            return INTERPRET_RUNTIME_ERROR;          \
-        }                                            \
-        frame = &vm->frames[vm->frameCount - 1];     \
+#define BINARY_OP(operator)                              \
+    do                                                   \
+    {                                                    \
+        if (!callOperator(vm, peek(vm, 1), 1, operator)) \
+        {                                                \
+            return INTERPRET_RUNTIME_ERROR;              \
+        }                                                \
+        frame = &vm->frames[vm->frameCount - 1];         \
     } while (false)
 
     for (;;)

@@ -469,6 +469,11 @@ VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_coun
     return FALSE_VAL;
 }
 
+VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    return NIL_VAL;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -495,6 +500,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
     defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
+    defineNativeMethod(vm, string_class, &string_format, "format", 1, false);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
     defineNativeOperator(vm, string_class, &string_get_at, 1, OPERATOR_INDEX);

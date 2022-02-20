@@ -207,6 +207,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_PROPAGATE_EXCEPTION", offset);
     case OP_IMPORT:
         return simpleInstruction("OP_IMPORT", offset);
+    case OP_SPLAT:
+        return simpleInstruction("OP_SPLAT", offset);
     default:
         printf("Unknown opcode %d\n", instruction);
         return offset + 1;

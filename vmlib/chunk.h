@@ -62,6 +62,7 @@ typedef enum
     OP_BITWISE_XOR,
     OP_BITSHIFT_LEFT,
     OP_BITSHIFT_RIGHT,
+    OP_SPLAT,
 } OpCode;
 
 typedef struct

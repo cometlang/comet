@@ -138,8 +138,8 @@ Value getStackTrace(VM *vm)
             lineno,
             function->name == NIL_VAL ? "script" : string_get_cstr(function->name));
     }
-    stacktrace[index] = '\0';
     stacktrace = GROW_ARRAY(stacktrace, char, maxStacktraceLength, index+1);
+    stacktrace[index] = '\0';
     return takeString(vm, stacktrace, index);
 #undef MAX_LINE_LENGTH
 }
@@ -302,7 +302,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
         default:
             // Non-callable object type.
             printObject(callee);
-            printf("\nObj type: %s\n", objTypeName(OBJ_TYPE(callee)));
+            printf("\nObj type: %s\n arg_count: %d\n", objTypeName(OBJ_TYPE(callee)), argCount);
             break;
         }
     }
@@ -816,22 +816,24 @@ static InterpretResult run(VM *vm)
         }
         case OP_CALL:
         {
-            int argCount = READ_BYTE();
+            int argCount = READ_BYTE() + frame->bonusSplatArgCount;
             if (!callValue(vm, peek(vm, argCount), argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
+            frame->bonusSplatArgCount = 0;
             frame = updateFrame(vm);
             break;
         }
         case OP_INVOKE:
         {
             Value method = READ_CONSTANT();
-            int argCount = READ_BYTE();
+            int argCount = READ_BYTE() + frame->bonusSplatArgCount;
             if (!invoke(vm, method, argCount))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }
+            frame->bonusSplatArgCount = 0;
             frame = updateFrame(vm);
             break;
         }
@@ -1034,6 +1036,21 @@ static InterpretResult run(VM *vm)
                 }
                 pop(vm);
             }
+            break;
+        }
+        case OP_SPLAT:
+        {
+            // This kind of freaks me out - if we get a GC here, it's possible
+            // that the list gets free'd.
+            Value list = pop(vm);
+            int length = number_get_value(list_length(vm, list, 0, NULL));
+            for (int i = 0; i < length; i++)
+            {
+                Value index = create_number(vm, i);
+                push(vm, list_get_at(vm, list, 1, &index));
+            }
+            // -1 because we already had "one" argument
+            frame->bonusSplatArgCount += (length - 1);
             break;
         }
         }

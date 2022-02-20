@@ -305,6 +305,9 @@ static void unary(Parser *parser, bool UNUSED(canAssign))
     case TOKEN_BITWISE_NEGATE:
         emitByte(parser, OP_NEGATE);
         break;
+    case TOKEN_STAR:
+        emitByte(parser, OP_SPLAT);
+        break;
     default:
         return; // Unreachable.
     }
@@ -447,7 +450,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_PLUS]             = {NULL,         binary,    PREC_TERM},
     [TOKEN_SEMI_COLON]       = {NULL,         NULL,      PREC_NONE},
     [TOKEN_SLASH]            = {NULL,         binary,    PREC_FACTOR},
-    [TOKEN_STAR]             = {NULL,         binary,    PREC_FACTOR},
+    [TOKEN_STAR]             = {unary,        binary,    PREC_FACTOR},
     [TOKEN_COLON]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_EOL]              = {NULL,         NULL,      PREC_NONE},
     [TOKEN_VBAR]             = {lambda,       binary,    PREC_BITWISE_OR},

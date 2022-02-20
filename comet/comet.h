@@ -34,6 +34,7 @@ extern "C" {
     VALUE list_create(VM* vm);
     VALUE list_add(VM* vm, VALUE self, int arg_count, VALUE* arguments);
     VALUE list_get_at(VM* vm, VALUE self, int arg_count, VALUE* arguments);
+    VALUE list_length(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 
     void hash_mark_contents(VALUE self);
     void list_mark_contents(VALUE self);

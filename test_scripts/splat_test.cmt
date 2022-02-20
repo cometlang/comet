@@ -1,0 +1,8 @@
+function splatted(arg1, arg2, arg3) {
+    print("Arg1: ", arg1)
+    print("Arg2: ", arg2)
+    print("Arg3: ", arg3)
+}
+
+var list = ['arg1', 'arg2', 'arg3']
+splatted(*list)

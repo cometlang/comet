@@ -23,6 +23,7 @@ typedef struct
     Value *slots;
     uint8_t handlerCount;
     ExceptionHandler handlerStack[MAX_HANDLER_FRAMES];
+    uint8_t bonusSplatArgCount;
 } CallFrame;
 
 struct _vm

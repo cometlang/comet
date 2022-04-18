@@ -8,18 +8,11 @@
 
 static VALUE number_class;
 
-void number_constructor(void *instanceData)
-{
-    NumberData *data = (NumberData *) instanceData;
-    data->num = 0;
-}
-
 VALUE number_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
 #define TEMP_STRING_MAX_LEN 64
     char temp[TEMP_STRING_MAX_LEN];
-    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%.17g", data->num);
+    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%.17g", AS_NUMBER(self));
     return copyString(vm, temp, length);
 #undef TEMP_STRING_MAX_LEN
 }
@@ -29,7 +22,7 @@ VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
     if (arg_count == 1)
     {
         VALUE arg = arguments[0];
-        if (instanceof(arg, number_class) == TRUE_VAL)
+        if (IS_NUMBER(arg))
         {
             return arg;
         }
@@ -42,6 +35,94 @@ VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
     }
     return NIL_VAL;
 }
+
+VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
+{
+    VALUE arg = arguments[0];
+    if (!IS_NUMBER(arg))
+    {
+        throw_exception_native(vm, "ArgumentException",
+            "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(op), getClassNameFromInstance(arg));
+    }
+    switch (op)
+    {
+    case OPERATOR_MULTIPLICATION:
+    { 
+        return NUMBER_VAL(AS_NUMBER(self) * AS_NUMBER(arg));
+    }
+    case OPERATOR_PLUS:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) + AS_NUMBER(arg));
+    }
+    case OPERATOR_MINUS:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) - AS_NUMBER(arg));
+    }
+    case OPERATOR_DIVISION:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) / AS_NUMBER(arg));
+    }
+    case OPERATOR_MODULO:
+    {
+        return NUMBER_VAL((int64_t)AS_NUMBER(self) % (int64_t)AS_NUMBER(arg));
+    }
+    case OPERATOR_GREATER_THAN:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) > AS_NUMBER(arg));
+    }
+    case OPERATOR_LESS_THAN:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+    case OPERATOR_GREATER_EQUAL:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) >= AS_NUMBER(arg));
+    }
+    case OPERATOR_LESS_EQUAL:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) <= AS_NUMBER(arg));
+    }
+    case OPERATOR_EQUALS:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) == AS_NUMBER(arg));
+    }
+    case OPERATOR_INDEX:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+    case OPERATOR_INDEX_ASSIGN:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+    case OPERATOR_BITWISE_OR:
+    {
+        return NUMBER_VAL((int64_t)AS_NUMBER(self) | (int64_t)AS_NUMBER(arg));
+    }
+    case OPERATOR_BITWISE_AND:
+    {
+        return NUMBER_VAL((int64_t)AS_NUMBER(self) & (int64_t)AS_NUMBER(arg));
+    }
+    case OPERATOR_BITWISE_XOR:
+    {
+        return NUMBER_VAL((int64_t)AS_NUMBER(self) ^ (int64_t)AS_NUMBER(arg));
+    }
+    case OPERATOR_BITWISE_NEGATE:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+    case OPERATOR_BITSHIFT_LEFT:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+    case OPERATOR_BITSHIFT_RIGHT:
+    {
+        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+    }
+
+    }
+    return false;
+}
+
 
 VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
@@ -200,21 +281,16 @@ VALUE number_operator_bitshift_right(VM *vm, VALUE self, int UNUSED(arg_count), 
     return create_number(vm, (double)((int64_t)lhs->num >> (int64_t)rhs->num));
 }
 
-VALUE create_number(VM *vm, double number)
+VALUE create_number(VM UNUSED(*vm), double number)
 {
-    VALUE result = OBJ_VAL(newInstance(vm, AS_CLASS(number_class)));
-    NumberData *result_data = GET_NATIVE_INSTANCE_DATA(NumberData, result);
-    result_data->num = number;
-    return result;
+    return NUMBER_VAL(number);
 }
 
 double number_get_value(VALUE self)
 {
-    if (instanceof(self, number_class) == TRUE_VAL)
+    if (IS_NUMBER(self))
     {
-        NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-        if (data != NULL)
-            return data->num;
+        return AS_NUMBER(self);
     }
     return NAN;
 }
@@ -228,7 +304,7 @@ bool is_a_number(VALUE instance)
 
 void bootstrap_number(VM *vm)
 {
-    number_class = bootstrapNativeClass(vm, "Number", &number_constructor, NULL, CLS_NUMBER, sizeof(NumberData), false);
+    number_class = bootstrapNativeClass(vm, "Number", NULL, NULL, CLS_NUMBER, sizeof(NumberData), false);
 }
 
 void complete_number(VM *vm)

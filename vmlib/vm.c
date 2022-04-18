@@ -368,9 +368,18 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
     return false;
 }
 
+static bool callNumberOperator(VM* vm, Value receiver, int argCount, OPERATOR operator)
+{
+
+}
+
 static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator)
 {
-    if (IS_NATIVE_INSTANCE(receiver) || IS_INSTANCE(receiver))
+    if (IS_NUMBER(receiver))
+    {
+        callNumberOperator(vm, receiver, argCount, operator);
+    }
+    else if (IS_NATIVE_INSTANCE(receiver) || IS_INSTANCE(receiver))
     {
         ObjInstance *instance = AS_INSTANCE(receiver);
         Value operator_callable = instance->klass->operators[operator];

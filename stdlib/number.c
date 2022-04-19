@@ -36,87 +36,93 @@ VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
+/**
+* This is absolutely a concession to speed.  Basically, polymorphism won't
+* work for a Number, because I'm not performing a lookup.  And I don't have
+* an object instance to get the overidden function table.
+**/
 VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
 {
-    VALUE arg = arguments[0];
-    if (!IS_NUMBER(arg))
-    {
-        throw_exception_native(vm, "ArgumentException",
-            "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(op), getClassNameFromInstance(arg));
-    }
+    VALUE arg = arguments == NULL ? NIL_VAL : arguments[0];
     switch (op)
     {
     case OPERATOR_MULTIPLICATION:
-    { 
-        return NUMBER_VAL(AS_NUMBER(self) * AS_NUMBER(arg));
+    {
+        return create_number(vm, AS_NUMBER(self) * AS_NUMBER(arg));
     }
     case OPERATOR_PLUS:
     {
-        return NUMBER_VAL(AS_NUMBER(self) + AS_NUMBER(arg));
+        return create_number(vm, AS_NUMBER(self) + AS_NUMBER(arg));
     }
     case OPERATOR_MINUS:
     {
-        return NUMBER_VAL(AS_NUMBER(self) - AS_NUMBER(arg));
+        return create_number(vm, AS_NUMBER(self) - AS_NUMBER(arg));
     }
     case OPERATOR_DIVISION:
     {
-        return NUMBER_VAL(AS_NUMBER(self) / AS_NUMBER(arg));
+        return create_number(vm, AS_NUMBER(self) / AS_NUMBER(arg));
     }
     case OPERATOR_MODULO:
     {
-        return NUMBER_VAL((int64_t)AS_NUMBER(self) % (int64_t)AS_NUMBER(arg));
+        return create_number(vm, ((int64_t)AS_NUMBER(self) % (int64_t)AS_NUMBER(arg)));
     }
     case OPERATOR_GREATER_THAN:
     {
-        return NUMBER_VAL(AS_NUMBER(self) > AS_NUMBER(arg));
+        if (AS_NUMBER(self) > AS_NUMBER(arg))
+            return TRUE_VAL;
+        return FALSE_VAL;
     }
     case OPERATOR_LESS_THAN:
     {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+        if (AS_NUMBER(self) < AS_NUMBER(arg))
+            return TRUE_VAL;
+        return FALSE_VAL;
     }
     case OPERATOR_GREATER_EQUAL:
     {
-        return NUMBER_VAL(AS_NUMBER(self) >= AS_NUMBER(arg));
+        if (AS_NUMBER(self) >= AS_NUMBER(arg))
+            return TRUE_VAL;
+        return FALSE_VAL;
     }
     case OPERATOR_LESS_EQUAL:
     {
-        return NUMBER_VAL(AS_NUMBER(self) <= AS_NUMBER(arg));
+        if (AS_NUMBER(self) <= AS_NUMBER(arg))
+            return TRUE_VAL;
+        return FALSE_VAL;
     }
     case OPERATOR_EQUALS:
     {
-        return NUMBER_VAL(AS_NUMBER(self) == AS_NUMBER(arg));
-    }
-    case OPERATOR_INDEX:
-    {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
-    }
-    case OPERATOR_INDEX_ASSIGN:
-    {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+        if (AS_NUMBER(self) == AS_NUMBER(arg))
+            return TRUE_VAL;
+        return FALSE_VAL;
     }
     case OPERATOR_BITWISE_OR:
     {
-        return NUMBER_VAL((int64_t)AS_NUMBER(self) | (int64_t)AS_NUMBER(arg));
+        return create_number(vm, (double)((int64_t)AS_NUMBER(self) | (int64_t)AS_NUMBER(arg)));
     }
     case OPERATOR_BITWISE_AND:
     {
-        return NUMBER_VAL((int64_t)AS_NUMBER(self) & (int64_t)AS_NUMBER(arg));
+        return create_number(vm, (double)((int64_t)AS_NUMBER(self) & (int64_t)AS_NUMBER(arg)));
     }
     case OPERATOR_BITWISE_XOR:
     {
-        return NUMBER_VAL((int64_t)AS_NUMBER(self) ^ (int64_t)AS_NUMBER(arg));
+        return create_number(vm, (double)((int64_t)AS_NUMBER(self) ^ (int64_t)AS_NUMBER(arg)));
     }
     case OPERATOR_BITWISE_NEGATE:
     {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+        return create_number(vm, (double)~((int64_t)AS_NUMBER(self)));
     }
     case OPERATOR_BITSHIFT_LEFT:
     {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+        return create_number(vm, (double)((int64_t)AS_NUMBER(self) << (int64_t)AS_NUMBER(arg)));
     }
     case OPERATOR_BITSHIFT_RIGHT:
     {
-        return NUMBER_VAL(AS_NUMBER(self) < AS_NUMBER(arg));
+        return create_number(vm, (double)((int64_t)AS_NUMBER(self) >> (int64_t)AS_NUMBER(arg)));
+    }
+    default:
+    {
+        runtimeError(vm, "Undefined operator for Number class: %s", getOperatorString(op));
     }
 
     }
@@ -126,159 +132,33 @@ VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
 
 VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    double result = sqrt(data->num);
+    double result = sqrt(number_get_value(self));
     return create_number(vm, result);
 }
 
 VALUE number_abs(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData* data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    double result = fabs(data->num);
+    double result = fabs(number_get_value(self));
     return create_number(vm, result);
 }
 
 VALUE number_ceiling(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    double result = ceil(data->num);
+    double result = ceil(number_get_value(self));
     return create_number(vm, result);
 }
 
 VALUE number_floor(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    double result = floor(data->num);
+    double result = floor(number_get_value(self));
     return create_number(vm, result);
 }
 
 VALUE number_even_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    NumberData *data = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    if (((int64_t)data->num) & 1)
+    if (((int64_t)number_get_value(self)) & 1)
         return TRUE_VAL;
     return FALSE_VAL;
-}
-
-VALUE number_operator_plus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, lhs->num + rhs->num);
-}
-
-VALUE number_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, lhs->num - rhs->num);
-}
-
-VALUE number_operator_divide(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, lhs->num / rhs->num);
-}
-
-VALUE number_operator_multiply(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, lhs->num * rhs->num);
-}
-
-VALUE number_operator_modulo(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (int64_t) lhs->num % (int64_t) rhs->num);
-}
-
-VALUE number_operator_greater_than(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    if (lhs->num > rhs->num)
-        return TRUE_VAL;
-    return FALSE_VAL;
-}
-
-VALUE number_operator_greater_equal(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    if (lhs->num >= rhs->num)
-        return TRUE_VAL;
-    return FALSE_VAL;
-}
-
-VALUE number_operator_less_than(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    if (lhs->num < rhs->num)
-        return TRUE_VAL;
-    return FALSE_VAL;
-}
-
-VALUE number_operator_less_equal(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    if (lhs->num <= rhs->num)
-        return TRUE_VAL;
-    return FALSE_VAL;
-}
-
-VALUE number_operator_equals(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
-{
-    NumberData *lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData *rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    if (lhs->num == rhs->num)
-        return TRUE_VAL;
-    return FALSE_VAL;
-}
-
-VALUE number_operator_bitwise_or(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (double) ((int64_t)lhs->num | (int64_t)rhs->num));
-}
-
-VALUE number_operator_bitwise_and(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (double)((int64_t)lhs->num & (int64_t)rhs->num));
-}
-
-VALUE number_operator_bitwise_xor(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (double)((int64_t)lhs->num ^ (int64_t)rhs->num));
-}
-
-VALUE number_operator_bitwise_negate(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    return create_number(vm, (double)(~(int64_t)lhs->num));
-}
-
-VALUE number_operator_bitshift_left(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (double)((int64_t)lhs->num << (int64_t)rhs->num));
-}
-
-VALUE number_operator_bitshift_right(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    NumberData* lhs = GET_NATIVE_INSTANCE_DATA(NumberData, self);
-    NumberData* rhs = GET_NATIVE_INSTANCE_DATA(NumberData, arguments[0]);
-    return create_number(vm, (double)((int64_t)lhs->num >> (int64_t)rhs->num));
 }
 
 VALUE create_number(VM UNUSED(*vm), double number)
@@ -295,16 +175,9 @@ double number_get_value(VALUE self)
     return NAN;
 }
 
-bool is_a_number(VALUE instance)
-{
-    if (instanceof(instance, number_class) == TRUE_VAL)
-        return true;
-    return false;
-}
-
 void bootstrap_number(VM *vm)
 {
-    number_class = bootstrapNativeClass(vm, "Number", NULL, NULL, CLS_NUMBER, sizeof(NumberData), false);
+    number_class = bootstrapNativeClass(vm, "Number", NULL, NULL, CLS_NUMBER, 0, true);
 }
 
 void complete_number(VM *vm)
@@ -317,24 +190,4 @@ void complete_number(VM *vm)
     defineNativeMethod(vm, number_class, &number_floor, "floor", 0, false);
     defineNativeMethod(vm, number_class, &number_even_p, "even?", 0, false);
     defineNativeMethod(vm, number_class, &number_abs, "absolute_value", 0, false);
-
-    defineNativeOperator(vm, number_class, &number_operator_plus, 1, OPERATOR_PLUS);
-    defineNativeOperator(vm, number_class, &number_operator_minus, 1, OPERATOR_MINUS);
-    defineNativeOperator(vm, number_class, &number_operator_divide, 1, OPERATOR_DIVISION);
-    defineNativeOperator(vm, number_class, &number_operator_multiply, 1, OPERATOR_MULTIPLICATION);
-    defineNativeOperator(vm, number_class, &number_operator_modulo, 1, OPERATOR_MODULO);
-
-    defineNativeOperator(vm, number_class, &number_operator_bitwise_or, 1, OPERATOR_BITWISE_OR);
-    defineNativeOperator(vm, number_class, &number_operator_bitwise_and, 1, OPERATOR_BITWISE_AND);
-    defineNativeOperator(vm, number_class, &number_operator_bitwise_xor, 1, OPERATOR_BITWISE_XOR);
-    defineNativeOperator(vm, number_class, &number_operator_bitshift_left, 1, OPERATOR_BITSHIFT_LEFT);
-    defineNativeOperator(vm, number_class, &number_operator_bitshift_right, 1, OPERATOR_BITSHIFT_RIGHT);
-    defineNativeOperator(vm, number_class, &number_operator_bitwise_negate, 0, OPERATOR_BITWISE_NEGATE);
-
-    // Ideally I should be able to compress these five down to one eventually
-    defineNativeOperator(vm, number_class, &number_operator_greater_than, 1, OPERATOR_GREATER_THAN);
-    defineNativeOperator(vm, number_class, &number_operator_greater_equal, 1, OPERATOR_GREATER_EQUAL);
-    defineNativeOperator(vm, number_class, &number_operator_less_than, 1, OPERATOR_LESS_THAN);
-    defineNativeOperator(vm, number_class, &number_operator_less_equal, 1, OPERATOR_LESS_EQUAL);
-    defineNativeOperator(vm, number_class, &number_operator_equals, 1, OPERATOR_EQUALS);
 }

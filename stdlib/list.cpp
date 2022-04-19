@@ -116,12 +116,21 @@ VALUE list_peek(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(
     return data->entries[data->count - 1].item;
 }
 
-VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_get_at(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-        int index = (int)number_get_value(arguments[0]);
+        VALUE arg = arguments[0];
+        int index;
+        if (IS_NUMBER(arg))
+        {
+            index = (int)number_get_value(arg);
+        }
+        else if (IS_INSTANCE_OF_STDLIB_TYPE(arg, CLS_ENUM_VALUE))
+        {
+            index = (int)enumvalue_get_value(arg);
+        }
         if (index >= data->count)
         {
             throw_exception_native(

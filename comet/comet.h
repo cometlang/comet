@@ -30,6 +30,7 @@ extern "C" {
 
     VALUE create_number(VM* vm, double number);
     double number_get_value(VALUE self);
+    VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op);
 
     VALUE list_create(VM* vm);
     VALUE list_add(VM* vm, VALUE self, int arg_count, VALUE* arguments);

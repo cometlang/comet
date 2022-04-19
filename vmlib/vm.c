@@ -370,14 +370,25 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
 static bool callNumberOperator(VM* vm, Value receiver, int argCount, OPERATOR operator)
 {
-
+    VALUE* args = argCount > 0 ? vm->stackTop - argCount : NULL;
+    if (args != NULL)
+    {
+        if (!IS_NUMBER(args[0]))
+        {
+            runtimeError(vm, "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(operator), getClassNameFromInstance(args[0]));
+        }
+    }
+    VALUE result = number_operator(vm, receiver, args, operator);
+    popMany(vm, argCount + 1);
+    push(vm, result);
+    return true;
 }
 
 static bool callOperator(VM *vm, Value receiver, int argCount, OPERATOR operator)
 {
     if (IS_NUMBER(receiver))
     {
-        callNumberOperator(vm, receiver, argCount, operator);
+        return callNumberOperator(vm, receiver, argCount, operator);
     }
     else if (IS_NATIVE_INSTANCE(receiver) || IS_INSTANCE(receiver))
     {
@@ -421,7 +432,8 @@ static bool invoke(VM *vm, Value name, int argCount)
     if (!(IS_INSTANCE(receiver) ||
           IS_NATIVE_INSTANCE(receiver) ||
           IS_CLASS(receiver) ||
-          IS_NATIVE_CLASS(receiver)))
+          IS_NATIVE_CLASS(receiver) ||
+          IS_NUMBER(receiver)))
     {
         if (IS_NIL(receiver))
         {
@@ -434,9 +446,10 @@ static bool invoke(VM *vm, Value name, int argCount)
         return false;
     }
 
+    ObjClass *klass = NULL;
     if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver))
     {
-        ObjInstance *instance = AS_INSTANCE(receiver);
+        ObjInstance* instance = AS_INSTANCE(receiver);
 
         // First look for a field which may shadow a method.
         Value value;
@@ -447,15 +460,28 @@ static bool invoke(VM *vm, Value name, int argCount)
             // Try to invoke it like a function.
             return callValue(vm, value, argCount);
         }
+        klass = instance->klass;
+    }
+    else if (IS_NUMBER(receiver))
+    {
+        VALUE numberClass;
+        if (!findGlobal(copyString(vm, "Number", 6), &numberClass))
+        {
+            runtimeError(vm, "Couldn't find the Number class!");
+        }
+        klass = AS_CLASS(numberClass);
+    }
 
-        Value method = findMethod(instance->klass, name);
+    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_NUMBER(receiver))
+    {
+        Value method = findMethod(klass, name);
         if (method == NIL_VAL)
         {
             throw_exception_native(
                 vm,
                 "MethodNotFoundException",
                 "Unable to call '%s' on object of type '%s'",
-                string_get_cstr(name), instance->klass->name);
+                string_get_cstr(name), klass->name);
                 return false;
         }
 
@@ -472,7 +498,7 @@ static bool invoke(VM *vm, Value name, int argCount)
             return callNativeMethod(vm, receiver, AS_NATIVE_METHOD(method), argCount);
         }
 
-        return invokeFromClass(vm, instance->klass, name, argCount);
+        return invokeFromClass(vm, klass, name, argCount);
     }
 
     return invokeFromClass(vm, AS_CLASS(receiver), name, argCount);

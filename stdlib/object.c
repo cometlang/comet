@@ -22,6 +22,11 @@ VALUE instanceof(VALUE self, VALUE klass)
             current_klass = current_klass->super_;
         }
     }
+    else if (IS_NUMBER(self)) {
+        if (AS_CLASS(klass)->classType == CLS_NUMBER) {
+            return TRUE_VAL;
+        }
+    }
     return FALSE_VAL;
 }
 

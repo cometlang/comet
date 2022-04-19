@@ -20,7 +20,8 @@ typedef struct {
 } EnumIterator;
 
 typedef struct {
-    NumberData num;
+    ObjNativeInstance obj;
+    double num;
     VALUE name;
 } EnumValueData;
 
@@ -28,23 +29,23 @@ static void enumvalue_constructor(void *instanceData)
 {
     EnumValueData *data = (EnumValueData *)instanceData;
     data->name = NIL_VAL;
-    data->num.num = 0;
+    data->num = 0;
 }
 
 static VALUE enumvalue_init(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, self);
     data->name = arguments[0];
-    data->num.num = number_get_value(arguments[1]);
+    data->num = number_get_value(arguments[1]);
     setNativeProperty(vm, self, "name", data->name);
-    setNativeProperty(vm, self, "value", data->num.num);
+    setNativeProperty(vm, self, "value", data->num);
     return NIL_VAL;
 }
 
 uint64_t enumvalue_get_value(VALUE instance)
 {
     EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, instance);
-    return (uint64_t) data->num.num;
+    return (uint64_t) data->num;
 }
 
 static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -57,7 +58,7 @@ static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(
     int max_len = 64 + strlen(name);
 #endif
     char temp_string[max_len];
-    int length = snprintf(temp_string, max_len, "%s:%.17g", name, data->num.num);
+    int length = snprintf(temp_string, max_len, "%s:%.17g", name, data->num);
     return copyString(vm, temp_string, length);
 }
 
@@ -107,7 +108,22 @@ static VALUE enum_parse(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE
 {
     EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, self);
     VALUE candidate = arguments[0];
-    if (AS_INSTANCE(candidate)->klass->classType == CLS_STRING)
+    if (IS_NUMBER(candidate))
+    {
+        for (int i = 0; i < data->array.count; i++)
+        {
+            VALUE current = data->array.values[i];
+            if (current != NIL_VAL)
+            {
+                EnumValueData *val = GET_NATIVE_INSTANCE_DATA(EnumValueData, current);
+                if (val->num == number_get_value(candidate))
+                {
+                    return current;
+                }
+            }
+        }
+    }
+    else if (IS_INSTANCE_OF_STDLIB_TYPE(candidate, CLS_STRING))
     {
         for (int i = 0; i < data->array.count; i++)
         {
@@ -116,21 +132,6 @@ static VALUE enum_parse(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE
             {
                 EnumValueData *val = GET_NATIVE_INSTANCE_DATA(EnumValueData, current);
                 if (strcmp(string_get_cstr(val->name), string_get_cstr(candidate)) == 0)
-                {
-                    return current;
-                }
-            }
-        }
-    }
-    else if (is_a_number(candidate))
-    {
-        for (int i = 0; i < data->array.count; i++)
-        {
-            VALUE current = data->array.values[i];
-            if (current != NIL_VAL)
-            {
-                EnumValueData *val = GET_NATIVE_INSTANCE_DATA(EnumValueData, current);
-                if (val->num.num == number_get_value(candidate))
                 {
                     return current;
                 }
@@ -220,7 +221,7 @@ void init_enum(VM *vm)
     defineNativeMethod(vm, enum_class, &enum_length, "length", 0, false);
     defineNativeMethod(vm, enum_class, &enum_length, "count", 0, false);
 
-    enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, NULL, "Number", CLS_ENUM_VALUE, sizeof(EnumValueData), false);
+    enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, NULL, NULL, CLS_ENUM_VALUE, sizeof(EnumValueData), false);
     defineNativeMethod(vm, enum_value_class, &enumvalue_init, "init", 2, false);
     defineNativeMethod(vm, enum_value_class, &enumvalue_to_string, "to_string", 0, false);
 

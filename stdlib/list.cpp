@@ -116,12 +116,21 @@ VALUE list_peek(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(
     return data->entries[data->count - 1].item;
 }
 
-VALUE list_get_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE list_get_at(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-        int index = (int)number_get_value(arguments[0]);
+        VALUE arg = arguments[0];
+        int index;
+        if (IS_NUMBER(arg))
+        {
+            index = (int)number_get_value(arg);
+        }
+        else if (IS_INSTANCE_OF_STDLIB_TYPE(arg, CLS_ENUM_VALUE))
+        {
+            index = (int)enumvalue_get_value(arg);
+        }
         if (index >= data->count)
         {
             throw_exception_native(
@@ -185,30 +194,49 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
     return FALSE_VAL;
 }
 
+static VALUE is_lhs_less_than_or_equal_to_rhs(VALUE lhs, VALUE rhs, VALUE compare_func)
+{
+    if (IS_NUMBER(lhs))
+    {
+        if (AS_NUMBER(lhs) <= AS_NUMBER(rhs))
+            return TRUE_VAL;
+        return FALSE_VAL;
+    }
+    return call_function(lhs, compare_func, 1, &rhs);
+}
+
+static VALUE get_compare_func(VM *vm, VALUE self)
+{
+    if (IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self))
+    {
+        VALUE compare_func = AS_INSTANCE(self)->klass->operators[OPERATOR_LESS_EQUAL];
+        if (compare_func == NIL_VAL)
+        {
+            runtimeError(
+                vm,
+                "ArgumentException",
+                "%s doesn't implement <= as required for sorting",
+                getClassNameFromInstance(self));
+        }
+    }
+    return NIL_VAL;
+}
+
 static void insertion_sort(VM *vm, const ListData *data, int left, int right)
 {
     for (int i = left + 1; i <= right; i++)
     {
         VALUE temp = data->entries[i].item;
-        if (!IS_INSTANCE(temp) && !IS_NATIVE_INSTANCE(temp))
+        VALUE compare_func = get_compare_func(vm, temp);
+        if (!IS_INSTANCE(temp) && !IS_NATIVE_INSTANCE(temp) && !IS_NUMBER(temp))
         {
             throw_exception_native(vm, "ArgumentException", "Can't sort a list containing a '%s'", objTypeName(AS_OBJ(temp)->type));
-            return;
-        }
-        VALUE compare_func = AS_INSTANCE(temp)->klass->operators[OPERATOR_LESS_EQUAL];
-        if (compare_func == NIL_VAL)
-        {
-            throw_exception_native(
-                vm,
-                "ArgumentException",
-                "%s doesn't implement <= as required for sorting",
-                getClassNameFromInstance(temp));
             return;
         }
         int j = i - 1;
         while (j >= left)
         {
-            VALUE result = call_function(temp, compare_func, 1, &data->entries[j].item);
+            VALUE result = is_lhs_less_than_or_equal_to_rhs(temp, data->entries[j].item, compare_func);
             if (result == TRUE_VAL)
             {
                 data->entries[j + 1].item = data->entries[j].item;
@@ -223,7 +251,7 @@ static void insertion_sort(VM *vm, const ListData *data, int left, int right)
     }
 }
 
-static void merge_sorted_runs(ListData* data, int l, int m, int r)
+static void merge_sorted_runs(VM *vm, ListData* data, int l, int m, int r)
 {
     // Original array is broken into two parts - left and right array
     int len1 = m - l + 1, len2 = r - m;
@@ -241,8 +269,8 @@ static void merge_sorted_runs(ListData* data, int l, int m, int r)
     // After comparing, we merge those two arrays into a larger sub array
     while (i < len1 && j < len2)
     {
-        VALUE compare_func = AS_INSTANCE(left[i])->klass->operators[OPERATOR_LESS_EQUAL];
-        VALUE result = call_function(left[i], compare_func, 1, &right[j]);
+        VALUE compare_func = get_compare_func(vm, left[i]);
+        VALUE result = is_lhs_less_than_or_equal_to_rhs(left[i], right[j], compare_func);
         if (result == TRUE_VAL)
         {
             data->entries[k].item = left[i];
@@ -300,7 +328,7 @@ VALUE list_sort(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
 
             // merge sub array arr[left.....mid] and arr[mid+1....right]
             if (mid < right)
-                merge_sorted_runs(data, left, mid, right);
+                merge_sorted_runs(vm, data, left, mid, right);
         }
     }
 

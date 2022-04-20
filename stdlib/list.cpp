@@ -198,7 +198,7 @@ static VALUE is_lhs_less_than_or_equal_to_rhs(VALUE lhs, VALUE rhs, VALUE compar
 {
     if (IS_NUMBER(lhs))
     {
-        if (AS_NUMBER(lhs) <= AS_NUMBER(rhs))
+        if (number_get_value(lhs) <= number_get_value(rhs))
             return TRUE_VAL;
         return FALSE_VAL;
     }

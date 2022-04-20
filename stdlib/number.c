@@ -12,7 +12,7 @@ VALUE number_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
 {
 #define TEMP_STRING_MAX_LEN 64
     char temp[TEMP_STRING_MAX_LEN];
-    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%.17g", AS_NUMBER(self));
+    int length = snprintf(temp, TEMP_STRING_MAX_LEN, "%.17g", number_get_value(self));
     return copyString(vm, temp, length);
 #undef TEMP_STRING_MAX_LEN
 }
@@ -48,81 +48,81 @@ VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
     {
     case OPERATOR_MULTIPLICATION:
     {
-        return create_number(vm, AS_NUMBER(self) * AS_NUMBER(arg));
+        return create_number(vm, number_get_value(self) * number_get_value(arg));
     }
     case OPERATOR_PLUS:
     {
-        return create_number(vm, AS_NUMBER(self) + AS_NUMBER(arg));
+        return create_number(vm, number_get_value(self) + number_get_value(arg));
     }
     case OPERATOR_MINUS:
     {
-        return create_number(vm, AS_NUMBER(self) - AS_NUMBER(arg));
+        return create_number(vm, number_get_value(self) - number_get_value(arg));
     }
     case OPERATOR_DIVISION:
     {
-        return create_number(vm, AS_NUMBER(self) / AS_NUMBER(arg));
+        return create_number(vm, number_get_value(self) / number_get_value(arg));
     }
     case OPERATOR_MODULO:
     {
-        return create_number(vm, ((int64_t)AS_NUMBER(self) % (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, ((int64_t)number_get_value(self) % (int64_t)number_get_value(arg)));
     }
     case OPERATOR_GREATER_THAN:
     {
-        if (AS_NUMBER(self) > AS_NUMBER(arg))
+        if (number_get_value(self) > number_get_value(arg))
             return TRUE_VAL;
         return FALSE_VAL;
     }
     case OPERATOR_LESS_THAN:
     {
-        if (AS_NUMBER(self) < AS_NUMBER(arg))
+        if (number_get_value(self) < number_get_value(arg))
             return TRUE_VAL;
         return FALSE_VAL;
     }
     case OPERATOR_GREATER_EQUAL:
     {
-        if (AS_NUMBER(self) >= AS_NUMBER(arg))
+        if (number_get_value(self) >= number_get_value(arg))
             return TRUE_VAL;
         return FALSE_VAL;
     }
     case OPERATOR_LESS_EQUAL:
     {
-        if (AS_NUMBER(self) <= AS_NUMBER(arg))
+        if (number_get_value(self) <= number_get_value(arg))
             return TRUE_VAL;
         return FALSE_VAL;
     }
     case OPERATOR_EQUALS:
     {
-        if (AS_NUMBER(self) == AS_NUMBER(arg))
+        if (number_get_value(self) == number_get_value(arg))
             return TRUE_VAL;
         return FALSE_VAL;
     }
     case OPERATOR_BITWISE_OR:
     {
-        return create_number(vm, (double)((int64_t)AS_NUMBER(self) | (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, (double)((int64_t)number_get_value(self) | (int64_t)number_get_value(arg)));
     }
     case OPERATOR_BITWISE_AND:
     {
-        return create_number(vm, (double)((int64_t)AS_NUMBER(self) & (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, (double)((int64_t)number_get_value(self) & (int64_t)number_get_value(arg)));
     }
     case OPERATOR_BITWISE_XOR:
     {
-        return create_number(vm, (double)((int64_t)AS_NUMBER(self) ^ (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, (double)((int64_t)number_get_value(self) ^ (int64_t)number_get_value(arg)));
     }
     case OPERATOR_BITWISE_NEGATE:
     {
-        return create_number(vm, (double)~((int64_t)AS_NUMBER(self)));
+        return create_number(vm, (double)~((int64_t)number_get_value(self)));
     }
     case OPERATOR_BITSHIFT_LEFT:
     {
-        return create_number(vm, (double)((int64_t)AS_NUMBER(self) << (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, (double)((int64_t)number_get_value(self) << (int64_t)number_get_value(arg)));
     }
     case OPERATOR_BITSHIFT_RIGHT:
     {
-        return create_number(vm, (double)((int64_t)AS_NUMBER(self) >> (int64_t)AS_NUMBER(arg)));
+        return create_number(vm, (double)((int64_t)number_get_value(self) >> (int64_t)number_get_value(arg)));
     }
     default:
     {
-        runtimeError(vm, "Undefined operator for Number class: %s", getOperatorString(op));
+        runtimeError(vm, "Operator '%s' is not defined for class 'Number'.", getOperatorString(op));
     }
 
     }

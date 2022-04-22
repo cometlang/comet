@@ -1049,6 +1049,7 @@ static InterpretResult run(VM *vm)
             Value imported = import_from_file(vm, frame->closure->function->chunk.filename, peek(vm, 0));
             if (imported != NIL_VAL)
             {
+                pop(vm);
                 push(vm, OBJ_VAL(imported));
                 if (!module_is_initialized(imported))
                 {

@@ -46,7 +46,7 @@ static VALUE string_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(a
     return FALSE_VAL;
 }
 
-static VALUE string_iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE string_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringIterator *data = GET_NATIVE_INSTANCE_DATA(StringIterator, self);
     utf8proc_ssize_t bytes_read = utf8proc_iterate(
@@ -61,6 +61,18 @@ static VALUE string_iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UN
     return copyString(vm, (const char *) character, (int)char_len);
 }
 
+static VALUE string_iterator_peek_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    StringIterator *data = GET_NATIVE_INSTANCE_DATA(StringIterator, self);
+    utf8proc_ssize_t bytes_read = utf8proc_iterate(
+        (const utf8proc_uint8_t *)&data->string->chars[data->offset], data->remaining, &data->current_codepoint);
+    if (bytes_read == -1)
+        return NIL_VAL;
+
+    utf8proc_uint8_t character[4];
+    utf8proc_ssize_t char_len = utf8proc_encode_char(data->current_codepoint, character);
+    return copyString(vm, (const char *) character, (int)char_len);
+}
 
 uint32_t string_hash_cstr(const char *string, int length)
 {
@@ -474,6 +486,16 @@ VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
     return NIL_VAL;
 }
 
+VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    StringData* data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    char *failed;
+    double value = strtod(data->chars, &failed);
+    if (failed != data->chars)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -494,6 +516,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_ends_with_q, "ends_with?", 1, false);
     defineNativeMethod(vm, string_class, &string_empty_q, "empty?", 0, false);
     defineNativeMethod(vm, string_class, &string_iterable_contains_q, "contains?", 0, false);
+    defineNativeMethod(vm, string_class, &string_number_q, "number?", 0, false);
     defineNativeMethod(vm, string_class, &string_to_lower, "to_lower", 0, false);
     defineNativeMethod(vm, string_class, &string_to_upper, "to_upper", 0, false);
     defineNativeMethod(vm, string_class, &string_to_string, "to_string", 0, false);
@@ -511,5 +534,6 @@ void init_string(VM *vm, VALUE obj_klass)
         NULL,
         "Iterator", CLS_ITERATOR, sizeof(StringIterator), true);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_has_next_p, "has_next?", 0, false);
+    defineNativeMethod(vm, string_iterator_class, &string_iterator_peek_next, "peek_next", 0, false);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_get_next, "get_next", 0, false);
 }

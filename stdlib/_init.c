@@ -27,6 +27,7 @@ void init_stdlib(VM *vm)
     init_functions(vm);
     init_list(vm);
     init_hash(vm);
+    init_image(vm);
     init_datetime(vm);
     init_duration(vm);
     init_socket(vm);

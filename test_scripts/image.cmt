@@ -1,0 +1,13 @@
+var width = 200
+var height = 100
+
+var image = Image(width, height)
+for (var y = 0; y < height; y+=1) {
+	for (var x = 0; x < width; x+=1) {
+		image.set_pixel(x, y, 0, 255, 255)
+	}
+}
+
+image.write_to_file("test.png", IMAGE_FORMAT.PNG)
+image.write_to_file("test.jpg", IMAGE_FORMAT.JPEG)
+image.write_to_file("test.bmp", IMAGE_FORMAT.BMP)

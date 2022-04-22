@@ -17,6 +17,7 @@ extern "C" {
     void init_duration(VM *vm);
     void init_functions(VM* vm);
     void init_hash(VM* vm);
+    void init_image(VM* vm);
     void init_list(VM* vm);
     void init_module(VM* vm);
     void init_nil(VM* vm);

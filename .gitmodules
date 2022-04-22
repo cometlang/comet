@@ -4,3 +4,6 @@
 [submodule "utf8proc"]
 	path = utf8proc
 	url = https://github.com/JuliaStrings/utf8proc
+[submodule "stb"]
+	path = stb
+	url = https://github.com/nothings/stb

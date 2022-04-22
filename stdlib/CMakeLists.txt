@@ -7,7 +7,8 @@ include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}"
   ../comet
   ../vmlib
-  ../eral)
+  ../eral
+  ../stb)
 
 set(SOURCE 
   _init.c
@@ -20,6 +21,7 @@ set(SOURCE
   file_common.c
   functions.c
   hash.cpp
+  image.c
   iterable.c
   list.cpp
   module.c

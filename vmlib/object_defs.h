@@ -58,6 +58,7 @@ typedef enum
     CLS_ITERATOR,
     CLS_LIST,
     CLS_HASH,
+    CLS_IMAGE,
     CLS_MODULE,
     CLS_MUTEX,
     CLS_NIL,

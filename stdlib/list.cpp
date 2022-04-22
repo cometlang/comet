@@ -457,7 +457,7 @@ VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 void list_mark_contents(VALUE self)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    for (int i = 0; i < data->capacity; i++)
+    for (int i = 0; i < data->count; i++)
     {
         if (!IS_NIL(data->entries[i].item))
         {

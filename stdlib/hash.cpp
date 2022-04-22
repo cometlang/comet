@@ -26,7 +26,7 @@ typedef struct
 {
     ObjNativeInstance obj;
     int count;
-    size_t capacity;
+    int32_t capacity;
     HashEntry *entries;
 } HashTable;
 
@@ -193,7 +193,7 @@ static void adjust_capacity(HashTable *table, int capacity)
     table->count = 0;
     if (table->entries != NULL)
     {
-        for (size_t i = 0; i <= table->capacity; i++)
+        for (int32_t i = 0; i <= table->capacity; i++)
         {
             HashEntry *entry = &table->entries[i];
             if (entry == NULL || entry->key == NIL_VAL)
@@ -255,7 +255,7 @@ VALUE hash_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
 
 void hash_add_all(VM *vm, HashTable *from, HashTable *to)
 {
-    for (size_t i = 0; i <= from->capacity; i++)
+    for (int32_t i = 0; i <= from->capacity; i++)
     {
         HashEntry *entry = &from->entries[i];
         VALUE args[2] = {entry->key, entry->value};
@@ -268,7 +268,7 @@ void hash_add_all(VM *vm, HashTable *from, HashTable *to)
 
 void table_remove_white(VM *vm, HashTable *table)
 {
-    for (size_t i = 0; i <= table->capacity; i++)
+    for (int32_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
         if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
@@ -281,11 +281,14 @@ void table_remove_white(VM *vm, HashTable *table)
 void hash_mark_contents(VALUE self)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
-    for (size_t i = 0; i <= table->capacity; i++)
+    for (int32_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
-        markValue(entry->key);
-        markValue(entry->value);
+        if (entry->key != NIL_VAL)
+        {
+            markValue(entry->key);
+            markValue(entry->value);
+        }
     }
 }
 
@@ -295,7 +298,7 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
     std::stringstream stream;
     stream << "{";
     size_t count = 0;
-    for (size_t i = 0; i <= table->capacity; i++)
+    for (int32_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
         if (entry->key != NIL_VAL)

@@ -85,6 +85,7 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
 
 #if DEBUG_TRACE_EXECUTION
 void toggle_stack_printing(void);
+void print_stack(VM *vm);
 #endif
 
 #endif

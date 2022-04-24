@@ -138,6 +138,7 @@ void markObject(Obj *object)
     printf("\n");
 #endif
 
+    object->isMarked = true;
     if (object->type == OBJ_NATIVE_INSTANCE || object->type == OBJ_INSTANCE)
     {
         ObjInstance *instance = (ObjInstance *)object;
@@ -162,7 +163,6 @@ void markObject(Obj *object)
                 break;
         }
     }
-    object->isMarked = true;
 
     if (grey_capacity < grey_count + 1)
     {
@@ -259,14 +259,26 @@ static void freeObject(Obj *object)
     {
         printf("%p free String: \"%s\"\n", (void *)object, string_get_cstr(OBJ_VAL(object)));
     }
-    else if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) &&
-             AS_INSTANCE(OBJ_VAL(object))->klass->classType == CLS_NUMBER)
-    {
-        printf("%p free Number: \"%.17g\"\n", (void *)object, number_get_value(OBJ_VAL(object)));
-    }
     else if (IS_INSTANCE(OBJ_VAL(object)) || IS_NATIVE_INSTANCE(OBJ_VAL(object)))
     {
         printf("%p free %s (%s)\n", (void *)object, objTypeName(object->type), ((ObjInstance *)object)->klass->name);
+    }
+    else if (IS_CLOSURE(OBJ_VAL(object)))
+    {
+        ObjClosure *closure = (ObjClosure *)object;
+        if (closure->function && closure->function->name != NIL_VAL)
+        {
+            printf("%p free Closure (%s)\n", (void *)object, string_get_cstr(closure->function->name));
+        }
+        else
+        {
+            printf("%p free Closure (anonymous) %s\n", (void *)object, closure->function->chunk.filename);
+        }
+    }
+    else if (IS_FUNCTION(OBJ_VAL(object)))
+    {
+        ObjFunction *func = (ObjFunction *)object;
+        printf("%p free Function (%s)\n", (void *)object, string_get_cstr(func->name));
     }
     else
     {

@@ -203,6 +203,10 @@ static void printFunction(ObjFunction *function)
 
 void printObject(Value value)
 {
+    if (IS_NUMBER(value))
+    {
+        printf("%.17g", number_get_value(value));
+    }
     switch (OBJ_TYPE(value))
     {
     case OBJ_CLASS:
@@ -224,20 +228,20 @@ void printObject(Value value)
     case OBJ_INSTANCE:
     case OBJ_NATIVE_INSTANCE:
     {
-        if (AS_INSTANCE(value)->klass->classType == CLS_STRING)
+        if (IS_INSTANCE_OF_STDLIB_TYPE(value, CLS_STRING))
         {
             printf("\"%s\"", string_get_cstr(value));
         }
-        else if (AS_INSTANCE(value)->klass->classType == CLS_NUMBER)
-        {
-            printf("%.17g", number_get_value(value));
-        }
-        else if (AS_INSTANCE(value)->klass->classType == CLS_BOOLEAN)
+        else if (IS_INSTANCE_OF_STDLIB_TYPE(value, CLS_BOOLEAN))
         {
             if (bool_is_falsey(value))
                 printf("false");
             else
                 printf("true");
+        }
+        else if (IS_INSTANCE_OF_STDLIB_TYPE(value, CLS_MODULE))
+        {
+            printf("Module %s", module_filename(value));
         }
         else
         {

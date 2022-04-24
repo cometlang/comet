@@ -429,20 +429,22 @@ static bool invoke(VM *vm, Value name, int argCount)
 {
     Value receiver = peek(vm, argCount);
 
+    if (IS_NIL(receiver))
+    {
+        runtimeError(vm, "'%s' can't be invoked from nil.", string_get_cstr(name));
+    }
+
     if (!(IS_INSTANCE(receiver) ||
           IS_NATIVE_INSTANCE(receiver) ||
           IS_CLASS(receiver) ||
           IS_NATIVE_CLASS(receiver) ||
           IS_NUMBER(receiver)))
     {
-        if (IS_NIL(receiver))
-        {
-            runtimeError(vm, "'%s' can't be invoked from nil.", string_get_cstr(name));
-        }
-        else
-        {
-            runtimeError(vm, "'%s' can't be invoked from a '%s'.", string_get_cstr(name), objTypeName(OBJ_TYPE(receiver)));
-        }
+        runtimeError(
+            vm,
+            "'%s' can't be invoked from a '%s'.",
+            string_get_cstr(name),
+            objTypeName(OBJ_TYPE(receiver)));
         return false;
     }
 
@@ -595,6 +597,24 @@ static CallFrame *updateFrame(VM *vm)
     return &vm->frames[vm->frameCount - 1];
 }
 
+#if DEBUG_TRACE_EXECUTION
+void print_stack(VM *vm)
+{
+    CallFrame *frame = updateFrame(vm);
+    disassembleInstruction(&frame->closure->function->chunk,
+                        (int)(frame->ip - frame->closure->function->chunk.code));
+    printf("          ");
+    for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
+    {
+        printf("[ ");
+        printObject(*slot);
+        printf(" ]");
+        fflush(stdout);
+    }
+    printf("\n");
+}
+#endif
+
 static InterpretResult run(VM *vm)
 {
     // No work to do
@@ -620,22 +640,13 @@ static InterpretResult run(VM *vm)
 
     for (;;)
     {
-        uint8_t instruction;
 #if DEBUG_TRACE_EXECUTION
         if (_print_stack)
         {
-            disassembleInstruction(&frame->closure->function->chunk,
-                                (int)(frame->ip - frame->closure->function->chunk.code));
-            printf("          ");
-            for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
-            {
-                printf("[ ");
-                printObject(*slot);
-                printf(" ]");
-            }
-            printf("\n");
+            print_stack(vm);
         }
 #endif
+        uint8_t instruction;
         switch (instruction = READ_BYTE())
         {
         case OP_CONSTANT:

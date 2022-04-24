@@ -35,8 +35,6 @@ static int grey_count = 0;
 
 static uint32_t gc_count;
 static Obj *generation_0;
-static Obj *generation_1;
-static Obj *generation_2;
 
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
 static uint64_t total_gc_clocks;
@@ -421,32 +419,7 @@ static Obj *sweep_object_list(Obj *object, Obj **base)
 
 static void sweep()
 {
-    if (gc_count != 0)
-    {
-        if (gc_count % 11 == 0)
-        {
-            sweep_object_list(generation_2, &generation_2);
-        }
-        if (gc_count % 7 == 0)
-        {
-            Obj *end = sweep_object_list(generation_1, &generation_1);
-            if (end != NULL)
-            {
-                end->next = generation_2;
-                generation_2 = generation_1;
-                generation_1 = NULL;
-            }
-        }
-    }
-
-    Obj *end = sweep_object_list(generation_0, &generation_0);
-    if (end != NULL)
-    {
-        end->next = generation_1;
-        generation_1 = generation_0;
-        generation_0 = NULL;
-    }
-
+    sweep_object_list(generation_0, &generation_0);
     gc_count++;
 }
 
@@ -489,8 +462,6 @@ void initializeGarbageCollection()
     collecting_garbage = false;
     gc_count = 0;
     generation_0 = NULL;
-    generation_1 = NULL;
-    generation_2 = NULL;
 }
 
 static void free_object_list(Obj *object)
@@ -506,8 +477,6 @@ static void free_object_list(Obj *object)
 void freeObjects()
 {
     free_object_list(generation_0);
-    free_object_list(generation_1);
-    free_object_list(generation_2);
 }
 
 void finalizeGarbageCollection(void)

@@ -129,6 +129,12 @@ VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
     return false;
 }
 
+VALUE number_pow(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    double result = pow(number_get_value(self), number_get_value(arguments[0]));
+    return create_number(vm, result);
+}
+
 
 VALUE number_square_root(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
@@ -161,6 +167,20 @@ VALUE number_even_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNU
     return FALSE_VAL;
 }
 
+VALUE number_max(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+{
+    double lhs = number_get_value(arguments[0]);
+    double rhs = number_get_value(arguments[1]);
+    return create_number(vm, max(lhs, rhs));
+}
+
+VALUE number_min(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+{
+    double lhs = number_get_value(arguments[0]);
+    double rhs = number_get_value(arguments[1]);
+    return create_number(vm, min(lhs, rhs));
+}
+
 VALUE create_number(VM UNUSED(*vm), double number)
 {
     return NUMBER_VAL(number);
@@ -185,9 +205,12 @@ void complete_number(VM *vm)
     completeNativeClassDefinition(vm, number_class, NULL);
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
     defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
+    defineNativeMethod(vm, number_class, &number_pow, "power", 1, false);
     defineNativeMethod(vm, number_class, &number_square_root, "square_root", 0, false);
     defineNativeMethod(vm, number_class, &number_ceiling, "ceiling", 0, false);
     defineNativeMethod(vm, number_class, &number_floor, "floor", 0, false);
     defineNativeMethod(vm, number_class, &number_even_p, "even?", 0, false);
     defineNativeMethod(vm, number_class, &number_abs, "absolute_value", 0, false);
+    defineNativeMethod(vm, number_class, &number_max, "max", 2, true);
+    defineNativeMethod(vm, number_class, &number_min, "min", 2, true);
 }

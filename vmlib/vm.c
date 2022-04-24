@@ -429,11 +429,6 @@ static bool invoke(VM *vm, Value name, int argCount)
 {
     Value receiver = peek(vm, argCount);
 
-    if (IS_NIL(receiver))
-    {
-        runtimeError(vm, "'%s' can't be invoked from nil.", string_get_cstr(name));
-    }
-
     if (!(IS_INSTANCE(receiver) ||
           IS_NATIVE_INSTANCE(receiver) ||
           IS_CLASS(receiver) ||
@@ -442,7 +437,7 @@ static bool invoke(VM *vm, Value name, int argCount)
     {
         runtimeError(
             vm,
-            "'%s' can't be invoked from a '%s'.",
+            "'%s' can't be invoked from '%s'.",
             string_get_cstr(name),
             objTypeName(OBJ_TYPE(receiver)));
         return false;
@@ -479,12 +474,8 @@ static bool invoke(VM *vm, Value name, int argCount)
         Value method = findMethod(klass, name);
         if (method == NIL_VAL)
         {
-            throw_exception_native(
-                vm,
-                "MethodNotFoundException",
-                "Unable to call '%s' on object of type '%s'",
-                string_get_cstr(name), klass->name);
-                return false;
+            runtimeError(vm, "'%s' can't be invoked from '%s'.", string_get_cstr(name), klass->name);
+            return false;
         }
 
         if (IS_BOUND_METHOD(method))

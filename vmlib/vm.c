@@ -1075,6 +1075,7 @@ static InterpretResult run(VM *vm)
                 {
                     // Simulate a function return that we will be ditching
                     push(vm, NIL_VAL);
+                    push(vm, NIL_VAL);
                 }
                 pop(vm);
             }

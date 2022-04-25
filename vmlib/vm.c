@@ -1128,6 +1128,7 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         runtimeError(frame, "Invoke of method failed\n");
     }
+    markValue(result); // HACK. Hope to get the result through a round of GC, just in case we trigger a run.
     deregister_thread(frame);
     FREE(VM, frame);
     return result;

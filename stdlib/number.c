@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <errno.h>
 
 #include "cometlib.h"
@@ -163,23 +164,40 @@ VALUE number_floor(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argu
 VALUE number_even_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     if (((int64_t)number_get_value(self)) & 1)
-        return TRUE_VAL;
-    return FALSE_VAL;
+        return FALSE_VAL;
+    return TRUE_VAL;
 }
 
-VALUE number_max(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE number_max(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     double lhs = number_get_value(arguments[0]);
     double rhs = number_get_value(arguments[1]);
     return create_number(vm, max(lhs, rhs));
 }
 
-VALUE number_min(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+VALUE number_min(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     double lhs = number_get_value(arguments[0]);
     double rhs = number_get_value(arguments[1]);
     return create_number(vm, min(lhs, rhs));
 }
+
+static unsigned int rand_seed;
+VALUE number_random(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
+{
+    if (arg_count == 1)
+    {
+        rand_seed = (int)number_get_value(arguments[0]);
+    }
+    double random;
+#ifdef _WIN32
+    random = rand() / RAND_MAX;
+#else
+    random = rand_r(&rand_seed) / RAND_MAX;
+#endif
+    return create_number(vm, random);
+}
+
 
 VALUE create_number(VM UNUSED(*vm), double number)
 {
@@ -198,6 +216,8 @@ double number_get_value(VALUE self)
 void bootstrap_number(VM *vm)
 {
     number_class = bootstrapNativeClass(vm, "Number", NULL, NULL, CLS_NUMBER, 0, true);
+    rand_seed = time(NULL);
+    srand(rand_seed);
 }
 
 void complete_number(VM *vm)
@@ -205,6 +225,7 @@ void complete_number(VM *vm)
     completeNativeClassDefinition(vm, number_class, NULL);
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
     defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
+    defineNativeMethod(vm, number_class, &number_random, "random", 0, true);
     defineNativeMethod(vm, number_class, &number_pow, "power", 1, false);
     defineNativeMethod(vm, number_class, &number_square_root, "square_root", 0, false);
     defineNativeMethod(vm, number_class, &number_ceiling, "ceiling", 0, false);

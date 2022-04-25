@@ -26,4 +26,15 @@ assert(2 | 1 == 3)
 assert(2 << 1 == 4)
 assert(2 >> 1 == 1)
 
+assert(2.power(2) == 4)
+assert(4.square_root() == 2)
+assert(4.even?())
+assert(!3.even?())
+
+assert(Number.min(Number.random(), 0) == 0)
+assert(Number.max(Number.random(), 1) == 1)
+
+print((-42).absolute_value())
+assert((-42).absolute_value() == 42)
+
 print("Numbers test passed!")

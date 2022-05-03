@@ -200,7 +200,7 @@ VALUE file_static_read_all_lines(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_cou
     return pop(vm);
 }
 
-VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     int result = unlink(string_get_cstr(arguments[0]));
     if (result != 0)

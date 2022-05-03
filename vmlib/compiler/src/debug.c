@@ -154,7 +154,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_INVOKE:
         return invokeInstruction("OP_INVOKE", chunk, offset);
     case OP_SUPER:
-        return invokeInstruction("OP_SUPER_", chunk, offset);
+        return invokeInstruction("OP_SUPER", chunk, offset);
     case OP_CLOSURE:
     {
         offset++;

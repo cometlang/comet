@@ -592,8 +592,10 @@ static CallFrame *updateFrame(VM *vm)
 void print_stack(VM *vm)
 {
     CallFrame *frame = updateFrame(vm);
-    disassembleInstruction(&frame->closure->function->chunk,
-                        (int)(frame->ip - frame->closure->function->chunk.code));
+    if (vm->frameCount > 0) {
+        disassembleInstruction(&frame->closure->function->chunk,
+                            (int)(frame->ip - frame->closure->function->chunk.code));
+    }
     printf("          ");
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {

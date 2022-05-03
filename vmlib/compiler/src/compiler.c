@@ -119,12 +119,13 @@ void patchJump(Parser *parser, int offset)
 
 void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
 {
+    push(parser->compilation_thread, OBJ_VAL(newFunction(parser->filename, parser->currentModule)));
     compiler->enclosing = parser->currentFunction;
     compiler->function = NULL;
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;
-    compiler->function = newFunction(parser->filename, parser->currentModule);
+    compiler->function = AS_FUNCTION(peek(parser->compilation_thread, 0));
     parser->currentFunction = compiler;
 
     if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
@@ -163,6 +164,7 @@ ObjFunction *endCompiler(Parser *parser)
     }
 #endif
     parser->currentFunction = parser->currentFunction->enclosing;
+    pop(parser->compilation_thread);
     return function;
 }
 
@@ -237,12 +239,13 @@ void synchronize(Parser *parser)
 
 void initParser(Parser *parser, Scanner *scanner, const char *filename, VM *compilation_thread)
 {
+    push(compilation_thread, module_create(compilation_thread, filename));
     parser->filename = filename;
     parser->hadError = false;
     parser->panicMode = false;
     parser->scanner = scanner;
     parser->compilation_thread = compilation_thread;
-    parser->currentModule = module_create(parser->compilation_thread, filename);
+    parser->currentModule = peek(compilation_thread, 0);
     parser->currentClass = NULL;
     parser->currentLoop = NULL;
     parser->currentFunction = NULL;
@@ -267,6 +270,7 @@ Value compile(const SourceFile *source, VM *thread)
     }
     ObjFunction *function = endCompiler(&parser);
     module_set_main(function->module, function);
+    pop(thread);
 
     return parser.hadError ? NIL_VAL : function->module;
 }

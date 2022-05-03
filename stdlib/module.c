@@ -56,6 +56,12 @@ VALUE module_create(VM *vm, const char *filename)
     return instance;
 }
 
+void module_mark_contents(VALUE self)
+{
+    module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, self);
+    markValue(OBJ_VAL(data->main));
+}
+
 void init_module(VM *vm)
 {
     klass = defineNativeClass(vm, "Module", &module_constructor, NULL, "Object", CLS_MODULE, sizeof(module_data_t), true);

@@ -137,30 +137,6 @@ void markObject(Obj *object)
 #endif
 
     object->isMarked = true;
-    if (object->type == OBJ_NATIVE_INSTANCE || object->type == OBJ_INSTANCE)
-    {
-        ObjInstance *instance = (ObjInstance *)object;
-        switch (instance->klass->classType)
-        {
-            case CLS_HASH:
-                hash_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_LIST:
-                list_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_SET:
-                set_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_ENUM:
-                enum_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_THREAD:
-                thread_mark_contents(OBJ_VAL(object));
-                break;
-            default:
-                break;
-        }
-    }
 
     if (grey_capacity < grey_count + 1)
     {
@@ -236,6 +212,29 @@ static void blackenObject(Obj *object)
     case OBJ_NATIVE_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
+        switch (instance->klass->classType)
+        {
+            case CLS_HASH:
+                hash_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_LIST:
+                list_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_SET:
+                set_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_ENUM:
+                enum_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_THREAD:
+                thread_mark_contents(OBJ_VAL(object));
+                break;
+            case CLS_MODULE:
+                module_mark_contents(OBJ_VAL(object));
+                break;
+            default:
+                break;
+        }
         markObject((Obj *)instance->klass);
         markTable(&instance->fields);
         break;
@@ -276,7 +275,11 @@ static void freeObject(Obj *object)
     else if (IS_FUNCTION(OBJ_VAL(object)))
     {
         ObjFunction *func = (ObjFunction *)object;
-        printf("%p free Function (%s)\n", (void *)object, string_get_cstr(func->name));
+        if (func->name != NIL_VAL) {
+            printf("%p free Function (%s - %s)\n", (void *)object, string_get_cstr(func->name), func->chunk.filename);
+        } else {
+            printf("%p free Function (<script> - %s)\n", (void *)object, func->chunk.filename);
+        }
     }
     else
     {

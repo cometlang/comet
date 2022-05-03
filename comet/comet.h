@@ -42,6 +42,7 @@ extern "C" {
     void set_mark_contents(VALUE self);
     void enum_mark_contents(VALUE self);
     void thread_mark_contents(VALUE self);
+    void module_mark_contents(VALUE self);
 
     VALUE module_create(VM* vm, const char* filename);
     bool module_is_initialized(VALUE module);

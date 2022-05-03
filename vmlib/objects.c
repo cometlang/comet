@@ -206,6 +206,7 @@ void printObject(Value value)
     if (IS_NUMBER(value))
     {
         printf("%.17g", number_get_value(value));
+        return;
     }
     switch (OBJ_TYPE(value))
     {

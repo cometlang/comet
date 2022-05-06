@@ -16,7 +16,7 @@ set(SOURCE
   datetime.cpp
   duration.cpp
   enum.c
-  env.c
+  env.cpp
   exception.c
   file_common.c
   functions.c
@@ -53,3 +53,5 @@ target_include_directories(stdlib PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/private" 
 target_include_directories(stdlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_subdirectory(test)
+
+add_subdirectory(comet)

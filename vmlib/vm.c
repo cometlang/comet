@@ -7,7 +7,6 @@
 #include "compiler.h"
 #include "debug.h"
 #include "mem.h"
-#include "messages.h"
 #include "import.h"
 
 #include "comet.h"
@@ -148,9 +147,25 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
 {
     va_list args;
     va_start(args, message_format);
-    char* message = make_message(message_format, args);
-    push(vm, string_create(vm, message, strlen(message)));
+        int n = 0;
+    size_t size = 0;
+    char *message = NULL;
+
+    /* Determine required size */
+    n = vsnprintf(message, size, message_format, args);
     va_end(args);
+
+    va_start(args, message_format);
+    /* One extra byte for '\0' */
+    size = (size_t) n + 1;
+    message = malloc(size);
+
+    n = vsnprintf(message, size, message_format, args);
+    if (n < 0) {
+        free(message);
+    }
+
+    push(vm, string_create(vm, message, strlen(message)));
     push(vm, copyString(vm, exception_type_name, strlen(exception_type_name)));
     Value exception_type = NIL_VAL;
     if (findGlobal(peek(vm, 0), &exception_type))

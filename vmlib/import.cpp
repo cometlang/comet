@@ -23,30 +23,63 @@ extern "C" {
 
 using namespace std;
 
-constexpr string_view file_extenstion(".cmt");
+static constexpr string_view file_extension(".cmt");
+static const char *COMET_LIB_ENV_VARNAME = "COMET_LIB_DIR";
 
-#define EXTENSION_MAX_STRLEN 4
+static filesystem::path resolve_import_path(const char *relative_to_filename, const char *to_import)
+{
+    std::string to_import_filename = string(to_import);
+    if (!to_import_filename.ends_with(file_extension))
+    {
+        to_import_filename += string(file_extension);
+    }
+    filesystem::path import_path = filesystem::path(to_import_filename);
+    filesystem::path current_dir;
+    if (relative_to_filename == NULL)
+    {
+        current_dir = filesystem::current_path();
+    }
+    else
+    {
+        current_dir = filesystem::path(relative_to_filename).parent_path();
+    }
+    filesystem::path candidate = current_dir / import_path;
+    if (filesystem::exists(candidate))
+    {
+        return candidate;
+    }
+
+    char *dir = std::getenv(COMET_LIB_ENV_VARNAME);
+    if (dir != NULL)
+    {
+        candidate = filesystem::path(std::string(dir)) / import_path;
+    }
+    else
+    {
+#ifdef WIN32
+        const char *lib_dir = "C:\\comet";
+#else
+        const char *lib_dir = "/usr/local/lib/comet";
+#endif
+        candidate = filesystem::path(std::string(lib_dir)) / import_path;
+    }
+
+    if (filesystem::exists(candidate))
+    {
+        return candidate;
+    }
+
+    return filesystem::path();
+}
+
 
 Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import)
 {
     const char *to_import_path = string_get_cstr(to_import);
-    string current_dir;
-    if (relative_to_filename == NULL)
-    {
-        current_dir = filesystem::current_path().string();
-    }
-    else
-    {
-        current_dir = filesystem::path(relative_to_filename).parent_path().string();
-    }
-    filesystem::path candidate = filesystem::path(current_dir) / filesystem::path(string(to_import_path));
+    filesystem::path candidate = resolve_import_path(relative_to_filename, to_import_path);
     if (!filesystem::exists(candidate))
     {
-        candidate += string(file_extenstion);
-    }
-    if (!filesystem::exists(candidate))
-    {
-        throw_exception_native(vm, "ImportError", "Could not import file at path '%s'", to_import_path);
+        throw_exception_native(vm, "ImportError", "Could not import '%s'", to_import_path);
         return NIL_VAL;
     }
     string absolute_path = filesystem::canonical(candidate).string();

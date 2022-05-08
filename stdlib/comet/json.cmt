@@ -1,4 +1,4 @@
-function _skipWhitespace (iter) {
+function _skip_whitespace (iter) {
     while (iter.has_next?()) {
         var char = iter.peek_next()
         if (char == ' ' || char == '\n' || char == '\r') {
@@ -16,7 +16,7 @@ function _consume (iter, expected) {
     }
 }
 
-function _parseNumber (iter) {
+function _parse_number (iter) {
     var num = ''
     var char = iter.peek_next()
     while (iter.has_next?() && (char.number?() || char == '-')) {
@@ -37,7 +37,7 @@ function _parseNumber (iter) {
     return Number.parse(num)
 }
 
-function _parseString (iter) {
+function _parse_string (iter) {
     _consume(iter, '"')
     var result = ''
     var char = iter.peek_next()
@@ -49,13 +49,13 @@ function _parseString (iter) {
     return result
 }
 
-function _parseArray (iter) {
+function _parse_array (iter) {
     _consume(iter, '[')
     var result = []
     var char = iter.peek_next()
     while (iter.has_next?() && char != ']') {
-        result.append(_parseJson(iter))
-        _skipWhitespace(iter)
+        result.append(_parse_json(iter))
+        _skip_whitespace(iter)
         char = iter.peek_next()
         if (char == ',') {
             _consume(iter, ',')
@@ -65,18 +65,18 @@ function _parseArray (iter) {
     return result
 }
 
-function _parseObject (iter) {
+function _parse_object (iter) {
     _consume(iter, '{')
     var result = {}
     while (iter.has_next?()) {
-        _skipWhitespace(iter)
+        _skip_whitespace(iter)
         var char = iter.peek_next()
         if (char == '"') {
-            var name = _parseString(iter)
-            _skipWhitespace(iter)
+            var name = _parse_string(iter)
+            _skip_whitespace(iter)
             _consume(iter, ':')
-            _skipWhitespace(iter)
-            var obj = _parseJson(iter)
+            _skip_whitespace(iter)
+            var obj = _parse_json(iter)
             result[name] = obj
         } else if (char == ',') {
             _consume(iter, ',')
@@ -91,31 +91,31 @@ function _parseObject (iter) {
     return result
 }
 
-function _parseJson (iter) {
+function _parse_json (iter) {
     while (iter.has_next?()) {
-        _skipWhitespace(iter)
+        _skip_whitespace(iter)
         var char = iter.peek_next()
         if (char == '{') {
-            return _parseObject(iter)
+            return _parse_object(iter)
         } else if (char == '[') {
-            return _parseArray(iter)
+            return _parse_array(iter)
         } else if (char == '"') {
-            return _parseString(iter)
+            return _parse_string(iter)
         } else if (char == '-' || char.number?()) {
-            return _parseNumber(iter)
+            return _parse_number(iter)
         } else {
             throw Exception("Couldn't parse json: '" + char + "'")
         }
     }
 }
 
-function parseJsonFromString (str) {
-    return _parseJson(str.iterator())
+function parse_from_string (str) {
+    return _parse_json(str.iterator())
 }
 
-function parseJsonFromFile (filename) {
+function parse_from_file (filename) {
     var sceneFile = File.open(filename, FOPEN.READ_ONLY)
     var sceneContents = sceneFile.read()
     sceneFile.close()
-    return parseJsonFromString(sceneContents)
+    return parse_from_string(sceneContents)
 }

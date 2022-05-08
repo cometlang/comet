@@ -1,0 +1,74 @@
+class CsvRowIterator : Iterator {
+    init(fields) {
+        self.fields = fields
+        self.index = 0
+    }
+
+    get_next() {
+        var index = self.index
+        self.index += 1
+        return self.fields[index]
+    }
+
+    has_next?() {
+        return self.index < self.fields.length()
+    }
+}
+
+class CsvRow : Iterable {
+    init(fields) {
+        self.fields = fields
+    }
+
+    operator [] (index) {
+        return self.fields[index]
+    }
+
+    iterator() {
+        return CsvRowIterator(self.fields)
+    }
+
+    empty?() {
+        return self.fields.length() == 0
+    }
+
+    contains?(item) {
+        foreach (var field in self.fields) {
+            if (field == item) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+function _parse_line(line) {
+    var fields = line.trim().split(',')
+    return CsvRow(fields)
+}
+
+function _parse_all_lines(lines, has_header) {
+    var result = []
+    var header_row = nil
+    var index = 0
+    if (has_header) {
+        header_row = _parse_line(lines[0])
+        index += 1
+    }
+    for (; index < lines.length(); index += 1) {
+        result.append(_parse_line(lines[index]))
+    }
+    return result
+}
+
+function parse_from_string (str, has_header = false) {
+    var lines = str.split('\n')
+    return _parse_all_lines(lines)
+}
+
+function parse_from_file (filename, has_header = false) {
+    var file = File.open(filename, FOPEN.READ_ONLY)
+    var contents = file.read_all_lines()
+    file.close()
+    return _parse_all_lines(contents, has_header)
+}

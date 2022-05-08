@@ -375,7 +375,7 @@ static bool invokeFromClass(VM *vm, ObjClass *klass, Value name,
 
     if (IS_NIL(method))
     {
-        runtimeError(vm, "'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
+        throw_exception_native(vm, "MethodNotFoundException", "'%s' has no method called '%s'.", klass->name, string_get_cstr(name));
         return false;
     }
 
@@ -390,7 +390,7 @@ static bool callNumberOperator(VM* vm, Value receiver, int argCount, OPERATOR op
     {
         if (!IS_NUMBER(args[0]))
         {
-            runtimeError(vm, "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(operator), getClassNameFromInstance(args[0]));
+            throw_exception_native(vm, "ArgumentException", "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(operator), getClassNameFromInstance(args[0]));
         }
     }
     VALUE result = number_operator(vm, receiver, args, operator);

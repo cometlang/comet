@@ -147,8 +147,13 @@ void classDeclaration(Parser *parser)
         {
             error(parser, "A class cannot inherit from itself.");
         }
+
         beginScope(parser);
         variable(parser, false);
+        if (match(parser, TOKEN_DOT) && match(parser, TOKEN_IDENTIFIER)) {
+            uint8_t name = identifierConstant(parser, &parser->previous);
+            emitBytes(parser, OP_GET_PROPERTY, name);
+        }
     }
     else
     {

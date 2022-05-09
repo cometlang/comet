@@ -57,6 +57,15 @@ static int constantInstruction(const char *name, Chunk *chunk, int offset)
     return offset + 2;
 }
 
+static int classInstruction(const char *name, Chunk *chunk, int offset)
+{
+    uint8_t constant = chunk->code[offset + 1];
+    printf("%-16s %4d '", name, constant);
+    printObject(chunk->constants.values[constant]);
+    printf("' %s\n", chunk->code[offset + 2] ? "true" : "false");
+    return offset + 3;
+}
+
 static int exceptionHandlerInstruction(const char *name, Chunk *chunk, int offset)
 {
     uint8_t type = chunk->code[offset + 1];
@@ -180,7 +189,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_RETURN:
         return simpleInstruction("OP_RETURN", offset);
     case OP_CLASS:
-        return constantInstruction("OP_CLASS", chunk, offset);
+        return classInstruction("OP_CLASS", chunk, offset);
     case OP_INHERIT:
         return simpleInstruction("OP_INHERIT", offset);
     case OP_METHOD:

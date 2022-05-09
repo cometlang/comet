@@ -942,8 +942,12 @@ static InterpretResult run(VM *vm)
         }
         case OP_CLASS:
         {
+            push(vm, READ_CONSTANT());
             bool final = READ_BYTE();
-            push(vm, OBJ_VAL(newClass(string_get_cstr(READ_CONSTANT()), CLS_USER_DEF, final)));
+            const char *name = string_get_cstr(peek(vm, 0));
+            ObjClass *klass = newClass(name, CLS_USER_DEF, final);
+            pop(vm);
+            push(vm, OBJ_VAL(klass));
             break;
         }
         case OP_INHERIT:
@@ -1076,7 +1080,7 @@ static InterpretResult run(VM *vm)
                     ObjFunction *mod_main = module_get_main(imported);
                     ObjClosure *closure = newClosure(mod_main);
                     push(vm, OBJ_VAL(closure));
-                    callValue(vm, OBJ_VAL(closure), 0);
+                    call(vm, closure, 0);
                     frame = updateFrame(vm);
                 }
                 else
@@ -1162,7 +1166,7 @@ InterpretResult interpret(VM *vm, Value main)
     ObjClosure *closure = newClosure(main_func);
     pop(vm);
     push(vm, OBJ_VAL(closure));
-    callValue(vm, OBJ_VAL(closure), 0);
+    call(vm, closure, 0);
 
     return run(vm);
 }

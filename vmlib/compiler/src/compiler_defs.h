@@ -38,8 +38,8 @@ typedef enum
     PREC_TERM,        // + -
     PREC_FACTOR,      // * / %
     PREC_UNARY,       // ! - ~
-    PREC_CALL,        // . () []
     PREC_INSTANCEOF,  // instanceof
+    PREC_CALL,        // . () []
     PREC_PRIMARY,
 } Precedence;
 

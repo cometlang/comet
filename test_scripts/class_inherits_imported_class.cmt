@@ -1,0 +1,11 @@
+import 'class_inherits_object' as imported
+
+class final SomeOtherClass : imported.SomeClass {
+
+}
+
+var instance = SomeOtherClass()
+
+assert(instance instanceof imported.SomeClass)
+
+print("Class Inherits Imported Class Tests Passed!")

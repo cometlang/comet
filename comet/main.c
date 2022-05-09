@@ -47,6 +47,7 @@ static void runFile(const char *path)
     Value to_import = copyString(&virtualMachine, path, strlen(path));
     push(&virtualMachine, to_import);
     Value main = import_from_file(&virtualMachine, NULL, to_import);
+    pop(&virtualMachine);
     InterpretResult result = interpret(&virtualMachine, main);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);

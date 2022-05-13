@@ -444,7 +444,7 @@ static void collectGarbage()
     removeWhiteStrings();
     sweep();
 
-    _next_GC = _bytes_allocated * 2;
+    _next_GC = _bytes_allocated + MINIMUM_GC_MARK;
     collecting_garbage = false;
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
     clock_t end = clock();

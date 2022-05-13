@@ -134,7 +134,7 @@ void classDeclaration(Parser *parser)
 
     ClassCompiler classCompiler;
     classCompiler.name = parser->previous;
-    classCompiler.hasSuperclass = false;
+    classCompiler.hasSuperclass = true;
     classCompiler.enclosing = parser->currentClass;
     parser->currentClass = &classCompiler;
 
@@ -162,12 +162,11 @@ void classDeclaration(Parser *parser)
     }
 
     // Store the superclass in a local variable named "super".
-    addLocal(parser, syntheticToken("super"));
-    defineVariable(parser, 0);
+    int local = addLocal(parser, syntheticToken("super"));
+    defineVariable(parser, local);
 
     namedVariable(parser, className, false);
     emitByte(parser, OP_INHERIT);
-    classCompiler.hasSuperclass = true;
 
     namedVariable(parser, className, false);
     match(parser, TOKEN_EOL); // optional end of line.
@@ -191,11 +190,7 @@ void classDeclaration(Parser *parser)
     consume(parser, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
     emitByte(parser, OP_POP);
 
-    if (classCompiler.hasSuperclass)
-    {
-        endScope(parser);
-    }
-
+    endScope(parser);
     parser->currentClass = parser->currentClass->enclosing;
 }
 

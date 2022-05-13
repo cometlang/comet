@@ -742,6 +742,11 @@ static InterpretResult run(VM *vm)
         {
             if (!IS_INSTANCE(peek(vm, 0)) && !IS_NATIVE_INSTANCE(peek(vm, 0)))
             {
+                if (IS_NUMBER(peek(vm, 0)))
+                {
+                    runtimeError(vm, "Cannot access properties of a Number");
+                    return INTERPRET_RUNTIME_ERROR;
+                }
                 runtimeError(vm, "Cannot access properties of a %s", objTypeName(OBJ_TYPE(peek(vm, 0))));
                 return INTERPRET_RUNTIME_ERROR;
             }

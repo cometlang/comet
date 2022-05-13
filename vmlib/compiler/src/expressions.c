@@ -264,7 +264,7 @@ static void super_(Parser *parser, bool UNUSED(canAssign))
         uint8_t argCount = argumentList(parser, TOKEN_RIGHT_PAREN);
 
         pushSuperclass(parser);
-        emitBytes(parser, OP_SUPER, argCount);
+        emitBytes(parser, OP_GET_SUPER, argCount);
         emitByte(parser, name);
     }
     else

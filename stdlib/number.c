@@ -191,9 +191,9 @@ VALUE number_random(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments
     }
     double random;
 #ifdef _WIN32
-    random = rand() / RAND_MAX;
+    random = (double)rand() / (double)RAND_MAX;
 #else
-    random = rand_r(&rand_seed) / RAND_MAX;
+    random = (double)rand_r(&rand_seed) / (double)RAND_MAX;
 #endif
     return create_number(vm, random);
 }

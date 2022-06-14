@@ -1135,6 +1135,7 @@ VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *argument
     {
         push(frame, arguments[i]);
     }
+    closeUpvalues(frame, NULL);
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method) || IS_FUNCTION(method))
     {
         if (callValue(frame, method, arg_count) && run(frame) == INTERPRET_OK)

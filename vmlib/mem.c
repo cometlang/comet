@@ -243,6 +243,11 @@ static void blackenObject(Obj *object)
         markValue(((ObjUpvalue *)object)->closed);
         break;
     case OBJ_NATIVE_METHOD:
+    {
+        ObjNativeMethod *method = (ObjNativeMethod *)object;
+        markValue(method->name);
+        break;
+    }
     case OBJ_NATIVE:
         break;
     }

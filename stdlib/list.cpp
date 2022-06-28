@@ -450,6 +450,7 @@ VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
             args[i] = NIL_VAL;
         }
         list_add(vm, self, initial_length, args);
+        free(args);
     }
     return NIL_VAL;
 }

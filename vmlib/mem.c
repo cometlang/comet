@@ -209,34 +209,22 @@ static void blackenObject(Obj *object)
         break;
     }
     case OBJ_INSTANCE:
-    case OBJ_NATIVE_INSTANCE:
     {
         ObjInstance *instance = (ObjInstance *)object;
-        switch (instance->klass->classType)
-        {
-            case CLS_HASH:
-                hash_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_LIST:
-                list_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_SET:
-                set_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_ENUM:
-                enum_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_THREAD:
-                thread_mark_contents(OBJ_VAL(object));
-                break;
-            case CLS_MODULE:
-                module_mark_contents(OBJ_VAL(object));
-                break;
-            default:
-                break;
-        }
         markObject((Obj *)instance->klass);
         markTable(&instance->fields);
+        break;
+    }
+    case OBJ_NATIVE_INSTANCE:
+    {
+        ObjNativeInstance *instance = (ObjNativeInstance *)object;
+        MarkNativeObject marker = ((ObjNativeClass *)instance->instance.klass)->marker;
+        if (marker != NULL)
+        {
+            marker(OBJ_VAL(object));
+        }
+        markObject((Obj *)instance->instance.klass);
+        markTable(&instance->instance.fields);
         break;
     }
     case OBJ_UPVALUE:

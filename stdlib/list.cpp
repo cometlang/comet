@@ -27,7 +27,7 @@ typedef struct
 
 typedef struct {
     ObjNativeInstance obj;
-    ListData *data;
+    VALUE list;
     int index;
 } ListIteratorData;
 
@@ -37,14 +37,15 @@ static VALUE list_iterator_class;
 static void list_iterator_constructor(void *instanceData)
 {
     ListIteratorData *data = (ListIteratorData *)instanceData;
-    data->data = NULL;
+    data->list = NIL_VAL;
     data->index = 0;
 }
 
 VALUE list_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ListIteratorData *data = GET_NATIVE_INSTANCE_DATA(ListIteratorData, self);
-    if (data->index < data->data->count)
+    ListData *list_data = GET_NATIVE_INSTANCE_DATA(ListData, data->list);
+    if (data->index < list_data->count)
         return TRUE_VAL;
     return FALSE_VAL;
 }
@@ -52,7 +53,14 @@ VALUE list_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
 VALUE list_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ListIteratorData *data = GET_NATIVE_INSTANCE_DATA(ListIteratorData, self);
-    return data->data->entries[data->index++].item;
+    ListData *list_data = GET_NATIVE_INSTANCE_DATA(ListData, data->list);
+    return list_data->entries[data->index++].item;
+}
+
+void mark_list_iterator(VALUE self)
+{
+    ListIteratorData *data = GET_NATIVE_INSTANCE_DATA(ListIteratorData, self);
+    markValue(data->list);
 }
 
 void list_constructor(void *instanceData)
@@ -175,7 +183,7 @@ VALUE list_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UN
 {
     VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(list_iterator_class)));
     ListIteratorData *list_iterator_data = GET_NATIVE_INSTANCE_DATA(ListIteratorData, instance);
-    list_iterator_data->data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    list_iterator_data->list = self;
     return instance;
 }
 
@@ -474,7 +482,7 @@ VALUE list_create(VM *vm)
 
 void init_list(VM *vm)
 {
-    list_class = defineNativeClass(vm, "List", list_constructor, NULL, "Iterable", CLS_LIST, sizeof(ListData), true);
+    list_class = defineNativeClass(vm, "List", list_constructor, NULL, list_mark_contents, "Iterable", CLS_LIST, sizeof(ListData), true);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "append", 1, false);
@@ -499,7 +507,15 @@ void init_list(VM *vm)
     defineNativeOperator(vm, list_class, &list_union, 1, OPERATOR_PLUS);
 
     list_iterator_class = defineNativeClass(
-        vm, "ListIterator", &list_iterator_constructor, NULL, "Iterator", CLS_ITERATOR, sizeof(ListIteratorData), false);
+        vm,
+        "ListIterator",
+        &list_iterator_constructor,
+        NULL,
+        &mark_list_iterator,
+        "Iterator",
+        CLS_ITERATOR,
+        sizeof(ListIteratorData),
+        false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, list_iterator_class, &list_iterator_get_next, "get_next", 0, false);
 }

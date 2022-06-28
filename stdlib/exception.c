@@ -29,17 +29,17 @@ VALUE exception_get_stacktrace(VM *vm, VALUE self)
 
 void init_exception(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, CLS_EXCEPTION, 0, false);
+    VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, NULL, CLS_EXCEPTION, 0, false);
     defineNativeMethod(vm, klass, &exception_init, "init", 1, false);
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
-    defineNativeClass(vm, "AssertionException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "ArgumentException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "IOException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "SocketException", NULL, NULL, "IOException", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "TimeoutException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "IndexOutOfBoundsException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "MethodNotFoundException", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "ImportError", NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "AssertionException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "ArgumentException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "IOException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "SocketException", NULL, NULL, NULL, "IOException", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "TimeoutException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "IndexOutOfBoundsException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "MethodNotFoundException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "ImportError", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
 }

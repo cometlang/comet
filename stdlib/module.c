@@ -64,5 +64,14 @@ void module_mark_contents(VALUE self)
 
 void init_module(VM *vm)
 {
-    klass = defineNativeClass(vm, "Module", &module_constructor, NULL, "Object", CLS_MODULE, sizeof(module_data_t), true);
+    klass = defineNativeClass(
+        vm,
+        "Module",
+        &module_constructor,
+        NULL,
+        &module_mark_contents,
+        "Object",
+        CLS_MODULE,
+        sizeof(module_data_t),
+        true);
 }

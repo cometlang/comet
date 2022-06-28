@@ -116,7 +116,7 @@ VALUE duration_create(VM *vm, const int64_t count)
 
 void init_duration(VM *vm)
 {
-    duration_class = defineNativeClass(vm, "Duration", NULL, NULL, NULL, CLS_DURATION, sizeof(DurationData), false);
+    duration_class = defineNativeClass(vm, "Duration", NULL, NULL, NULL, NULL, CLS_DURATION, sizeof(DurationData), false);
 
     defineNativeMethod(vm, duration_class, &duration_init, "init", 0, false);
 

@@ -18,7 +18,7 @@ typedef struct {
 
 typedef struct {
     ObjNativeInstance obj;
-    SetData *set;
+    VALUE set;
     int index;
     int returned_count;
     SetEntry *current;
@@ -247,10 +247,11 @@ void set_iterator_constructor(void *instanceData)
 VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
+    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetIterator, iter->set);
     while (iter->current == NULL)
     {
         iter->index++;
-        iter->current = iter->set->entries[iter->index];
+        iter->current = set_data->entries[iter->index];
     }
     VALUE result = iter->current->key;
     iter->current = iter->current->next;
@@ -261,14 +262,30 @@ VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), V
 VALUE set_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
-    if (iter->returned_count < iter->set->count)
+    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetIterator, iter->set);
+    if (iter->returned_count < set_data->count)
         return TRUE_VAL;
     return FALSE_VAL;
 }
 
+void mark_set_iterator(VALUE self)
+{
+    SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
+    markValue(iter->set);
+}
+
 void init_set(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Set", &set_constructor, &set_destructor, "Iterable", CLS_SET, sizeof(SetData), true);
+    VALUE klass = defineNativeClass(
+        vm,
+        "Set",
+        &set_constructor,
+        &set_destructor,
+        &set_mark_contents,
+        "Iterable",
+        CLS_SET,
+        sizeof(SetData),
+        true);
     defineNativeMethod(vm, klass, &set_add, "add", 1, false);
     defineNativeMethod(vm, klass, &set_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &set_union, "union", 1, false);
@@ -279,7 +296,15 @@ void init_set(VM *vm)
     defineNativeMethod(vm, klass, &set_iterable_count, "count", 0, false);
 
     set_iterator_class = defineNativeClass(
-        vm, "SetIterator", &set_iterator_constructor, NULL, "Iterator", CLS_ITERATOR, sizeof(SetIterator), true);
+        vm,
+        "SetIterator",
+        &set_iterator_constructor,
+        NULL,
+        &mark_set_iterator,
+        "Iterator",
+        CLS_ITERATOR,
+        sizeof(SetIterator),
+        true);
     defineNativeMethod(vm, set_iterator_class, &set_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, set_iterator_class, &set_iterator_get_next, "get_next", 0, false);
 }

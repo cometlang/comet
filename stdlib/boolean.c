@@ -63,7 +63,7 @@ bool bool_is_falsey(VALUE value)
 
 void init_boolean(VM *vm)
 {
-    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, CLS_BOOLEAN, sizeof(BooleanData_t), true);
+    bool_class = defineNativeClass(vm, "Boolean", NULL, NULL, NULL, NULL, CLS_BOOLEAN, sizeof(BooleanData_t), true);
     defineNativeMethod(vm, bool_class, &boolean_to_string, "to_string", 0, false);
     defineNativeMethod(vm, bool_class, &boolean_parse, "parse", 1, true);
     init_instance(vm, &_true, AS_CLASS(bool_class), true);

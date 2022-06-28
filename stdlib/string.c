@@ -532,7 +532,11 @@ void init_string(VM *vm, VALUE obj_klass)
         vm, "StringIterator",
         &string_iterator_constructor,
         NULL,
-        "Iterator", CLS_ITERATOR, sizeof(StringIterator), true);
+        NULL,
+        "Iterator",
+        CLS_ITERATOR,
+        sizeof(StringIterator),
+        true);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_peek_next, "peek_next", 0, false);
     defineNativeMethod(vm, string_iterator_class, &string_iterator_get_next, "get_next", 0, false);

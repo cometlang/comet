@@ -88,7 +88,7 @@ static VALUE image_write_to_file(VM UNUSED(*vm), VALUE self, int UNUSED(arg_coun
 
 void init_image(VM* vm)
 {
-    VALUE klass = defineNativeClass(vm, "Image", image_constructor, image_destructor, NULL, CLS_IMAGE, sizeof(ImageData), false);
+    VALUE klass = defineNativeClass(vm, "Image", image_constructor, image_destructor, NULL, NULL, CLS_IMAGE, sizeof(ImageData), false);
     defineNativeMethod(vm, klass, &image_init, "init", 2, false);
     defineNativeMethod(vm, klass, &image_set_pixel, "set_pixel", 5, false);
     defineNativeMethod(vm, klass, &image_write_to_file, "write_to_file", 2, false);

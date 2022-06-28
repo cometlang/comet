@@ -47,6 +47,7 @@ ObjNativeClass *newNativeClass(
     const char *name,
     NativeConstructor constructor,
     NativeDestructor destructor,
+    MarkNativeObject marker,
     ClassType classType,
     size_t allocSize,
     bool final)
@@ -56,6 +57,7 @@ ObjNativeClass *newNativeClass(
     init_class((ObjClass *)klass, name, classType, final);
     klass->constructor = constructor;
     klass->destructor = destructor;
+    klass->marker = marker;
     klass->allocSize = allocSize == 0 ? sizeof(ObjNativeInstance) : allocSize;
     return klass;
 }

@@ -153,12 +153,14 @@ typedef struct sObjClass
 typedef void (*NativeConstructor)(void *data);
 typedef void(*NativeDestructor)(void *data);
 typedef Value (*NativeMethod)(VM *vm, Value receiver, int argCount, Value *args);
+typedef void (*MarkNativeObject)(Value self);
 
 typedef struct sNativeClass
 {
     ObjClass klass;
     NativeConstructor constructor;
     NativeDestructor destructor;
+    MarkNativeObject marker;
     size_t allocSize;
 } ObjNativeClass;
 

@@ -10,7 +10,15 @@
 
 ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method);
 ObjClass *newClass(const char *name, ClassType classType, bool final);
-ObjNativeClass *newNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, size_t dataSize, bool final);
+ObjNativeClass *newNativeClass(
+    VM *vm,
+    const char *name,
+    NativeConstructor constructor,
+    NativeDestructor destructor,
+    MarkNativeObject marker,
+    ClassType classType,
+    size_t dataSize,
+    bool final);
 ObjNativeMethod *newNativeMethod(NativeMethod function, uint8_t arity, bool isStatic, Value name);
 ObjClosure *newClosure(ObjFunction *function);
 ObjFunction *newFunction(const char *filename, Value module);

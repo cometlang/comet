@@ -5,7 +5,16 @@
 #include "vm.h"
 
 void defineNativeFunction(VM *vm, const char *name, NativeFn function);
-VALUE defineNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, const char *super_name, ClassType classType, size_t dataSize, bool final);
+VALUE defineNativeClass(
+    VM *vm,
+    const char *name,
+    NativeConstructor constructor,
+    NativeDestructor destructor,
+    MarkNativeObject marker,
+    const char *super_name,
+    ClassType classType,
+    size_t dataSize,
+    bool final);
 void defineNativeMethod(VM *vm, VALUE klass, NativeMethod function, const char *name, uint8_t arity, bool isStatic);
 void defineNativeOperator(VM *vm, VALUE klass, NativeMethod function, uint8_t arity, OPERATOR operator_);
 void setNativeProperty(VM *vm, VALUE self, const char *property_name, VALUE value);

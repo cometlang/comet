@@ -38,7 +38,7 @@ set(SOURCE
 if (WIN32)
 list(APPEND SOURCE file_win.c thread_synchronisation_win.c)
 else()
-list(APPEND SOURCE file.c thread_synchronisation.c)
+list(APPEND SOURCE file_unix.c thread_synchronisation.c)
 endif()
 
 add_library(stdlib STATIC "${SOURCE}")

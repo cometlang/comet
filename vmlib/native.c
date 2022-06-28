@@ -16,7 +16,7 @@ void defineNativeFunction(VM *vm, const char *name, NativeFn function)
 
 VALUE bootstrapNativeClass(VM *vm, const char *name, NativeConstructor constructor, NativeDestructor destructor, ClassType classType, size_t dataSize, bool final)
 {
-    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType, dataSize, final));
+    return OBJ_VAL(newNativeClass(vm, name, constructor, destructor, NULL, classType, dataSize, final));
 }
 
 VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name)
@@ -72,12 +72,13 @@ VALUE defineNativeClass(
     const char *name,
     NativeConstructor constructor,
     NativeDestructor destructor,
+    MarkNativeObject marker,
     const char *super_name,
     ClassType classType,
     size_t dataSize,
     bool final)
 {
-    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor, classType, dataSize, final));
+    VALUE klass = OBJ_VAL(newNativeClass(vm, name, constructor, destructor, marker, classType, dataSize, final));
     return completeNativeClassDefinition(vm, klass, super_name);
 }
 

@@ -150,7 +150,7 @@ static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), 
 
 void init_datetime(VM *vm)
 {
-    datetime_class = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
+    datetime_class = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
     defineNativeMethod(vm, datetime_class, &datetime_static_now, "now", 0, true);
     defineNativeMethod(vm, datetime_class, &datetime_to_string, "to_string", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_year, "year", 0, false);

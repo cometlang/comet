@@ -106,10 +106,12 @@ void hash_destructor(void *data)
     FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
 }
 
-static HashEntry *find_entry(HashEntry *entries, int capacity, Value key)
+static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key)
 {
     Value hash_value = call_function(key, common_strings[STRING_HASH], 0, NULL);
+    push(vm, hash_value);
     uint32_t index = ((uint32_t) number_get_value(hash_value)) & capacity;
+    pop(vm);
     HashEntry *tombstone = NULL;
 
     for (;;)
@@ -147,7 +149,7 @@ VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
         return false;
 
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry == NULL || entry->key == NIL_VAL)
     {
         VALUE str = call_function(key, common_strings[STRING_TO_STRING], 0, NULL);
@@ -161,14 +163,14 @@ VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return entry->value;
 }
 
-VALUE hash_get(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
+VALUE hash_get(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
         return false;
 
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry == NULL || entry->key == NIL_VAL)
     {
         if (arg_count == 2)
@@ -181,7 +183,7 @@ VALUE hash_get(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
     return entry->value;
 }
 
-static void adjust_capacity(HashTable *table, int capacity)
+static void adjust_capacity(VM *vm, HashTable *table, int capacity)
 {
     HashEntry *entries = ALLOCATE(HashEntry, capacity + 1);
     for (int i = 0; i <= capacity; i++)
@@ -199,7 +201,7 @@ static void adjust_capacity(HashTable *table, int capacity)
             if (entry == NULL || entry->key == NIL_VAL)
                 continue;
 
-            HashEntry *dest = find_entry(entries, capacity, entry->key);
+            HashEntry *dest = find_entry(vm, entries, capacity, entry->key);
             dest->key = entry->key;
             dest->value = entry->value;
             table->count++;
@@ -211,19 +213,19 @@ static void adjust_capacity(HashTable *table, int capacity)
     table->capacity = capacity;
 }
 
-VALUE hash_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
         // Figure out the new table size.
         int capacity = GROW_CAPACITY(table->capacity + 1) - 1;
-        adjust_capacity(table, capacity);
+        adjust_capacity(vm, table, capacity);
     }
 
     VALUE key = arguments[0];
     VALUE value = arguments[1];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
 
     bool isNewKey = entry->key == NIL_VAL;
     if (isNewKey && IS_NIL(entry->value))
@@ -234,7 +236,7 @@ VALUE hash_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argumen
     return isNewKey;
 }
 
-VALUE hash_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
@@ -242,7 +244,7 @@ VALUE hash_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argu
 
     // Find the entry.
     VALUE key = arguments[0];
-    HashEntry *entry = find_entry(table->entries, table->capacity, key);
+    HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry == NULL || entry->key == NIL_VAL)
         return false;
 

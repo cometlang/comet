@@ -89,7 +89,9 @@ VALUE thread_join(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argum
         throw_exception_native(vm, "ThreadException", "Unable to join thread");
     }
     if (result != NULL)
+    {
         return OBJ_VAL(result);
+    }
     return NIL_VAL;
 }
 

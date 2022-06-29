@@ -4,12 +4,7 @@
 #include <time.h>
 #include "comet_stdlib.h"
 #include "cometlib.h"
-
-typedef struct {
-    ObjNativeInstance obj;
-    pthread_cond_t cond_var;
-    pthread_mutex_t lock;
-} CondVarData;
+#include "thread_sync_common.h"
 
 void cond_var_constructor(void *instanceData)
 {
@@ -73,12 +68,6 @@ VALUE cond_var_timed_wait(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *argu
     return NIL_VAL;
 }
 
-
-typedef struct {
-    ObjNativeInstance obj;
-    pthread_mutex_t mutex;
-} MutexData;
-
 void mutex_constructor(void *instanceData)
 {
     MutexData *data = (MutexData *)instanceData;
@@ -123,20 +112,4 @@ VALUE mutex_timed_lock(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *argumen
         throw_exception_native(vm, "TimeoutException", "Interval elapsed");
     }
     return NIL_VAL;
-}
-
-void init_thread_sync(VM *vm)
-{
-    VALUE cond_var_class = defineNativeClass(
-        vm, "ConditionVariable", &cond_var_constructor, &cond_var_destructor, NULL, NULL, CLS_COND_VAR, sizeof(CondVarData), false);
-    defineNativeMethod(vm, cond_var_class, &cond_var_signal_one, "signal_one", 0, false);
-    defineNativeMethod(vm, cond_var_class, &cond_var_signal_all, "signal_all", 0, false);
-    defineNativeMethod(vm, cond_var_class, &cond_var_wait, "wait", 0, false);
-    defineNativeMethod(vm, cond_var_class, &cond_var_timed_wait, "timed_wait", 1, false);
-
-    VALUE mutex_class = defineNativeClass(vm, "Mutex", &mutex_constructor, &mutex_destructor, NULL, NULL, CLS_MUTEX, sizeof(MutexData), false);
-    defineNativeMethod(vm, mutex_class, &mutex_lock, "lock", 0, false);
-    defineNativeMethod(vm, mutex_class, &mutex_timed_lock, "timed_lock", 1, false);
-    defineNativeMethod(vm, mutex_class, &mutex_unlock, "unlock", 0, false);
-    defineNativeMethod(vm, mutex_class, &mutex_try_lock, "try_lock", 0, false);
 }

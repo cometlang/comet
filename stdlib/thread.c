@@ -73,7 +73,7 @@ VALUE thread_start(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE thread_join(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE thread_join(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     ThreadData *data = GET_NATIVE_INSTANCE_DATA(ThreadData, self);
     void *result = NULL;

@@ -54,6 +54,7 @@ static pthread_mutex_t gc_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 void register_thread(VM *vm)
 {
+    MUTEX_LOCK(gc_lock);
     if (thread_capacity <= num_threads)
     {
         int new_capacity = GROW_CAPACITY(thread_capacity);
@@ -61,10 +62,12 @@ void register_thread(VM *vm)
         thread_capacity = new_capacity;
     }
     threads[num_threads++] = vm;
+    MUTEX_UNLOCK(gc_lock);
 }
 
 void deregister_thread(VM *vm)
 {
+    MUTEX_LOCK(gc_lock);
     int index = 0;
     for (; index < num_threads; index++)
     {
@@ -79,6 +82,7 @@ void deregister_thread(VM *vm)
         threads[index] = threads[index + 1];
     }
     num_threads--;
+    MUTEX_UNLOCK(gc_lock);
 }
 
 void *reallocate(void *previous, size_t oldSize, size_t newSize)
@@ -430,7 +434,7 @@ static void collectGarbage()
 #endif
     collecting_garbage = true;
 
-    for (int i = 0; i < num_threads; i++)
+    for (int i = 0; i < thread_capacity; i++)
     {
         markRoots(threads[i]);
     }

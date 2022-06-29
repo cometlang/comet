@@ -247,9 +247,9 @@ static void blackenObject(Obj *object)
 
 static void freeObject(Obj *object)
 {
-#if DEBUG_LOG_GC
+#if DEBUG_LOG_GC || DEBUG_LOG_GC_OBJ_FREES
     if (IS_NATIVE_INSTANCE(OBJ_VAL(object)) &&
-        AS_INSTANCE(OBJ_VAL(object))->klass->classType == CLS_STRING)
+        IS_INSTANCE_OF_STDLIB_TYPE(OBJ_VAL(object), CLS_STRING))
     {
         printf("%p free String: \"%s\"\n", (void *)object, string_get_cstr(OBJ_VAL(object)));
     }

@@ -92,6 +92,10 @@ static bool propagateException(VM *vm)
         }
         vm->frameCount--;
     }
+#if DEBUG_TRACE_EXECUTION
+    print_stack_trace(vm);
+    print_stack(vm);
+#endif
     printf("Unhandled %s", AS_INSTANCE(exception)->klass->name);
     VALUE message = exception_get_message(vm, exception, 0, NULL);
     if (message != NIL_VAL)
@@ -143,6 +147,12 @@ Value getStackTrace(VM *vm)
 #undef MAX_LINE_LENGTH
 }
 
+void print_stack_trace(VM *vm)
+{
+    Value trace = getStackTrace(vm);
+    printf("%s\n", string_get_cstr(trace));
+}
+
 void throw_exception_native(VM *vm, const char *exception_type_name, const char *message_format, ...)
 {
     va_list args;
@@ -183,6 +193,10 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
 
 void runtimeError(VM *vm, const char *format, ...)
 {
+#if DEBUG_TRACE_EXECUTION
+    print_stack_trace(vm);
+    print_stack(vm);
+#endif
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
@@ -192,10 +206,13 @@ void runtimeError(VM *vm, const char *format, ...)
     resetStack(vm);
 }
 
+
+static int thread_id = 0;
 void initVM(VM *vm)
 {
     resetStack(vm);
     register_thread(vm);
+    vm->thread_id = thread_id++;
 }
 
 void freeVM(VM *vm)
@@ -618,7 +635,7 @@ void print_stack(VM *vm)
         disassembleInstruction(&frame->closure->function->chunk,
                             (int)(frame->ip - frame->closure->function->chunk.code));
     }
-    printf("          ");
+    printf("id: %04d ", vm->thread_id);
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
         printf("[ ");

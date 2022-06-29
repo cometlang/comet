@@ -33,6 +33,7 @@ struct _vm
     Value stack[STACK_MAX];
     Value *stackTop;
     ObjUpvalue *openUpvalues;
+    int thread_id;
 };
 
 typedef enum
@@ -80,12 +81,14 @@ void push(VM *vm, Value value);
 Value pop(VM *vm);
 Value peek(VM *vm, int distance);
 Value popMany(VM *vm, int count);
+void swapTop(VM *vm);
 
 void throw_exception_native(VM *vm, const char *exception_type_name, const char *message_format, ...);
 
 #if DEBUG_TRACE_EXECUTION
 void toggle_stack_printing(void);
 void print_stack(VM *vm);
+void print_stack_trace(VM *vm);
 #endif
 
 #endif

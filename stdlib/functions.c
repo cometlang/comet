@@ -11,12 +11,13 @@ static Value clockNative(VM *vm, int UNUSED(argCount), Value UNUSED(*args))
     return create_number(vm, (double)clock() / CLOCKS_PER_SEC);
 }
 
-static VALUE printNative(VM UNUSED(*vm), int arg_count, VALUE *args)
+static VALUE printNative(VM *vm, int arg_count, VALUE *args)
 {
     for (int i = 0; i < arg_count; i++)
     {
-        VALUE string = call_function(args[i], common_strings[STRING_TO_STRING], 0, NULL);
-        printf("%s", string_get_cstr(string));
+        call_function(vm, args[i], common_strings[STRING_TO_STRING], 0, NULL);
+        printf("%s", string_get_cstr(peek(vm, 0)));
+        pop(vm);
     }
     printf("\n");
     fflush(stdout);

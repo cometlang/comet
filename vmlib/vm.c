@@ -227,6 +227,13 @@ Value peek(VM *vm, int distance)
     return vm->stackTop[-1 - distance];
 }
 
+void swapTop(VM *vm)
+{
+    Value top = *(vm->stackTop - 1);
+    *(vm->stackTop - 1) = *(vm->stackTop - 2);
+    *(vm->stackTop - 2) = top;
+}
+
 static bool call(VM *vm, ObjClosure *closure, int argCount)
 {
     if (argCount + closure->function->optionalArgCount < closure->function->arity)
@@ -1125,40 +1132,36 @@ static InterpretResult run(VM *vm)
 #undef READ_BYTE
 }
 
-VALUE call_function(VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
+void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
 {
     VM *frame = ALLOCATE(VM, 1);
     initVM(frame);
     push(frame, receiver);
-    VALUE result = NIL_VAL;
     for (int i = 0; i < arg_count; i++)
     {
         push(frame, arguments[i]);
     }
-    closeUpvalues(frame, NULL);
     if (IS_BOUND_METHOD(method) || IS_CLOSURE(method) || IS_FUNCTION(method))
     {
         if (callValue(frame, method, arg_count) && run(frame) == INTERPRET_OK)
         {
-            result = peek(frame, 0);
+            push(vm, peek(frame, 0));
         }
     }
     else if (IS_NATIVE_METHOD(method))
     {
-        result = AS_NATIVE_METHOD(method)->function(frame, receiver, arg_count, arguments);
+        push(vm, AS_NATIVE_METHOD(method)->function(frame, receiver, arg_count, arguments));
     }
     else if (invoke(frame, method, arg_count) && run(frame) == INTERPRET_OK)
     {
-        result = peek(frame, 0);
+        push(vm, peek(frame, 0));
     }
     else
     {
         runtimeError(frame, "Invoke of method failed\n");
     }
-    markValue(result); // HACK. Hope to get the result through a round of GC, just in case we trigger a run.
     deregister_thread(frame);
     FREE(VM, frame);
-    return result;
 }
 
 InterpretResult interpret(VM *vm, Value main)

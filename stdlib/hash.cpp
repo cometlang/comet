@@ -108,9 +108,8 @@ void hash_destructor(void *data)
 
 static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key)
 {
-    Value hash_value = call_function(key, common_strings[STRING_HASH], 0, NULL);
-    push(vm, hash_value);
-    uint32_t index = ((uint32_t) number_get_value(hash_value)) & capacity;
+    call_function(vm, key, common_strings[STRING_HASH], 0, NULL);
+    uint32_t index = ((uint32_t) number_get_value(peek(vm, 0))) & capacity;
     pop(vm);
     HashEntry *tombstone = NULL;
 
@@ -152,10 +151,9 @@ VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
     if (entry == NULL || entry->key == NIL_VAL)
     {
-        VALUE str = call_function(key, common_strings[STRING_TO_STRING], 0, NULL);
-        push(vm, str);
+        call_function(vm, key, common_strings[STRING_TO_STRING], 0, NULL);
         throw_exception_native(vm, "KeyNotFoundException",
-            "Could not find the key '%s'", string_get_cstr(str));
+            "Could not find the key '%s'", string_get_cstr(peek(vm, 0)));
         pop(vm);
         return NIL_VAL;
     }
@@ -294,7 +292,7 @@ void hash_mark_contents(VALUE self)
     }
 }
 
-VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     std::stringstream stream;
@@ -305,12 +303,15 @@ VALUE hash_obj_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_coun
         HashEntry *entry = &table->entries[i];
         if (entry->key != NIL_VAL)
         {
-            VALUE key_str = call_function(entry->key, common_strings[STRING_TO_STRING], 0, NULL);
-            VALUE value_str = call_function(entry->value, common_strings[STRING_TO_STRING], 0, NULL);
+            call_function(vm, entry->key, common_strings[STRING_TO_STRING], 0, NULL);
+            VALUE key_str = peek(vm, 0);
+            call_function(vm, entry->value, common_strings[STRING_TO_STRING], 0, NULL);
+            VALUE value_str = peek(vm, 0);
             stream << string_get_cstr(key_str) << ": " << string_get_cstr(value_str);
             if (count != table->count - 1)
                 stream << ", ";
             count++;
+            popMany(vm, 2);
         }
     }
     stream << "}";

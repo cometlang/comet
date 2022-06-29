@@ -351,7 +351,9 @@ static void freeObject(Obj *object)
 
 static void markRoots(VM *vm)
 {
-    for (Value *slot = vm->stack; slot <= vm->stackTop; slot++)
+    if (vm == NULL)
+        return;
+    for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
         markValue(*slot);
     }

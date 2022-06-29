@@ -43,7 +43,7 @@ void set_destructor(void *data)
     }
 }
 
-static bool compare_objects(VALUE lhs, VALUE rhs)
+static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
 {
     // try the cheap comparison first (also covers non-instance objects, like types)
     if (lhs == rhs)
@@ -52,18 +52,19 @@ static bool compare_objects(VALUE lhs, VALUE rhs)
         (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
     {
         ObjInstance *obj = AS_INSTANCE(lhs);
-        VALUE result = call_function(lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
-        if (result == TRUE_VAL)
+        call_function(vm, lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
+        if (pop(vm) == TRUE_VAL)
             return true;
     }
 
     return false;
 }
 
-static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
+static bool insert(VM *vm, SetEntry **entries, int capacity, SetEntry *entry)
 {
-    VALUE hash = call_function(entry->key, common_strings[STRING_HASH], 0, NULL);
-    uint32_t index = ((uint32_t) number_get_value(hash)) % capacity;
+    call_function(vm, entry->key, common_strings[STRING_HASH], 0, NULL);
+    uint32_t index = ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
+    pop(vm);
     if (entries[index] == NULL)
     {
         entries[index] = entry;
@@ -75,7 +76,7 @@ static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
         SetEntry *previous = NULL;
         while (current != NULL)
         {
-            if (compare_objects(current->key, entry->key))
+            if (compare_objects(vm, current->key, entry->key))
                 return false;
             previous = current;
             current = current->next;
@@ -85,7 +86,7 @@ static bool insert(SetEntry **entries, int capacity, SetEntry *entry)
     return true;
 }
 
-static void adjust_capacity(SetData *data)
+static void adjust_capacity(VM *vm, SetData *data)
 {
     int new_capacity = GROW_CAPACITY(data->capacity);
     SetEntry **new_entries = ALLOCATE(SetEntry *, new_capacity);
@@ -94,23 +95,23 @@ static void adjust_capacity(SetData *data)
         SetEntry *current = data->entries[i];
         while (current != NULL)
         {
-            insert(new_entries, new_capacity, current);
+            insert(vm, new_entries, new_capacity, current);
             current = current->next;
         }
     }
 }
 
-VALUE set_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
     if ((data->count + 1) > (data->capacity * SET_MAX_LOAD_FACTOR))
     {
-        adjust_capacity(data);
+        adjust_capacity(vm, data);
     }
     SetEntry *new_entry = ALLOCATE(SetEntry, 1);
     new_entry->next = NULL;
     new_entry->key = arguments[0];
-    if (insert(data->entries, data->capacity, new_entry))
+    if (insert(vm, data->entries, data->capacity, new_entry))
     {
         data->count++;
         return TRUE_VAL;
@@ -119,7 +120,7 @@ VALUE set_add(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argument
     return FALSE_VAL;
 }
 
-VALUE set_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE set_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
     for (int i = 0; i < data->capacity; i++)
@@ -128,7 +129,7 @@ VALUE set_remove(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *argum
         SetEntry *previous = NULL;
         while (current != NULL)
         {
-            if (compare_objects(current->key, arguments[0]))
+            if (compare_objects(vm, current->key, arguments[0]))
             {
                 VALUE result = current->key;
                 push(vm, result);
@@ -195,11 +196,11 @@ VALUE set_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNU
 {
     VALUE obj = OBJ_VAL(newInstance(vm, AS_CLASS(set_iterator_class)));
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, obj);
-    iter->set = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    iter->set = self;
     return OBJ_VAL(obj);
 }
 
-VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
+VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
     for (int i = 0; i < data->capacity; i++)
@@ -207,7 +208,7 @@ VALUE set_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count),
         SetEntry *current = data->entries[i];
         while (current != NULL)
         {
-            if (compare_objects(current->key, arguments[0]))
+            if (compare_objects(vm, current->key, arguments[0]))
                 return TRUE_VAL;
             current = current->next;
         }
@@ -240,14 +241,14 @@ void set_iterator_constructor(void *instanceData)
     SetIterator *iter = (SetIterator *)instanceData;
     iter->current = NULL;
     iter->index = -1;
-    iter->set = NULL;
+    iter->set = NIL_VAL;
     iter->returned_count = 0;
 }
 
 VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
-    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetIterator, iter->set);
+    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetData, iter->set);
     while (iter->current == NULL)
     {
         iter->index++;
@@ -262,7 +263,7 @@ VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), V
 VALUE set_iterator_has_next_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
-    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetIterator, iter->set);
+    SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetData, iter->set);
     if (iter->returned_count < set_data->count)
         return TRUE_VAL;
     return FALSE_VAL;

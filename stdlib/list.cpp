@@ -194,15 +194,15 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
     VALUE compare_func = AS_INSTANCE(contains)->klass->operators[OPERATOR_EQUALS];
     for (int i = 0; i < data->count; i++)
     {
-        VALUE result = call_function(contains, compare_func, 1, &data->entries[i].item);
-        if (result == TRUE_VAL) {
+        call_function(vm, contains, compare_func, 1, &data->entries[i].item);
+        if (pop(vm) == TRUE_VAL) {
             return TRUE_VAL;
         }
     }
     return FALSE_VAL;
 }
 
-static VALUE is_lhs_less_than_or_equal_to_rhs(VALUE lhs, VALUE rhs, VALUE compare_func)
+static VALUE is_lhs_less_than_or_equal_to_rhs(VM *vm, VALUE lhs, VALUE rhs, VALUE compare_func)
 {
     if (IS_NUMBER(lhs))
     {
@@ -210,7 +210,8 @@ static VALUE is_lhs_less_than_or_equal_to_rhs(VALUE lhs, VALUE rhs, VALUE compar
             return TRUE_VAL;
         return FALSE_VAL;
     }
-    return call_function(lhs, compare_func, 1, &rhs);
+    call_function(vm, lhs, compare_func, 1, &rhs);
+    return pop(vm);
 }
 
 static VALUE get_compare_func(VM *vm, VALUE self)
@@ -244,7 +245,7 @@ static void insertion_sort(VM *vm, const ListData *data, int left, int right)
         int j = i - 1;
         while (j >= left)
         {
-            VALUE result = is_lhs_less_than_or_equal_to_rhs(temp, data->entries[j].item, compare_func);
+            VALUE result = is_lhs_less_than_or_equal_to_rhs(vm, temp, data->entries[j].item, compare_func);
             if (result == TRUE_VAL)
             {
                 data->entries[j + 1].item = data->entries[j].item;
@@ -278,7 +279,7 @@ static void merge_sorted_runs(VM *vm, ListData* data, int l, int m, int r)
     while (i < len1 && j < len2)
     {
         VALUE compare_func = get_compare_func(vm, left[i]);
-        VALUE result = is_lhs_less_than_or_equal_to_rhs(left[i], right[j], compare_func);
+        VALUE result = is_lhs_less_than_or_equal_to_rhs(vm, left[i], right[j], compare_func);
         if (result == TRUE_VAL)
         {
             data->entries[k].item = left[i];
@@ -350,8 +351,8 @@ VALUE list_filter(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     push(vm, result);
     for (int i = 0; i < data->count; i++)
     {
-        VALUE status = call_function(NIL_VAL, arguments[0], 1, &data->entries[i].item);
-        if (status == TRUE_VAL)
+        call_function(vm, NIL_VAL, arguments[0], 1, &data->entries[i].item);
+        if (pop(vm) == TRUE_VAL)
         {
             list_add(vm, result, 1, &data->entries[i].item);
         }
@@ -366,8 +367,10 @@ VALUE list_map(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     push(vm, result);
     for (int i = 0; i < data->count; i++)
     {
-        VALUE mapped_val = call_function(NIL_VAL, arguments[0], 1, &data->entries[i].item);
+        call_function(vm, NIL_VAL, arguments[0], 1, &data->entries[i].item);
+        VALUE mapped_val = peek(vm, 0);
         list_add(vm, result, 1, &mapped_val);
+        pop(vm);
     }
     return pop(vm);
 }
@@ -384,7 +387,8 @@ VALUE list_reduce(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
         args[1] = data->entries[i].item;
         args[2] = create_number(vm, i);
         push(vm, args[2]);
-        accumulator = call_function(NIL_VAL, arguments[1], 3, args);
+        call_function(vm, NIL_VAL, arguments[1], 3, args);
+        accumulator = pop(vm);
         popMany(vm, 2);
         push(vm, accumulator);
     }
@@ -417,8 +421,8 @@ VALUE list_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
     for (int i = 0; i < data->capacity; i++)
     {
-        VALUE result = call_function(receiver, callable, 1, &data->entries[i].item);
-        if (result == TRUE_VAL)
+        call_function(vm, receiver, callable, 1, &data->entries[i].item);
+        if (pop(vm) == TRUE_VAL)
             return data->entries[i].item;
     }
     return NIL_VAL;
@@ -431,10 +435,11 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALU
     stream << "[";
     for (int i = 0; i < data->count; i++)
     {
-        VALUE str = call_function(data->entries[i].item, common_strings[STRING_TO_STRING], 0, NULL);
-        stream << string_get_cstr(str);
+        call_function(vm, data->entries[i].item, common_strings[STRING_TO_STRING], 0, NULL);
+        stream << string_get_cstr(peek(vm, 0));
         if (i != data->count - 1)
             stream << ", ";
+        pop(vm);
     }
     stream << "]";
     std::string result = stream.str();

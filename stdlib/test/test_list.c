@@ -82,7 +82,7 @@ static void assert_list_is_sorted(VALUE list)
 void test_list_sort_already_sorted(void)
 {
     // act
-    call_function(already_sorted, sort_func_name_string, 0, NULL);
+    call_function(&vm, already_sorted, sort_func_name_string, 0, NULL);
 
     //assert
     assert_list_is_sorted(already_sorted);
@@ -91,7 +91,7 @@ void test_list_sort_already_sorted(void)
 void test_list_sort_reverse_sorted(void)
 {
     // act
-    call_function(reverse_sorted, sort_func_name_string, 0, NULL);
+    call_function(&vm, reverse_sorted, sort_func_name_string, 0, NULL);
 
     //assert
     assert_list_is_sorted(reverse_sorted);
@@ -100,7 +100,7 @@ void test_list_sort_reverse_sorted(void)
 void test_list_sort_jumbled(void)
 {
     // act
-    call_function(jumbled, sort_func_name_string, 0, NULL);
+    call_function(&vm, jumbled, sort_func_name_string, 0, NULL);
 
     //assert
     assert_list_is_sorted(jumbled);

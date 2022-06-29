@@ -23,6 +23,7 @@ typedef struct {
     VALUE self;
     VALUE start_routine;
     VALUE arg;
+    VM *vm;
 } ThreadData;
 
 void thread_constructor(void *instanceData)
@@ -37,7 +38,8 @@ void thread_constructor(void *instanceData)
 void *thread_runner(void *arg)
 {
     ThreadData *data = (ThreadData *)arg;
-    return (void *)(uintptr_t)call_function(data->self, data->start_routine, 1, &data->arg);
+    call_function(data->vm, data->self, data->start_routine, 1, &data->arg);
+    return (void *)(uintptr_t)pop(data->vm);
 }
 
 VALUE thread_start(VM *vm, VALUE self, int arg_count, VALUE *arguments)
@@ -46,6 +48,7 @@ VALUE thread_start(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     data->self = self;
     data->start_routine = arguments[0];
     data->arg = arg_count > 1 ? arguments[1] : NIL_VAL;
+    data->vm = vm;
     int status = 0;
     if (callable_p(vm, 1, arguments) == FALSE_VAL)
     {

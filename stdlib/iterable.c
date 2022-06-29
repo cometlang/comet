@@ -44,33 +44,35 @@ VALUE iterable_compare(VM* vm, VALUE self, int arg_count, VALUE* arguments, OPER
     push(vm, has_next_name);
     VALUE get_next_name = copyString(vm, "get_next", strlen("get_next"));
     push(vm, get_next_name);
-    VALUE iterator = call_function(self, iterator_func_name, 0, NULL);
-    push(vm, iterator);
-    VALUE has_next = call_function(iterator, has_next_name, 0, NULL);
-    push(vm, has_next);
+    call_function(vm, self, iterator_func_name, 0, NULL);
+    VALUE iterator = peek(vm, 0);
+    call_function(vm, iterator, has_next_name, 0, NULL);
+    VALUE has_next = peek(vm, 0);
     VALUE current = NIL_VAL;
     while (has_next == TRUE_VAL) {
-        VALUE item = call_function(iterator, get_next_name, 0, NULL);
-        push(vm, item);
+        call_function(vm, iterator, get_next_name, 0, NULL);
+        VALUE item = peek(vm, 0);
         if (current == NIL_VAL) {
             current = item;
         }
         else {
             VALUE val = item;
             if (arg_count == 1) {
-                val = call_function(item, arguments[0], 1, &item);
+                call_function(vm, item, arguments[0], 1, &item);
+                swapTop(vm);
                 pop(vm);
-                push(vm, val);
+                val = peek(vm, 0);
             }
             VALUE compare_func = AS_INSTANCE(val)->klass->operators[op];
-            VALUE result = call_function(val, compare_func, 1, &current);
+            call_function(vm, val, compare_func, 1, &current);
+            VALUE result = peek(vm, 0);
             if (result == TRUE_VAL) {
                 current = val;
             }
         }
         popMany(vm, 2);
-        has_next = call_function(iterator, has_next_name, 0, NULL);
-        push(vm, has_next);
+        call_function(vm, iterator, has_next_name, 0, NULL);
+        has_next = peek(vm, 0);
     }
     popMany(vm, 5);
     return current;

@@ -69,7 +69,7 @@ bool findGlobal(Value name, Value *value);
 bool findModuleVariable(Value module, Value name, Value *value);
 bool addModuleVariable(Value module, Value name, Value value);
 
-VALUE call_function(VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
+void call_function(VM *vm, VALUE receiver, VALUE method_name, int arg_count, VALUE *arguments);
 
 InterpretResult interpret(VM *vm, Value main);
 void runtimeError(VM *vm, const char *format, ...);

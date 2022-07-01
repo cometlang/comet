@@ -60,6 +60,10 @@ void register_thread(VM *vm)
         int new_capacity = GROW_CAPACITY(thread_capacity);
         threads = GROW_ARRAY(threads, VM*, thread_capacity, new_capacity);
         thread_capacity = new_capacity;
+        for (int i = num_threads; i < new_capacity; i++)
+        {
+            threads[i] = NULL;
+        }
     }
     threads[num_threads++] = vm;
     MUTEX_UNLOCK(gc_lock);

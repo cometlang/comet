@@ -19,4 +19,7 @@ Exception(message)
  - `SocketException`
  - `TimeoutException`
  - `KeyNotFoundException`
- - `IndexOutOfBoundsExcpetion`
+ - `IndexOutOfBoundsException`
+ - `MethodNotFoundException`
+ - `ImportError`
+ - `ThreadException`

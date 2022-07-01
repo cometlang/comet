@@ -109,11 +109,11 @@ function _parse_json (iter) {
     }
 }
 
-function parse_from_string (str) {
+function parse_from_string(str) {
     return _parse_json(str.iterator())
 }
 
-function parse_from_file (filename) {
+function parse_from_file(filename) {
     var sceneFile = File.open(filename, FOPEN.READ_ONLY)
     var sceneContents = sceneFile.read()
     sceneFile.close()

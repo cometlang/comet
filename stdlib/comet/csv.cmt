@@ -61,12 +61,12 @@ function _parse_all_lines(lines, has_header) {
     return result
 }
 
-function parse_from_string (str, has_header = false) {
+function parse_from_string(str, has_header = false) {
     var lines = str.split('\n')
     return _parse_all_lines(lines)
 }
 
-function parse_from_file (filename, has_header = false) {
+function parse_from_file(filename, has_header = false) {
     var file = File.open(filename, FOPEN.READ_ONLY)
     var contents = file.read_all_lines()
     file.close()

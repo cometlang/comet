@@ -65,9 +65,22 @@ VALUE hash_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), 
     return result;
 }
 
-VALUE hash_iterable_contains_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE hash_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    HashTable* data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    VALUE contains = arguments[0];
+    VALUE compare_func = AS_INSTANCE(contains)->klass->operators[OPERATOR_EQUALS];
+    for (int i = 0; i < data->count; i++)
+    {
+        HashEntry entry = data->entries[i];
+        if (entry.key == NIL_VAL)
+            continue;
+        call_function(vm, contains, compare_func, 1, &data->entries[i].value);
+        if (pop(vm) == TRUE_VAL) {
+            return TRUE_VAL;
+        }
+    }
+    return FALSE_VAL;
 }
 
 VALUE hash_iterable_empty_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -145,7 +158,7 @@ VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
-        return false;
+        return FALSE_VAL;
 
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
@@ -161,11 +174,26 @@ VALUE hash_find(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return entry->value;
 }
 
+VALUE hash_has_key_q(VM* vm, VALUE self, int arg_count, VALUE* arguments)
+{
+    HashTable* table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (table->count == 0)
+        return FALSE_VAL;
+
+    VALUE key = arguments[0];
+    HashEntry* entry = find_entry(vm, table->entries, table->capacity, key);
+    if (entry == NULL || entry->key == NIL_VAL)
+    {
+        return FALSE_VAL;
+    }
+    return TRUE_VAL;
+}
+
 VALUE hash_get(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
-        return false;
+        return FALSE_VAL;
 
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);
@@ -238,7 +266,7 @@ VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
-        return false;
+        return FALSE_VAL;
 
     // Find the entry.
     VALUE key = arguments[0];
@@ -250,7 +278,7 @@ VALUE hash_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     entry->key = NIL_VAL;
     entry->value = TRUE_VAL;
 
-    return true;
+    return TRUE_VAL;
 }
 
 void hash_add_all(VM *vm, HashTable *from, HashTable *to)
@@ -321,7 +349,7 @@ VALUE hash_obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, &hash_mark_contents, NULL, CLS_HASH, sizeof(HashTable), false);
+    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, &hash_mark_contents, "Iterable", CLS_HASH, sizeof(HashTable), false);
     defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
     defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
     defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);
@@ -330,6 +358,7 @@ void init_hash(VM *vm)
     defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &hash_get, "get", 2, false);
+    defineNativeMethod(vm, klass, &hash_has_key_q, "has_key?", 1, false);
     defineNativeOperator(vm, klass, &hash_find, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 }

@@ -227,6 +227,11 @@ void push(VM *vm, Value value)
     vm->stackTop++;
 }
 
+void push_to(VM *vm, Value value, int distance)
+{
+    *(vm->stackTop - distance) = value;
+}
+
 Value pop(VM *vm)
 {
     vm->stackTop--;
@@ -333,8 +338,8 @@ static bool callValue(VM *vm, Value callee, int argCount)
         {
             NativeFn native = AS_NATIVE(callee);
             Value result = native(vm, argCount, vm->stackTop - argCount);
-            popMany(vm, argCount + 1);
-            push(vm, result);
+            push_to(vm, result, argCount + 1);
+            popMany(vm, argCount);
             return true;
         }
 
@@ -358,8 +363,8 @@ static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, in
                      string_get_cstr(method->name), method->arity, argCount);
     }
     Value result = method->function(vm, receiver, argCount, vm->stackTop - argCount);
-    popMany(vm, argCount + 1);
-    push(vm, result);
+    push_to(vm, result, argCount + 1);
+    popMany(vm, argCount);
     return true;
 }
 
@@ -418,8 +423,8 @@ static bool callNumberOperator(VM* vm, Value receiver, int argCount, OPERATOR op
         }
     }
     VALUE result = number_operator(vm, receiver, args, operator);
-    popMany(vm, argCount + 1);
-    push(vm, result);
+    push_to(vm, result, argCount + 1);
+    popMany(vm, argCount);
     return true;
 }
 
@@ -546,8 +551,9 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
     }
 
     ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
-    pop(vm); // Instance.
     push(vm, OBJ_VAL(bound));
+    swapTop(vm);
+    pop(vm); // Instance.
     return true;
 }
 
@@ -780,8 +786,9 @@ static InterpretResult run(VM *vm)
             Value value;
             if (tableGet(&instance->fields, name, &value))
             {
-                pop(vm); // Instance.
                 push(vm, value);
+                swapTop(vm);
+                pop(vm); // Instance.
                 break;
             }
 
@@ -800,10 +807,8 @@ static InterpretResult run(VM *vm)
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
             tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
-
-            Value value = pop(vm);
+            swapTop(vm);
             pop(vm);
-            push(vm, value);
             break;
         }
         case OP_GET_SUPER:

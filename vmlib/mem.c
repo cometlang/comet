@@ -26,8 +26,8 @@ static bool collecting_garbage;
 static void collectGarbage(void);
 
 static VM **threads;
-static int num_threads = 0;
-static int thread_capacity = 0;
+static volatile int num_threads = 0;
+static volatile int thread_capacity = 0;
 
 static Obj **grey_stack;
 static int grey_capacity = 0;
@@ -119,7 +119,7 @@ Obj *allocateObject(size_t size, ObjType type)
 {
     Obj *object = (Obj *)reallocate(NULL, 0, size);
     object->type = type;
-    object->isMarked = false;
+    object->isMarked = true;
 
     object->next = generation_0;
     generation_0 = object;

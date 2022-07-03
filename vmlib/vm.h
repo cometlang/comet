@@ -78,6 +78,7 @@ void defineMethod(VM *vm, Value name, bool isStatic);
 void defineOperator(VM *vm, OPERATOR operator_);
 
 void push(VM *vm, Value value);
+void push_to(VM *vm, Value value, int distance);
 Value pop(VM *vm);
 Value peek(VM *vm, int distance);
 Value popMany(VM *vm, int count);

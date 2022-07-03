@@ -389,8 +389,8 @@ VALUE list_reduce(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
         push(vm, args[2]);
         call_function(vm, NIL_VAL, arguments[1], 3, args);
         accumulator = pop(vm);
-        popMany(vm, 2);
-        push(vm, accumulator);
+        push_to(vm, accumulator, 2);
+        pop(vm);
     }
     return pop(vm);
 }

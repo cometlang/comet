@@ -225,14 +225,14 @@ static void blackenObject(Obj *object)
     }
     case OBJ_NATIVE_INSTANCE:
     {
-        ObjNativeInstance *instance = (ObjNativeInstance *)object;
-        MarkNativeObject marker = ((ObjNativeClass *)instance->instance.klass)->marker;
+        ObjInstance *instance = (ObjInstance *)object;
+        MarkNativeObject marker = ((ObjNativeClass *)instance->klass)->marker;
         if (marker != NULL)
         {
             marker(OBJ_VAL(object));
         }
-        markObject((Obj *)instance->instance.klass);
-        markTable(&instance->instance.fields);
+        markObject((Obj *)instance->klass);
+        markTable(&instance->fields);
         break;
     }
     case OBJ_UPVALUE:
@@ -338,13 +338,13 @@ static void freeObject(Obj *object)
     }
     case OBJ_NATIVE_INSTANCE:
     {
-        ObjNativeInstance *instance = (ObjNativeInstance *)object;
-        ObjNativeClass *klass = (ObjNativeClass *)instance->instance.klass;
+        ObjInstance *instance = (ObjInstance *)object;
+        ObjNativeClass *klass = (ObjNativeClass *)instance->klass;
         if (klass->destructor != NULL)
         {
             klass->destructor(instance);
         }
-        freeTable(&instance->instance.fields);
+        freeTable(&instance->fields);
         FREE_NATIVE_INSTANCE(object);
         break;
     }

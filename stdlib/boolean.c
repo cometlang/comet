@@ -4,15 +4,15 @@
 #include "comet_stdlib.h"
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     bool value;
 } BooleanData_t;
 
 static BooleanData_t _true;
 static BooleanData_t _false;
 
-ObjNativeInstance *boolean_true = (ObjNativeInstance *) &_true;
-ObjNativeInstance *boolean_false = (ObjNativeInstance *) &_false;
+ObjInstance *boolean_true = (ObjInstance *) &_true;
+ObjInstance *boolean_false = (ObjInstance *) &_false;
 
 static VALUE bool_class;
 
@@ -31,11 +31,11 @@ VALUE boolean_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
 
 static void init_instance(VM *vm, BooleanData_t *instance, ObjClass *klass, bool value)
 {
-    instance->obj.instance.obj.type = OBJ_NATIVE_INSTANCE;
-    instance->obj.instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
-    instance->obj.instance.klass = klass;
+    instance->obj.obj.type = OBJ_NATIVE_INSTANCE;
+    instance->obj.obj.isMarked = false; // doesn't matter, it's static memory anyway
+    instance->obj.klass = klass;
     instance->value = value;
-    initTable(&instance->obj.instance.fields);
+    initTable(&instance->obj.fields);
     if (value)
         push(vm, copyString(vm, "true", 4));
     else

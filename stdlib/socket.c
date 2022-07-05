@@ -22,7 +22,7 @@ static VALUE socket_type;
 static VALUE address_family;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     int sock_fd;
     int address_family;
     int sock_type;

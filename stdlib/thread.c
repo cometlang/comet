@@ -13,7 +13,7 @@
 #endif
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
 #ifdef WIN32
     HANDLE thread_handle;
     DWORD thread_id;

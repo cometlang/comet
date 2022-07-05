@@ -14,7 +14,7 @@
 
 typedef struct
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     int width;
     int height;
     uint8_t *buffer;

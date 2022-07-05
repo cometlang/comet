@@ -8,7 +8,7 @@
 #include "comet_stdlib.h"
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
 #ifdef WIN32
     CONDITION_VARIABLE cond_var;
     CRITICAL_SECTION critical_section;
@@ -26,7 +26,7 @@ VALUE cond_var_wait(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 VALUE cond_var_timed_wait(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
 #ifdef WIN32
     HANDLE mutex;
 #else

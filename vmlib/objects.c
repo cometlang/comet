@@ -58,7 +58,7 @@ ObjNativeClass *newNativeClass(
     klass->constructor = constructor;
     klass->destructor = destructor;
     klass->marker = marker;
-    klass->allocSize = allocSize == 0 ? sizeof(ObjNativeInstance) : allocSize;
+    klass->allocSize = allocSize == 0 ? sizeof(ObjInstance) : allocSize;
     return klass;
 }
 
@@ -109,12 +109,12 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
-        ObjNativeInstance *instance = (ObjNativeInstance *) allocateObject(
+        ObjInstance *instance = (ObjInstance *) allocateObject(
             native_klass->allocSize,
             OBJ_NATIVE_INSTANCE);
         push(vm, OBJ_VAL(instance));
-        instance->instance.klass = klass;
-        initTable(&instance->instance.fields);
+        instance->klass = klass;
+        initTable(&instance->fields);
         push(vm, OBJ_VAL(native_klass));
         if (native_klass->constructor != NULL)
         {

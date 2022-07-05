@@ -48,7 +48,7 @@ static DWORD translate_flags_to_mode(VALUE flags)
 
 VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
 {
-    ObjNativeInstance* instance = (ObjNativeInstance*)newInstance(vm, AS_CLASS(klass));
+    ObjInstance* instance = (ObjInstance*)newInstance(vm, AS_CLASS(klass));
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(instance));
     const char* path = string_get_cstr(arguments[0]);
     DWORD mode = translate_flags_to_mode(arguments[1]);

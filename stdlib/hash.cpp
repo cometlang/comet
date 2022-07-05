@@ -24,14 +24,14 @@ typedef struct hash_entry
 
 typedef struct
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     int count;
     int32_t capacity;
     HashEntry *entries;
 } HashTable;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     HashTable *table;
     int index;
     int values_returned;

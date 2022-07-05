@@ -24,7 +24,7 @@
 #define AS_CLOSURE(value) ((ObjClosure *)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction *)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
-#define AS_NATIVE_INSTANCE(value) ((ObjNativeInstance *)AS_OBJ(value))
+#define AS_NATIVE_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
 
 #define IS_INSTANCE_OF_STDLIB_TYPE(value, classType) isObjOfStdlibClassType(value, classType)
@@ -182,18 +182,13 @@ typedef struct
 
 typedef struct
 {
-    ObjInstance instance;
-} ObjNativeInstance;
-
-typedef struct
-{
     Obj obj;
     Value receiver;
     ObjClosure *method;
 } ObjBoundMethod;
 
-extern ObjNativeInstance nil_instance;
-extern ObjNativeInstance *boolean_true;
-extern ObjNativeInstance *boolean_false;
+extern ObjInstance nil_instance;
+extern ObjInstance *boolean_true;
+extern ObjInstance *boolean_false;
 
 #endif

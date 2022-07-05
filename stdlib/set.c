@@ -10,14 +10,14 @@ typedef struct _set_entry
 } SetEntry;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     int count;
     int capacity;
     SetEntry **entries;
 } SetData;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     VALUE set;
     int index;
     int returned_count;

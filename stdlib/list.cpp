@@ -19,14 +19,14 @@ typedef struct list_node
 
 typedef struct
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     list_node_t *entries;
     int count;
     int capacity;
 } ListData;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     VALUE list;
     int index;
 } ListIteratorData;

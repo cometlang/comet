@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "comet.h"
 
-ObjNativeInstance nil_instance;
+ObjInstance nil_instance;
 VALUE nil_iterator_class;
 
 VALUE nil_iterator_has_next_p(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -52,10 +52,10 @@ void init_nil(VM *vm)
     defineNativeMethod(vm, klass, &nil_iterable_contains_q, "contains?", 1, false);
     defineNativeMethod(vm, klass, &nil_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, klass, &nil_iterable_count, "count", 0, false);
-    nil_instance.instance.obj.type = OBJ_NATIVE_INSTANCE;
-    nil_instance.instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
-    nil_instance.instance.klass = AS_CLASS(klass);
-    initTable(&nil_instance.instance.fields);
+    nil_instance.obj.type = OBJ_NATIVE_INSTANCE;
+    nil_instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
+    nil_instance.klass = AS_CLASS(klass);
+    initTable(&nil_instance.fields);
     push(vm, copyString(vm, "nil", 3));
     addGlobal(peek(vm, 0), NIL_VAL);
     pop(vm);

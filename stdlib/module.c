@@ -4,7 +4,7 @@
 static VALUE klass;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     const char *filename;
     bool initialized;
     ObjFunction *main;

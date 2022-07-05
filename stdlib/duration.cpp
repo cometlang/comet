@@ -8,7 +8,7 @@
 static VALUE duration_class;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     std::chrono::nanoseconds duration;
 } DurationData;
 

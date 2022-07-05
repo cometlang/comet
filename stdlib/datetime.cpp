@@ -13,7 +13,7 @@
 using namespace std::chrono;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     date::zoned_time<nanoseconds> point;
 } DateTimeData;
 
@@ -46,7 +46,7 @@ static VALUE datetime_class;
 
 VALUE create_datetime(VM *vm, std::chrono::time_point<date::local_t, std::chrono::nanoseconds> time_point, const date::time_zone *time_zone)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(datetime_class));
+    ObjInstance *instance = (ObjInstance *)newInstance(vm, AS_CLASS(datetime_class));
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(instance));
     data->point = date::zoned_time<std::chrono::nanoseconds>{time_zone, time_point};
     return OBJ_VAL(instance);
@@ -103,7 +103,7 @@ static VALUE datetime_milliseconds(VM UNUSED(*vm), VALUE self, int UNUSED(arg_co
 
 static VALUE datetime_static_now(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
+    ObjInstance *instance = (ObjInstance *)newInstance(vm, AS_CLASS(klass));
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(instance));
     data->point = date::zoned_time{date::current_zone(), date::utc_clock::to_sys<nanoseconds>(date::utc_clock::now())};
     return OBJ_VAL(instance);

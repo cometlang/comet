@@ -9,18 +9,18 @@ VALUE enum_iterator_class;
 VALUE enum_value_class;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     ValueArray array;
 } EnumData;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     EnumData *data;
     int index;
 } EnumIterator;
 
 typedef struct {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     double num;
     VALUE name;
 } EnumValueData;

@@ -22,7 +22,7 @@ extern VALUE fopen_params;
 
 typedef struct fileData
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
 #ifdef WIN32
     HANDLE fp;
     bool is_binary;

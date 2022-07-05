@@ -12,7 +12,7 @@ static VALUE string_iterator_class;
 
 typedef struct
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     size_t length;
     char *chars;
     uint32_t hash;
@@ -20,7 +20,7 @@ typedef struct
 
 typedef struct
 {
-    ObjNativeInstance obj;
+    ObjInstance obj;
     StringData *string;
     utf8proc_int32_t current_codepoint;
     utf8proc_ssize_t remaining;

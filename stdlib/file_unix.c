@@ -47,7 +47,7 @@ static const char* translate_flags_to_mode(VALUE flags)
 
 VALUE file_static_open(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
 {
-    ObjNativeInstance *instance = (ObjNativeInstance *)newInstance(vm, AS_CLASS(klass));
+    ObjInstance *instance = (ObjInstance *)newInstance(vm, AS_CLASS(klass));
     const char *path = string_get_cstr(arguments[0]);
     const char *mode = translate_flags_to_mode(arguments[1]);
     FILE *fp = fopen(path, mode);

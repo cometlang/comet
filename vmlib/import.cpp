@@ -99,7 +99,9 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
         }
         else
         {
+            push(vm, module);
             addModule(module, copyString(vm, full_path, strlen(full_path)));
+            pop(vm);
         }
     }
     pop(vm);

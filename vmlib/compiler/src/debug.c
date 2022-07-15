@@ -215,7 +215,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_PROPAGATE_EXCEPTION:
         return simpleInstruction("OP_PROPAGATE_EXCEPTION", offset);
     case OP_IMPORT:
-        return simpleInstruction("OP_IMPORT", offset);
+        return constantInstruction("OP_IMPORT", chunk, offset);
     case OP_SPLAT:
         return simpleInstruction("OP_SPLAT", offset);
     default:

@@ -3,6 +3,7 @@
 #else
 #define _GNU_SOURCE
 #include <pthread.h>
+#include <errno.h>
 #endif
 #include <stdlib.h>
 #include <string.h>
@@ -45,11 +46,15 @@ static HANDLE gc_lock;
 #define MUTEX_LOCK(mut) WaitForSingleObject(mut, INFINITE)
 #define MUTEX_UNLOCK(mut) ReleaseMutex(mut)
 #define MUTEX_DESTROY(mut) CloseHandle(mut)
+#define MUTEX_TRY_LOCK(mut) WaitForSingleObject(mut, 1)
+#define MUTEX_LOCK_FAILED WAIT_ABANDONED
 #else
 static pthread_mutex_t gc_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 #define MUTEX_LOCK(mut) pthread_mutex_lock(&mut)
 #define MUTEX_UNLOCK(mut) pthread_mutex_unlock(&mut)
 #define MUTEX_DESTROY(mut) pthread_mutex_destroy(&mut)
+#define MUTEX_TRY_LOCK(mut) pthread_mutex_trylock(&mut)
+#define MUTEX_LOCK_FAILED EBUSY
 #endif
 
 void register_thread(VM *vm)
@@ -94,7 +99,7 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     MUTEX_LOCK(gc_lock);
     _bytes_allocated += newSize - oldSize;
 #if DEBUG_STRESS_GC
-    if (newSize > oldSize && newSize > MINIMUM_GC_MARK)
+    if (newSize > oldSize && _bytes_allocated > MINIMUM_GC_MARK)
     {
         collectGarbage();
     }
@@ -487,6 +492,7 @@ void freeObjects()
 
 void finalizeGarbageCollection(void)
 {
+    MUTEX_LOCK(gc_lock);
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
     printf("GC ran %u times, for a total of %lu clocks (%lu)\n", gc_count, total_gc_clocks, CLOCKS_PER_SEC);
 #endif
@@ -499,6 +505,6 @@ void finalizeGarbageCollection(void)
     threads = NULL;
     thread_capacity = 0;
     num_threads = 0;
-
+    MUTEX_UNLOCK(gc_lock);
     MUTEX_DESTROY(gc_lock);
 }

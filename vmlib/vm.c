@@ -17,6 +17,7 @@ static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
 
 #if DEBUG_TRACE_EXECUTION
+static CallFrame *updateFrame(VM *vm);
 static bool _print_stack = false;
 
 void toggle_stack_printing(void)
@@ -194,6 +195,11 @@ void throw_exception_native(VM *vm, const char *exception_type_name, const char 
 void runtimeError(VM *vm, const char *format, ...)
 {
 #if DEBUG_TRACE_EXECUTION
+    CallFrame *frame = updateFrame(vm);
+    ObjFunction *function = frame->closure->function;
+    disassembleChunk(
+        &function->chunk,
+        function->name != NIL_VAL ? string_get_cstr(function->name) : "<script>");
     print_stack_trace(vm);
     print_stack(vm);
 #endif

@@ -53,9 +53,12 @@ VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argume
     const char* path = string_get_cstr(arguments[0]);
     DWORD mode = translate_flags_to_mode(arguments[1]);
     DWORD creationDisposition = OPEN_EXISTING;
-    if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES && (mode & (FOPEN_READ_WRITE | FOPEN_APPEND)))
+    DWORD attributes = GetFileAttributesA(string_get_cstr(arguments[0]));
+    if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES && (mode & (GENERIC_READ | GENERIC_WRITE)))
+    {
         creationDisposition = CREATE_NEW;
-    HANDLE fp = CreateFile(path, mode, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    }
+    HANDLE fp = CreateFileA(path, mode, 0, NULL, creationDisposition, FILE_ATTRIBUTE_NORMAL, NULL);
     if (fp == INVALID_HANDLE_VALUE)
     {
         throw_exception_native(vm, "IOException", "Couldn't open file '%s'", path);
@@ -72,7 +75,11 @@ VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
     if (data->fp != INVALID_HANDLE_VALUE)
     {
-        CloseHandle(data->fp);
+
+        if (!CloseHandle(data->fp))
+        {
+            printf("Didn't close the file\n");
+        }
         data->fp = INVALID_HANDLE_VALUE;
     }
     return NIL_VAL;
@@ -179,8 +186,8 @@ VALUE file_static_read_all_lines(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED
     char* buffer = ALLOCATE(char, sizeof(char) * (fileSize + 1));
     DWORD bytesRead = 0;
     bool success = ReadFile(fp, buffer, fileSize, &bytesRead, NULL);
+    CloseHandle(fp);
     if (!success) {
-        CloseHandle(fp);
         throw_exception_native(vm, "IOException", "Couldn't read file '%s'\n", path);
     }
     buffer[bytesRead] = '\0';
@@ -229,6 +236,18 @@ VALUE file_static_delete(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argu
     if (!result)
     {
         throw_exception_native(vm, "IOException", "Could not delete file %s\n", filename);
+    }
+    return NIL_VAL;
+}
+
+VALUE file_static_copy(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
+{
+    const char* source_filename = string_get_cstr(arguments[0]);
+    const char* dest_filename = string_get_cstr(arguments[1]);
+    bool result = CopyFileA(source_filename, dest_filename, false);
+    if (!result)
+    {
+        throw_exception_native(vm, "IOException", "Could not copy file %s\n", source_filename);
     }
     return NIL_VAL;
 }

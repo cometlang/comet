@@ -30,6 +30,7 @@ void init_file(VM* vm)
     defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", 1, true);
     defineNativeMethod(vm, klass, &file_static_delete, "delete", 1, true);
     defineNativeMethod(vm, klass, &file_static_rename, "rename", 2, true);
+    defineNativeMethod(vm, klass, &file_static_copy, "copy", 2, true);
 
     fopen_params = enum_create(vm);
     push(vm, fopen_params);

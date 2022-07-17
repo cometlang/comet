@@ -209,3 +209,30 @@ VALUE file_static_delete(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VAL
     }
     return NIL_VAL;
 }
+
+VALUE file_static_copy(VM* vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE* arguments)
+{
+#define COPY_BUFFER_SIZE 1024
+    char* buffer = ALLOCATE(char, sizeof(char) * COPY_BUFFER_SIZE);
+    const char* source_filename = string_get_cstr(arguments[0]);
+    const char* dest_filename = string_get_cstr(arguments[1]);
+    FILE* source = fopen(source_filename, "r");
+    FILE* dest = fopen(source_filename, "w+");
+    int bytes_read = fread(buffer, sizeof(char), COPY_BUFFER_SIZE, source);
+    while (bytes_read > 0)
+    {
+        fwrite(buffer, sizeof(char), bytes_read, dest);
+        bytes_read = fread(buffer, sizeof(char), COPY_BUFFER_SIZE, source);
+    }
+    if (!feof(source))
+    {
+        fclose(source);
+        fclose(dest);
+        throw_exception_native(vm, "IOException", "Could not read soure file to copy '%s'\n", source_filename);
+    }
+    fclose(source);
+    fclose(dest);
+    FREE_ARRAY(char, buffer, COPY_BUFFER_SIZE);
+#undef COPY_BUFFER_SIZE
+    return NIL_VAL;
+}

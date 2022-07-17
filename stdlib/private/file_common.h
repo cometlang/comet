@@ -43,6 +43,7 @@ VALUE file_static_file_q(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_read_all_lines(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_delete(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_rename(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
+VALUE file_static_copy(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 
 VALUE file_close(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 VALUE file_write(VM* vm, VALUE self, int arg_count, VALUE* arguments);

@@ -38,7 +38,7 @@ static VALUE enumvalue_init(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *ar
     data->name = arguments[0];
     data->num = number_get_value(arguments[1]);
     setNativeProperty(vm, self, "name", data->name);
-    setNativeProperty(vm, self, "value", data->num);
+    setNativeProperty(vm, self, "value", create_number(vm, data->num));
     return NIL_VAL;
 }
 
@@ -201,7 +201,7 @@ VALUE enum_create(VM *vm)
 
 void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t value)
 {
-    VALUE args[2];
+    VALUE args[2] = {NIL_VAL};
     args[0] = copyString(vm, name, strlen(name));
     push(vm, args[0]);
     args[1] = create_number(vm, value);

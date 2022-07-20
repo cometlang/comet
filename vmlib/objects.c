@@ -102,9 +102,10 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     case OBJ_CLASS:
     {
         ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
+        push(vm, OBJ_VAL(instance));
         instance->klass = klass;
         initTable(&instance->fields);
-        return (Obj *)instance;
+        return AS_OBJ(pop(vm));
     }
     case OBJ_NATIVE_CLASS:
     {

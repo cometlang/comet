@@ -1070,9 +1070,10 @@ static InterpretResult run(VM *vm)
         }
         case OP_INSTANCEOF:
         {
-            VALUE rhs = pop(vm);
-            VALUE lhs = pop(vm);
-            push(vm, instanceof(lhs, rhs));
+            VALUE rhs = peek(vm, 1);
+            VALUE lhs = peek(vm, 0);
+            push_to(vm, instanceof(lhs, rhs), 2);
+            pop(vm);
             break;
         }
         case OP_PUSH_EXCEPTION_HANDLER:
@@ -1157,7 +1158,7 @@ static InterpretResult run(VM *vm)
 
 void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
 {
-    VM *frame = ALLOCATE(VM, 1);
+    VM *frame = malloc(sizeof(VM));
     initVM(frame);
     push(frame, receiver);
     for (int i = 0; i < arg_count; i++)
@@ -1184,7 +1185,7 @@ void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *a
         runtimeError(frame, "Invoke of method failed\n");
     }
     deregister_thread(frame);
-    FREE(VM, frame);
+    free(frame);
 }
 
 InterpretResult interpret(VM *vm, Value main)

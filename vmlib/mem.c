@@ -78,7 +78,7 @@ void deregister_thread(VM *vm)
 {
     MUTEX_LOCK(gc_lock);
     int index = 0;
-    for (; index < num_threads; index++)
+    for (; index < thread_capacity; index++)
     {
         if (threads[index] == vm)
         {
@@ -86,7 +86,7 @@ void deregister_thread(VM *vm)
         }
     }
 
-    for (; index < (num_threads - 1); index++)
+    for (; index < (thread_capacity - 1); index++)
     {
         threads[index] = threads[index + 1];
     }
@@ -445,7 +445,8 @@ static void collectGarbage()
 
     for (int i = 0; i < thread_capacity; i++)
     {
-        markRoots(threads[i]);
+        if (threads[i] != NULL)
+            markRoots(threads[i]);
     }
     markGlobals();
     traceReferences();

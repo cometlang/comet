@@ -29,12 +29,12 @@ void toggle_stack_printing(void)
 static bool create_instance(VM *vm, ObjClass *klass, int argCount)
 {
     Obj *obj_instance = newInstance(vm, klass);
+    push_to(vm, OBJ_VAL(obj_instance), argCount + 1);
+    Value instance = OBJ_VAL(obj_instance);
     if (obj_instance == NULL)
     {
         return false;
     }
-    Value instance = OBJ_VAL(obj_instance);
-    vm->stackTop[-argCount - 1] = instance;
     // Call the initializer, if there is one.
     Value initializer;
     if (tableGet(&klass->methods, common_strings[STRING_INIT], &initializer))
@@ -328,7 +328,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
 
             // Replace the bound method with the receiver so it's in the
             // right slot when the method is called.
-            vm->stackTop[-argCount - 1] = bound->receiver;
+            push_to(vm, argCount + 1, bound->receiver);
             return call(vm, bound->method, argCount);
         }
         case OBJ_NATIVE_CLASS:
@@ -503,7 +503,7 @@ static bool invoke(VM *vm, Value name, int argCount)
         if (tableGet(&instance->fields, name, &value))
         {
             // Load the field onto the stack in place of the receiver.
-            vm->stackTop[-argCount - 1] = value;
+            push_to(vm, value, argCount + 1);
             // Try to invoke it like a function.
             return callValue(vm, value, argCount);
         }
@@ -557,9 +557,7 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
     }
 
     ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
-    push(vm, OBJ_VAL(bound));
-    swapTop(vm);
-    pop(vm); // Instance.
+    push_to(vm, OBJ_VAL(bound), 1);
     return true;
 }
 
@@ -792,9 +790,7 @@ static InterpretResult run(VM *vm)
             Value value;
             if (tableGet(&instance->fields, name, &value))
             {
-                push(vm, value);
-                swapTop(vm);
-                pop(vm); // Instance.
+                push_to(vm, value, 1);
                 break;
             }
 
@@ -986,8 +982,7 @@ static InterpretResult run(VM *vm)
             bool final = READ_BYTE();
             const char *name = string_get_cstr(peek(vm, 0));
             ObjClass *klass = newClass(name, CLS_USER_DEF, final);
-            pop(vm);
-            push(vm, OBJ_VAL(klass));
+            push_to(vm, OBJ_VAL(klass), 1);
             break;
         }
         case OP_INHERIT:

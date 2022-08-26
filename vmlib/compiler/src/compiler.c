@@ -119,7 +119,7 @@ void patchJump(Parser *parser, int offset)
 
 void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
 {
-    push(parser->compilation_thread, OBJ_VAL(newFunction(parser->filename, parser->currentModule)));
+    newFunction(parser->compilation_thread, parser->filename, parser->currentModule);
     compiler->enclosing = parser->currentFunction;
     compiler->function = NULL;
     compiler->type = type;

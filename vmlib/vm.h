@@ -33,7 +33,6 @@ struct _vm
     Value stack[STACK_MAX];
     Value *stackTop;
     ObjUpvalue *openUpvalues;
-    int thread_id;
 };
 
 typedef enum

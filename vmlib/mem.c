@@ -1,5 +1,6 @@
 #ifdef WIN32
 #include <Windows.h>
+#include <processthreadsapi.h>
 #else
 #define _GNU_SOURCE
 #include <pthread.h>
@@ -56,6 +57,15 @@ static pthread_mutex_t gc_lock = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 #define MUTEX_TRY_LOCK(mut) pthread_mutex_trylock(&mut)
 #define MUTEX_LOCK_FAILED EBUSY
 #endif
+
+uint32_t get_current_thread_id()
+{
+#ifdef WIN32
+    return GetCurrentThreadId();
+#else
+    return pthread_self();
+#endif
+}
 
 void register_thread(VM *vm)
 {
@@ -120,8 +130,9 @@ void *reallocate(void *previous, size_t oldSize, size_t newSize)
     return result;
 }
 
-Obj *allocateObject(size_t size, ObjType type)
+Obj *allocateObject(VM *vm, size_t size, ObjType type)
 {
+    MUTEX_LOCK(gc_lock);
     Obj *object = (Obj *)reallocate(NULL, 0, size);
     object->type = type;
     object->isMarked = true;
@@ -133,6 +144,8 @@ Obj *allocateObject(size_t size, ObjType type)
     printf("%p allocate %ld for %s\n", (void *)object, size, objTypeName(type));
 #endif
 
+    push(vm, OBJ_VAL(object));
+    MUTEX_UNLOCK(gc_lock);
     return object;
 }
 
@@ -437,7 +450,7 @@ static void sweep()
 static void collectGarbage()
 {
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
-    printf("-- gc begin\n");
+    printf("-- gc begin on thread: 0x%X\n", get_current_thread_id());
     size_t before = _bytes_allocated;
     clock_t start = clock();
 #endif
@@ -458,7 +471,7 @@ static void collectGarbage()
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
     clock_t end = clock();
     total_gc_clocks += (end - start);
-    printf("-- gc end\n");
+    printf("-- gc end on thread 0x%X\n", get_current_thread_id());
     printf("   collected %ld bytes (from %ld to %ld) next at %ld\n",
            before - _bytes_allocated, before, _bytes_allocated,
            _next_GC);

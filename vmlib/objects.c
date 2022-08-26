@@ -7,12 +7,12 @@
 #include "scanner.h"
 #include "comet.h"
 
-#define ALLOCATE_OBJ(type, objectType) \
-    (type *)allocateObject(sizeof(type), objectType)
+#define ALLOCATE_OBJ(vm, type, objectType) \
+    (type *)allocateObject(vm, sizeof(type), objectType)
 
-ObjBoundMethod *newBoundMethod(Value receiver, ObjClosure *method)
+ObjBoundMethod *newBoundMethod(VM *vm, Value receiver, ObjClosure *method)
 {
-    ObjBoundMethod *bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
+    ObjBoundMethod *bound = ALLOCATE_OBJ(vm, ObjBoundMethod, OBJ_BOUND_METHOD);
 
     bound->receiver = receiver;
     bound->method = method;
@@ -35,9 +35,9 @@ static void init_class(ObjClass *klass, const char *name, ClassType classType, b
     }
 }
 
-ObjClass *newClass(const char *name, ClassType classType, bool final)
+ObjClass *newClass(VM *vm, const char *name, ClassType classType, bool final)
 {
-    ObjClass *klass = ALLOCATE_OBJ(ObjClass, OBJ_CLASS);
+    ObjClass *klass = ALLOCATE_OBJ(vm, ObjClass, OBJ_CLASS);
     init_class(klass, name, classType, final);
     return klass;
 }
@@ -52,8 +52,7 @@ ObjNativeClass *newNativeClass(
     size_t allocSize,
     bool final)
 {
-    ObjNativeClass *klass = ALLOCATE_OBJ(ObjNativeClass, OBJ_NATIVE_CLASS);
-    push(vm, OBJ_VAL(klass));
+    ObjNativeClass *klass = ALLOCATE_OBJ(vm, ObjNativeClass, OBJ_NATIVE_CLASS);
     init_class((ObjClass *)klass, name, classType, final);
     klass->constructor = constructor;
     klass->destructor = destructor;
@@ -62,23 +61,23 @@ ObjNativeClass *newNativeClass(
     return klass;
 }
 
-ObjClosure *newClosure(ObjFunction *function)
+ObjClosure *newClosure(VM *vm, ObjFunction *function)
 {
     ObjUpvalue **upvalues = ALLOCATE(ObjUpvalue *, function->upvalueCount);
     for (int i = 0; i < function->upvalueCount; i++)
     {
         upvalues[i] = NULL;
     }
-    ObjClosure *closure = ALLOCATE_OBJ(ObjClosure, OBJ_CLOSURE);
+    ObjClosure *closure = ALLOCATE_OBJ(vm, ObjClosure, OBJ_CLOSURE);
     closure->function = function;
     closure->upvalues = upvalues;
     closure->upvalueCount = function->upvalueCount;
     return closure;
 }
 
-ObjFunction *newFunction(const char *filename, VALUE module)
+ObjFunction *newFunction(VM *vm, const char *filename, VALUE module)
 {
-    ObjFunction *function = ALLOCATE_OBJ(ObjFunction, OBJ_FUNCTION);
+    ObjFunction *function = ALLOCATE_OBJ(vm, ObjFunction, OBJ_FUNCTION);
 
     function->arity = 0;
     function->upvalueCount = 0;
@@ -101,8 +100,7 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     {
     case OBJ_CLASS:
     {
-        ObjInstance *instance = ALLOCATE_OBJ(ObjInstance, OBJ_INSTANCE);
-        push(vm, OBJ_VAL(instance));
+        ObjInstance *instance = ALLOCATE_OBJ(vm, ObjInstance, OBJ_INSTANCE);
         instance->klass = klass;
         initTable(&instance->fields);
         return AS_OBJ(pop(vm));
@@ -110,10 +108,7 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     case OBJ_NATIVE_CLASS:
     {
         ObjNativeClass *native_klass = (ObjNativeClass *)klass;
-        ObjInstance *instance = (ObjInstance *) allocateObject(
-            native_klass->allocSize,
-            OBJ_NATIVE_INSTANCE);
-        push(vm, OBJ_VAL(instance));
+        ObjInstance *instance = (ObjInstance *)allocateObject(vm, native_klass->allocSize, OBJ_NATIVE_INSTANCE);
         instance->klass = klass;
         initTable(&instance->fields);
         push(vm, OBJ_VAL(native_klass));
@@ -134,16 +129,16 @@ Obj *newInstance(VM *vm, ObjClass *klass)
     }
 }
 
-ObjNative *newNativeFunction(NativeFn function)
+ObjNative *newNativeFunction(VM *vm, NativeFn function)
 {
-    ObjNative *native = ALLOCATE_OBJ(ObjNative, OBJ_NATIVE);
+    ObjNative *native = ALLOCATE_OBJ(vm, ObjNative, OBJ_NATIVE);
     native->function = function;
     return native;
 }
 
-ObjNativeMethod *newNativeMethod(NativeMethod function, uint8_t arity, bool isStatic, Value name)
+ObjNativeMethod *newNativeMethod(VM *vm, NativeMethod function, uint8_t arity, bool isStatic, Value name)
 {
-    ObjNativeMethod *method = ALLOCATE_OBJ(ObjNativeMethod, OBJ_NATIVE_METHOD);
+    ObjNativeMethod *method = ALLOCATE_OBJ(vm, ObjNativeMethod, OBJ_NATIVE_METHOD);
     method->function = function;
     method->arity = arity;
     method->isStatic = isStatic;
@@ -185,9 +180,9 @@ Value copyString(VM *vm, const char *chars, size_t length)
     return allocateString(vm, copied_string, length);
 }
 
-ObjUpvalue *newUpvalue(Value *slot)
+ObjUpvalue *newUpvalue(VM *vm, Value *slot)
 {
-    ObjUpvalue *upvalue = ALLOCATE_OBJ(ObjUpvalue, OBJ_UPVALUE);
+    ObjUpvalue *upvalue = ALLOCATE_OBJ(vm, ObjUpvalue, OBJ_UPVALUE);
     upvalue->closed = NIL_VAL;
     upvalue->location = slot;
     upvalue->next = NULL;

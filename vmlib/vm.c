@@ -213,12 +213,10 @@ void runtimeError(VM *vm, const char *format, ...)
 }
 
 
-static int thread_id = 0;
 void initVM(VM *vm)
 {
     resetStack(vm);
     register_thread(vm);
-    vm->thread_id = thread_id++;
 }
 
 void freeVM(VM *vm)
@@ -556,8 +554,9 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
         return false;
     }
 
-    ObjBoundMethod *bound = newBoundMethod(peek(vm, 0), AS_CLOSURE(method));
-    push_to(vm, OBJ_VAL(bound), 1);
+    newBoundMethod(vm, peek(vm, 0), AS_CLOSURE(method));
+    swapTop(vm);
+    pop(vm);
     return true;
 }
 
@@ -575,7 +574,7 @@ static ObjUpvalue *captureUpvalue(VM *vm, Value *local)
     if (upvalue != NULL && upvalue->location == local)
         return upvalue;
 
-    ObjUpvalue *createdUpvalue = newUpvalue(local);
+    ObjUpvalue *createdUpvalue = newUpvalue(vm, local);
     createdUpvalue->next = upvalue;
     if (prevUpvalue == NULL)
     {
@@ -643,9 +642,9 @@ void print_stack(VM *vm)
     CallFrame *frame = updateFrame(vm);
     if (vm->frameCount > 0) {
         disassembleInstruction(&frame->closure->function->chunk,
-                            (int)(frame->ip - frame->closure->function->chunk.code));
+                            (int)(frame->ip - 1 - frame->closure->function->chunk.code));
     }
-    printf("id: %04d ", vm->thread_id);
+    printf("id: 0x%X ", get_current_thread_id());
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
     {
         printf("[ ");
@@ -937,8 +936,7 @@ static InterpretResult run(VM *vm)
         case OP_CLOSURE:
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
-            ObjClosure *closure = newClosure(function);
-            push(vm, OBJ_VAL(closure));
+            ObjClosure *closure = newClosure(vm, function);
             for (int i = 0; i < closure->upvalueCount; i++)
             {
                 uint8_t isLocal = READ_BYTE();
@@ -946,6 +944,7 @@ static InterpretResult run(VM *vm)
                 if (isLocal)
                 {
                     closure->upvalues[i] = captureUpvalue(vm, frame->slots + index);
+                    pop(vm);
                 }
                 else
                 {
@@ -960,20 +959,19 @@ static InterpretResult run(VM *vm)
             break;
         case OP_RETURN:
         {
-            Value result = pop(vm);
+            Value result = peek(vm, 0);
             closeUpvalues(vm, frame->slots);
             vm->frameCount--;
             if (vm->frameCount == 0)
             {
+                swapTop(vm);
                 pop(vm);
-                push(vm, result);
                 return INTERPRET_OK;
             }
-
-            vm->stackTop = frame->slots;
-            push(vm, result);
-
+            *frame->slots = result;
+            vm->stackTop = frame->slots+1;
             frame = updateFrame(vm);
+
             break;
         }
         case OP_CLASS:
@@ -981,8 +979,9 @@ static InterpretResult run(VM *vm)
             push(vm, READ_CONSTANT());
             bool final = READ_BYTE();
             const char *name = string_get_cstr(peek(vm, 0));
-            ObjClass *klass = newClass(name, CLS_USER_DEF, final);
-            push_to(vm, OBJ_VAL(klass), 1);
+            newClass(vm, name, CLS_USER_DEF, final);
+            swapTop(vm);
+            pop(vm);
             break;
         }
         case OP_INHERIT:
@@ -1114,8 +1113,7 @@ static InterpretResult run(VM *vm)
                 {
                     module_set_initialized(imported);
                     ObjFunction *mod_main = module_get_main(imported);
-                    ObjClosure *closure = newClosure(mod_main);
-                    push(vm, OBJ_VAL(closure));
+                    ObjClosure *closure = newClosure(vm, mod_main);
                     call(vm, closure, 0);
                     frame = updateFrame(vm);
                 }
@@ -1158,8 +1156,9 @@ static InterpretResult run(VM *vm)
 
 void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *arguments)
 {
-    VM *frame = malloc(sizeof(VM));
+    VM *frame = (VM *)malloc(sizeof(VM));
     initVM(frame);
+    push(frame, method);
     push(frame, receiver);
     for (int i = 0; i < arg_count; i++)
     {
@@ -1196,9 +1195,9 @@ InterpretResult interpret(VM *vm, Value main)
     push(vm, main);
     module_set_initialized(main);
     ObjFunction *main_func = module_get_main(main);
-    ObjClosure *closure = newClosure(main_func);
+    ObjClosure *closure = newClosure(vm, main_func);
+    swapTop(vm);
     pop(vm);
-    push(vm, OBJ_VAL(closure));
     call(vm, closure, 0);
 
     return run(vm);

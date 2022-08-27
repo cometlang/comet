@@ -21,10 +21,12 @@
 #define AS_CLASS(value) ((ObjClass *)AS_OBJ(value))
 #define AS_NATIVE_CLASS(value) ((ObjNativeClass *)AS_OBJ(value))
 #define AS_NATIVE_METHOD(value) ((ObjNativeMethod *)AS_OBJ(value))
+#define AS_UPVALUE(value) ((ObjUpvalue *)AS_OBJ(value))
 #define AS_CLOSURE(value) ((ObjClosure *)AS_OBJ(value))
 #define AS_FUNCTION(value) ((ObjFunction *)AS_OBJ(value))
 #define AS_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
 #define AS_NATIVE_INSTANCE(value) ((ObjInstance *)AS_OBJ(value))
+#define AS_NATIVE_OBJ(value) (((ObjNative *)AS_OBJ(value)))
 #define AS_NATIVE(value) (((ObjNative *)AS_OBJ(value))->function)
 
 #define IS_INSTANCE_OF_STDLIB_TYPE(value, classType) isObjOfStdlibClassType(value, classType)

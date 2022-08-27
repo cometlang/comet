@@ -959,20 +959,19 @@ static InterpretResult run(VM *vm)
             break;
         case OP_RETURN:
         {
-            Value result = pop(vm);
+            Value result = peek(vm, 0);
             closeUpvalues(vm, frame->slots);
             vm->frameCount--;
             if (vm->frameCount == 0)
             {
+                swapTop(vm);
                 pop(vm);
-                push(vm, result);
                 return INTERPRET_OK;
             }
-
-            vm->stackTop = frame->slots;
-            push(vm, result);
-
+            *frame->slots = result;
+            vm->stackTop = frame->slots+1;
             frame = updateFrame(vm);
+
             break;
         }
         case OP_CLASS:

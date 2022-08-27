@@ -328,7 +328,7 @@ static bool callValue(VM *vm, Value callee, int argCount)
 
             // Replace the bound method with the receiver so it's in the
             // right slot when the method is called.
-            push_to(vm, argCount + 1, bound->receiver);
+            push_to(vm, bound->receiver, argCount + 1);
             return call(vm, bound->method, argCount);
         }
         case OBJ_NATIVE_CLASS:

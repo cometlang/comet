@@ -425,6 +425,7 @@ static void lambda(Parser *parser, bool UNUSED(canAssign))
     consume(parser, TOKEN_LEFT_BRACE, "Expect '{' before lambda body.");
     block(parser);
 
+    endScope(parser);
     // Create the function object.
     ObjFunction *function = endCompiler(parser);
     emitBytes(parser, OP_CLOSURE, makeConstant(parser, OBJ_VAL(function)));

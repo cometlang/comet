@@ -128,7 +128,11 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
     compiler->function = AS_FUNCTION(peek(parser->compilation_thread, 0));
     parser->currentFunction = compiler;
 
-    if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
+    if (type == TYPE_LAMBDA)
+    {
+        parser->currentFunction->function->name = common_strings[STRING_LAMBDA];
+    }
+    else if (type != TYPE_SCRIPT && type != TYPE_LAMBDA)
     {
         parser->currentFunction->function->name = copyString(parser->compilation_thread, parser->previous.start,
                                              parser->previous.length);

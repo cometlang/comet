@@ -33,6 +33,7 @@ static bool create_instance(VM *vm, ObjClass *klass, int argCount)
     Value instance = OBJ_VAL(obj_instance);
     if (obj_instance == NULL)
     {
+        runtimeError(vm, "Out of memory");
         return false;
     }
     // Call the initializer, if there is one.
@@ -200,7 +201,7 @@ void runtimeError(VM *vm, const char *format, ...)
     disassembleChunk(
         &function->chunk,
         function->name != NIL_VAL ? string_get_cstr(function->name) : "<script>");
-    print_stack_trace(vm);
+    printf("\n");
     print_stack(vm);
 #endif
     va_list args;

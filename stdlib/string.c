@@ -58,7 +58,7 @@ static VALUE string_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg
 
     utf8proc_uint8_t character[4];
     utf8proc_ssize_t char_len = utf8proc_encode_char(data->current_codepoint, character);
-    return copyString(vm, (const char *) character, (int)char_len);
+    return copyString(vm, (const char *)character, (int)char_len);
 }
 
 static VALUE string_iterator_peek_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -71,7 +71,7 @@ static VALUE string_iterator_peek_next(VM UNUSED(*vm), VALUE self, int UNUSED(ar
 
     utf8proc_uint8_t character[4];
     utf8proc_ssize_t char_len = utf8proc_encode_char(data->current_codepoint, character);
-    return copyString(vm, (const char *) character, (int)char_len);
+    return copyString(vm, (const char *)character, (int)char_len);
 }
 
 uint32_t string_hash_cstr(const char *string, int length)
@@ -180,7 +180,7 @@ static bool is_whitespace(const utf8proc_int32_t character)
     {
         return true;
     }
-    const utf8proc_property_t* prop = utf8proc_get_property(character);
+    const utf8proc_property_t *prop = utf8proc_get_property(character);
     if (prop->category == UTF8PROC_CATEGORY_ZS ||
         prop->category == UTF8PROC_CATEGORY_ZL ||
         prop->category == UTF8PROC_CATEGORY_ZP)
@@ -216,10 +216,10 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
         }
         if (found_non_whitespace)
         {
-            output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *) &output[output_offset]);
+            output_offset += utf8proc_encode_char(intermediate[i], (utf8proc_uint8_t *)&output[output_offset]);
         }
     }
-    VALUE result = copyString(vm, (const char*)output, output_offset);
+    VALUE result = copyString(vm, (const char *)output, output_offset);
     FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
     FREE_ARRAY(char, output, data->length + 1);
     return result;
@@ -228,7 +228,7 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
 VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    utf8proc_int32_t* intermediate = ALLOCATE(utf8proc_int32_t, data->length + 1);
+    utf8proc_int32_t *intermediate = ALLOCATE(utf8proc_int32_t, data->length + 1);
     utf8proc_ssize_t intermediate_length = utf8proc_decompose(
         (const utf8proc_uint8_t *)data->chars, data->length,
         intermediate, data->length,
@@ -239,7 +239,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
         throw_exception_native(vm, "Exception", "ERROR: %s\n", utf8proc_errmsg(intermediate_length));
         return NIL_VAL;
     }
-    char* output = ALLOCATE(char, data->length + 1);
+    char *output = ALLOCATE(char, data->length + 1);
 
     int i = intermediate_length - 1;
     for (; i >= 0; i--)
@@ -250,10 +250,10 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     int output_offset = 0;
     for (int j = 0; j <= i; j++)
     {
-        output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *) &output[output_offset]);
+        output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *)&output[output_offset]);
     }
 
-    VALUE result = copyString(vm, (const char*)output, output_offset);
+    VALUE result = copyString(vm, (const char *)output, output_offset);
     FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
     FREE_ARRAY(char, output, data->length + 1);
     return result;
@@ -269,17 +269,12 @@ VALUE string_trim(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argum
     return NIL_VAL;
 }
 
-VALUE string_find(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    return NIL_VAL;
-}
-
 VALUE string_split(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     VALUE list = list_create(vm);
     push(vm, list);
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    const char* separator_chars = NULL;
+    const char *separator_chars = NULL;
     size_t separator_length = 0;
     if (arg_count == 0)
     {
@@ -317,9 +312,45 @@ VALUE string_split(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     return list;
 }
 
-VALUE string_replace(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_replace(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    const char *orig = string_get_cstr(self);
+    const char *what = string_get_cstr(arguments[0]);
+    const char *with = string_get_cstr(arguments[1]);
+    size_t what_len = strlen(what);
+    size_t with_len = strlen(with);
+    int num_found = 0;
+    const char *current = strstr(orig, what);
+    while (current != NULL)
+    {
+        num_found++;
+        current = strstr(current + what_len, what);
+    }
+
+    int new_length = strlen(orig) - (num_found * what_len) + (num_found * with_len);
+    char *new_str = ALLOCATE(char, new_length + 1);
+    current = orig;
+    int chars_copied = 0;
+    while (current != NULL)
+    {
+        char *next = strstr(current, what);
+        if (next != NULL)
+        {
+            strncpy(&new_str[chars_copied], current, next - current);
+            chars_copied += next - current;
+            strncpy(&new_str[chars_copied], with, with_len);
+            chars_copied += with_len;
+            current = next + what_len;
+        }
+        else
+        {
+            strncpy(&new_str[chars_copied], current, strlen(current));
+            current = next;
+        }
+    }
+    new_str[new_length] = '\0';
+
+    return takeString(vm, new_str, new_length);
 }
 
 VALUE string_starts_with_q(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
@@ -444,7 +475,7 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 
 VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    uint64_t index = (int64_t) number_get_value(arguments[0]);
+    uint64_t index = (int64_t)number_get_value(arguments[0]);
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     utf8proc_int32_t current_codepoint;
     utf8proc_ssize_t remaining = data->length;
@@ -472,23 +503,24 @@ VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
     return NIL_VAL;
 }
 
-VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
+VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    StringData* data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    const char* string = strstr(data->chars, string_get_cstr(arguments[0]));
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    const char *string = strstr(data->chars, string_get_cstr(arguments[0]));
     if (string != NULL)
         return TRUE_VAL;
     return FALSE_VAL;
 }
 
-VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+
+    return arguments[0];
 }
 
 VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    StringData* data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     char *failed;
     double value = strtod(data->chars, &failed);
     if (failed != data->chars)
@@ -509,7 +541,6 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_trim_left, "left_trim", 0, false);
     defineNativeMethod(vm, string_class, &string_trim_right, "right_trim", 0, false);
     defineNativeMethod(vm, string_class, &string_trim, "trim", 0, false);
-    defineNativeMethod(vm, string_class, &string_find, "find", 1, false);
     defineNativeMethod(vm, string_class, &string_split, "split", 0, false);
     defineNativeMethod(vm, string_class, &string_replace, "replace", 2, false);
     defineNativeMethod(vm, string_class, &string_starts_with_q, "starts_with?", 1, false);
@@ -523,7 +554,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
     defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
-    defineNativeMethod(vm, string_class, &string_format, "format", 1, false);
+    defineNativeMethod(vm, string_class, &string_format, "format", 1, true);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
     defineNativeOperator(vm, string_class, &string_get_at, 1, OPERATOR_INDEX);

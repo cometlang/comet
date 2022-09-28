@@ -38,6 +38,10 @@ print("Iteration complete")
 print("This has an\nescaped newline in it")
 print("This has an \\ escaped escape in it")
 
+var replaced = "this;is;a;string;;that;should;be;replaced".replace(';', ' ')
+print("'", replaced, "'")
+assert(replaced == "this is a string  that should be replaced")
+
 var ooooo = utf8_string[10]
 print(ooooo)
 assert(ooooo == "ü")

@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include <sstream>
+using namespace std;
 
 #ifdef __cplusplus
 extern "C" {

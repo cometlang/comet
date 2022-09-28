@@ -1,5 +1,5 @@
-#ifndef clox_common_h
-#define clox_common_h
+#ifndef comet_common_h
+#define comet_common_h
 
 #include <stdbool.h> 
 #include <stddef.h>  
@@ -36,14 +36,6 @@ typedef struct {
 # define DEBUG_ASSERT(x) assert(x)
 #else
 # define DEBUG_ASSERT(x)
-#endif
-
-#ifndef max
-#define max(a,b) (((a) > (b)) ? (a) : (b))
-#endif
-
-#ifndef min
-#define min(a,b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #endif 

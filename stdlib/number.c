@@ -172,14 +172,14 @@ VALUE number_max(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
 {
     double lhs = number_get_value(arguments[0]);
     double rhs = number_get_value(arguments[1]);
-    return create_number(vm, max(lhs, rhs));
+    return create_number(vm, fmax(lhs, rhs));
 }
 
 VALUE number_min(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     double lhs = number_get_value(arguments[0]);
     double rhs = number_get_value(arguments[1]);
-    return create_number(vm, min(lhs, rhs));
+    return create_number(vm, fmin(lhs, rhs));
 }
 
 static unsigned int rand_seed;

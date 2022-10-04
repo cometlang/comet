@@ -222,7 +222,7 @@ void initVM(VM *vm)
 
 void freeVM(VM *vm)
 {
-    freeObjects(vm);
+    freeObjects();
     deregister_thread(vm);
 }
 

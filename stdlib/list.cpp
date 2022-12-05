@@ -1,8 +1,9 @@
+#define NOMINMAX
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <sstream>
-using namespace std;
+#include <limits>
 
 #ifdef __cplusplus
 extern "C" {
@@ -320,7 +321,7 @@ VALUE list_sort(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     for (int i = 0; i < data->count; i += RUN)
-        insertion_sort(vm, data, i, min((i + RUN - 1), (data->count - 1)));
+        insertion_sort(vm, data, i, std::min((i + RUN - 1), (data->count - 1)));
 
     // Start merging from size RUN (or 32).
     // It will merge to form size 64, then 128, 256 and so on...
@@ -334,7 +335,7 @@ VALUE list_sort(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argumen
             // find ending point of left sub array mid+1 is
             // the starting point of right sub array
             int mid = left + size - 1;
-            int right = min((left + 2 * size - 1), (data->count - 1));
+            int right = std::min((left + 2 * size - 1), (data->count - 1));
 
             // merge sub array arr[left.....mid] and arr[mid+1....right]
             if (mid < right)

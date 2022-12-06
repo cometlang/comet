@@ -454,6 +454,26 @@ VALUE list_length(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSE
     return create_number(vm, (double) data->count);
 }
 
+VALUE list_slice(VM *vm, VALUE self, int arg_count, VALUE *arguments)
+{
+    VALUE result = list_create(vm);
+    push(vm, result);
+    ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
+    int index = (int) number_get_value(arguments[0]);
+    int until = data->count;
+    int jump = 1;
+    if (arg_count >= 2) {
+        until = (int) number_get_value(arguments[1]);
+    }
+    if (arg_count == 3) {
+        jump = (int) number_get_value(arguments[2]);
+    }
+    for (; index < until; index += jump) {
+        list_add(vm, result, 1, &data->entries[index].item);
+    }
+    return pop(vm);
+}
+
 VALUE list_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1)
@@ -509,6 +529,7 @@ void init_list(VM *vm)
     defineNativeMethod(vm, list_class, &list_length, "length", 0, false);
     defineNativeMethod(vm, list_class, &list_length, "count", 0, false);
     defineNativeMethod(vm, list_class, &list_sort, "sort", 0, false);
+    defineNativeMethod(vm, list_class, &list_slice, "slice", 1, false);
     defineNativeOperator(vm, list_class, &list_get_at, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, list_class, &list_assign_at, 2, OPERATOR_INDEX_ASSIGN);
     defineNativeOperator(vm, list_class, &list_union, 1, OPERATOR_PLUS);

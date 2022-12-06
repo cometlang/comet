@@ -518,6 +518,26 @@ VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
     return arguments[0];
 }
 
+VALUE string_slice(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    // StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    // int index = (int) number_get_value(arguments[0]);
+    // int until = string_length(vm, self, 0, NULL);
+    // int jump = 1;
+    // if (arg_count >= 2) {
+    //     until = (int) number_get_value(arguments[1]);
+    // }
+    // if (arg_count == 3) {
+    //     jump = (int) number_get_value(arguments[2]);
+    // }
+    // int result_len = (until / jump) + 1;
+    // utf8proc_int32_t *result = ALLOCATE(utf8proc_int32_t, result_len);
+    // for (; index < until; index += jump) {
+    //     list_add(vm, result, 1, &data->entries[index].item);
+    // }
+    return string_create(vm, "slice", 5);
+}
+
 VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
@@ -554,6 +574,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
     defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
+    defineNativeMethod(vm, string_class, &string_slice, "slice", 1, false);
     defineNativeMethod(vm, string_class, &string_format, "format", 1, true);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);

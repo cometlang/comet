@@ -21,3 +21,5 @@ execute_process(COMMAND "git" "describe" "--tags"
 endif()
 
 target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})
+
+message(NOTICE "CURRENT BIN DIR: ${CMAKE_CURRENT_BINARY_DIR}")

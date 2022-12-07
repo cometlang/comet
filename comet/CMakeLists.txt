@@ -22,4 +22,7 @@ endif()
 
 target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})
 
-message(NOTICE "CURRENT BIN DIR: ${CMAKE_CURRENT_BINARY_DIR}")
+
+add_custom_command(TARGET comet POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E echo 
+  "comet target = $<TARGET_FILE:comet>")

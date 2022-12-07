@@ -44,8 +44,8 @@ jobs:
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
       with:
         files: |
-          ${{github.workspace}}/release/comet/comet
-          ${{github.workspace}}/stdlib/comet/*.cmt
+          ./release/comet/comet
+          ./stdlib/comet/*.cmt
     - run: cmake --build release --target ALL_BUILD --target RUN_TESTS --config Release
       if: ${{ runner.os == 'Windows' }}
     - name: Release-Windows
@@ -53,5 +53,5 @@ jobs:
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
       with:
         files: |
-          ${{github.workspace}}\release\comet\Release\comet.exe
-          ${{github.workspace}}\stdlib\comet\*.cmt
+          ./release/comet/Release/comet.exe
+          ./stdlib/comet/*.cmt

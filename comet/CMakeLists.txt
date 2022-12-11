@@ -21,8 +21,3 @@ execute_process(COMMAND "git" "describe" "--tags"
 endif()
 
 target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})
-
-
-add_custom_command(TARGET comet POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E echo 
-  "comet target = $<TARGET_FILE:comet>")

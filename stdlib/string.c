@@ -200,7 +200,7 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
         UTF8PROC_NULLTERM);
     if (intermediate_length < 0)
     {
-        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length + 1);
         throw_exception_native(vm, "Exception", "ERROR: %s\n", utf8proc_errmsg(intermediate_length));
         return NIL_VAL;
     }
@@ -220,7 +220,7 @@ VALUE string_trim_left(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE 
         }
     }
     VALUE result = copyString(vm, (const char *)output, output_offset);
-    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length + 1);
     FREE_ARRAY(char, output, data->length + 1);
     return result;
 }
@@ -235,7 +235,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
         UTF8PROC_NULLTERM);
     if (intermediate_length < 0)
     {
-        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+        FREE_ARRAY(utf8proc_int32_t, intermediate, data->length + 1);
         throw_exception_native(vm, "Exception", "ERROR: %s\n", utf8proc_errmsg(intermediate_length));
         return NIL_VAL;
     }
@@ -254,7 +254,7 @@ VALUE string_trim_right(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     }
 
     VALUE result = copyString(vm, (const char *)output, output_offset);
-    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length + 1);
     FREE_ARRAY(char, output, data->length + 1);
     return result;
 }
@@ -514,28 +514,64 @@ VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_coun
 
 VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-
     return arguments[0];
 }
 
-VALUE string_slice(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE string_substring(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    // StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
-    // int index = (int) number_get_value(arguments[0]);
-    // int until = string_length(vm, self, 0, NULL);
-    // int jump = 1;
-    // if (arg_count >= 2) {
-    //     until = (int) number_get_value(arguments[1]);
-    // }
-    // if (arg_count == 3) {
-    //     jump = (int) number_get_value(arguments[2]);
-    // }
-    // int result_len = (until / jump) + 1;
-    // utf8proc_int32_t *result = ALLOCATE(utf8proc_int32_t, result_len);
-    // for (; index < until; index += jump) {
-    //     list_add(vm, result, 1, &data->entries[index].item);
-    // }
-    return string_create(vm, "slice", 5);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    int start = (int) number_get_value(arguments[0]);
+    int length = string_length(vm, self, 0, NULL);
+    VALUE iterator = string_iterator(vm, self, 0, NULL);
+    push(vm, iterator);
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
+    utf8proc_ssize_t bytes_read;
+    for (int i = 0; i < start; i++) {
+        bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
+            iter->remaining,
+            &iter->current_codepoint);
+        if (bytes_read == -1)
+        {
+            pop(vm);
+            return NIL_VAL;
+        }
+        iter->offset += bytes_read;
+        iter->remaining -= bytes_read;
+    }
+    utf8proc_int32_t *intermediate = ALLOCATE(utf8proc_int32_t, length);
+    int index = 0;
+    int result_length = 0;
+    for (int i = start; i < length; i++) {
+        bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
+            iter->remaining,
+            &iter->current_codepoint);
+        if (bytes_read == -1)
+        {
+            FREE_ARRAY(utf8proc_int32_t, intermediate, length);
+            pop(vm);
+            return NIL_VAL;
+        }
+        result_length += utf8proc_charwidth(iter->current_codepoint);
+        intermediate[index] = iter->current_codepoint;
+        iter->offset += bytes_read;
+        iter->remaining -= bytes_read;
+    }
+
+    utf8proc_uint8_t *output = ALLOCATE(utf8proc_uint8_t, result_length);
+    int output_offset = 0;
+    for (int j = 0; j <= length; j++)
+    {
+        output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *)&output[output_offset]);
+    }
+
+    VALUE result = copyString(vm, (const char *)output, output_offset);
+    push(vm, result);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(char, output, data->length + 1);
+    popMany(vm, 2);
+    return result;
 }
 
 VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -574,7 +610,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_length, "length", 0, false);
     defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
-    defineNativeMethod(vm, string_class, &string_slice, "slice", 1, false);
+    defineNativeMethod(vm, string_class, &string_substring, "substring", 1, false);
     defineNativeMethod(vm, string_class, &string_format, "format", 1, true);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);

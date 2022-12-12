@@ -56,4 +56,9 @@ catch (IndexOutOfBoundsException)
     print("Correctly out of bounds")
 }
 
+var super_string = 'abc0123456789cba'
+var sub = super_string.substring(3, 10)
+print('sub: ', sub)
+assert(sub == '0123456789')
+
 print("String test passed!")

@@ -517,58 +517,67 @@ VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
     return arguments[0];
 }
 
+static bool string_iter_get_next(StringIterator *iter)
+{
+    utf8proc_ssize_t bytes_read;
+    bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
+            iter->remaining,
+            &iter->current_codepoint);
+    if (bytes_read == -1)
+    {
+        return false;
+    }
+    iter->offset += bytes_read;
+    iter->remaining -= bytes_read;
+    return true;
+}
+
 VALUE string_substring(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     int start = (int) number_get_value(arguments[0]);
     int length = string_length(vm, self, 0, NULL);
+    if (arg_count == 2)
+    {
+        length = (int) number_get_value(arguments[1]);
+    }
     VALUE iterator = string_iterator(vm, self, 0, NULL);
     push(vm, iterator);
     StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
-    utf8proc_ssize_t bytes_read;
     for (int i = 0; i < start; i++) {
-        bytes_read = utf8proc_iterate(
-            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
-            iter->remaining,
-            &iter->current_codepoint);
-        if (bytes_read == -1)
+        if (string_iter_get_next(iter) == false)
         {
             pop(vm);
             return NIL_VAL;
         }
-        iter->offset += bytes_read;
-        iter->remaining -= bytes_read;
     }
-    utf8proc_int32_t *intermediate = ALLOCATE(utf8proc_int32_t, length);
+    utf8proc_int32_t *intermediate = ALLOCATE(utf8proc_int32_t, length + 1);
     int index = 0;
     int result_length = 0;
-    for (int i = start; i < length; i++) {
-        bytes_read = utf8proc_iterate(
-            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
-            iter->remaining,
-            &iter->current_codepoint);
-        if (bytes_read == -1)
+    for (int i = start; i < start+length; i++) {
+        if (string_iter_get_next(iter) == false)
         {
-            FREE_ARRAY(utf8proc_int32_t, intermediate, length);
+            FREE_ARRAY(utf8proc_int32_t, intermediate, length + 1);
             pop(vm);
             return NIL_VAL;
         }
-        result_length += utf8proc_charwidth(iter->current_codepoint);
         intermediate[index] = iter->current_codepoint;
-        iter->offset += bytes_read;
-        iter->remaining -= bytes_read;
+        result_length += utf8proc_charwidth(iter->current_codepoint);
+        index++;
     }
+    intermediate[index] = '\0';
 
-    utf8proc_uint8_t *output = ALLOCATE(utf8proc_uint8_t, result_length);
+    utf8proc_uint8_t *output = ALLOCATE(utf8proc_uint8_t, result_length + 1);
     int output_offset = 0;
-    for (int j = 0; j <= length; j++)
+    for (int j = 0; j < length; j++)
     {
         output_offset += utf8proc_encode_char(intermediate[j], (utf8proc_uint8_t *)&output[output_offset]);
     }
 
     VALUE result = copyString(vm, (const char *)output, output_offset);
     push(vm, result);
-    FREE_ARRAY(utf8proc_int32_t, intermediate, data->length - 1);
+    FREE_ARRAY(utf8proc_int32_t, intermediate, length + 1);
     FREE_ARRAY(char, output, data->length + 1);
     popMany(vm, 2);
     return result;

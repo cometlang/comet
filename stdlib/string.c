@@ -517,8 +517,11 @@ VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
     return arguments[0];
 }
 
+
 static bool string_iter_get_next(StringIterator *iter)
 {
+    if (iter->remaining <= 0)
+        return false;
     utf8proc_ssize_t bytes_read;
     bytes_read = utf8proc_iterate(
             (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
@@ -537,7 +540,7 @@ VALUE string_substring(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count)
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     int start = (int) number_get_value(arguments[0]);
-    int length = string_length(vm, self, 0, NULL);
+    int length = string_length(vm, self, 0, NULL) - start;
     if (arg_count == 2)
     {
         length = (int) number_get_value(arguments[1]);
@@ -583,6 +586,20 @@ VALUE string_substring(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count)
     return result;
 }
 
+VALUE string_value(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    VALUE iterator = string_iterator(vm, self, 0, NULL);
+    push(vm, iterator);
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
+    uint64_t value = 0;
+    while (string_iter_get_next(iter))
+    {
+        value += iter->current_codepoint;
+    }
+    pop(vm);
+    return create_number(vm, value);
+}
+
 VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
@@ -620,6 +637,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_length, "count", 0, false);
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
     defineNativeMethod(vm, string_class, &string_substring, "substring", 1, false);
+    defineNativeMethod(vm, string_class, &string_value, "value", 0, false);
     defineNativeMethod(vm, string_class, &string_format, "format", 1, true);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);

@@ -48,6 +48,10 @@ static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
     // try the cheap comparison first (also covers non-instance objects, like types)
     if (lhs == rhs)
         return true;
+    if (IS_NUMBER(lhs) && IS_NUMBER(rhs))
+    {
+        return number_get_value(lhs) == number_get_value(rhs);
+    }
     if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)) &&
         (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
     {
@@ -108,15 +112,14 @@ VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     {
         adjust_capacity(vm, data);
     }
-    SetEntry *new_entry = ALLOCATE(SetEntry, 1);
-    new_entry->next = NULL;
-    new_entry->key = arguments[0];
-    if (insert(vm, data->entries, data->capacity, new_entry))
+    SetEntry new_entry;
+    new_entry.next = NULL;
+    new_entry.key = arguments[0];
+    if (insert(vm, data->entries, data->capacity, &new_entry))
     {
         data->count++;
         return TRUE_VAL;
     }
-    FREE(SetEntry, new_entry);
     return FALSE_VAL;
 }
 

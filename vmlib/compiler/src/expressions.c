@@ -520,6 +520,7 @@ ParseRule rules[NUM_TOKENS] = {
 
 void parsePrecedence(Parser *parser, Precedence precedence)
 {
+    match(parser, TOKEN_EOL);
     advance(parser);
     ParseFn prefixRule = getRule(parser->previous.type)->prefix;
     if (prefixRule == NULL)

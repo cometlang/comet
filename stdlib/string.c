@@ -610,6 +610,41 @@ VALUE string_number_q(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count),
     return FALSE_VAL;
 }
 
+static int compare_to(VALUE self, VALUE other)
+{
+    StringData *lhs = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    StringData *rhs = GET_NATIVE_INSTANCE_DATA(StringData, other);
+    return strncmp(lhs->chars, rhs->chars, lhs->length);
+}
+
+VALUE string_greater_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    if (compare_to(self, arguments[0]) > 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
+VALUE string_greater_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    if (compare_to(self, arguments[0]) >= 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
+VALUE string_less_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    if (compare_to(self, arguments[0]) < 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
+VALUE string_less_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    if (compare_to(self, arguments[0]) <= 0)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -642,6 +677,11 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
     defineNativeOperator(vm, string_class, &string_get_at, 1, OPERATOR_INDEX);
+
+    defineNativeOperator(vm, string_class, &string_greater_than, 1, OPERATOR_GREATER_THAN);
+    defineNativeOperator(vm, string_class, &string_greater_equal, 1, OPERATOR_GREATER_EQUAL);
+    defineNativeOperator(vm, string_class, &string_less_than, 1, OPERATOR_LESS_THAN);
+    defineNativeOperator(vm, string_class, &string_less_equal, 1, OPERATOR_LESS_EQUAL);
 
     string_iterator_class = defineNativeClass(
         vm, "StringIterator",

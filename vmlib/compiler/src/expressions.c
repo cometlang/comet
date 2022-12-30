@@ -105,8 +105,8 @@ static void binary(Parser *parser, bool UNUSED(canAssign))
     case TOKEN_SLASH:
         emitByte(parser, OP_DIVIDE);
         break;
-    case TOKEN_INSTANCEOF:
-        emitByte(parser, OP_INSTANCEOF);
+    case TOKEN_IS:
+        emitByte(parser, OP_IS);
         break;
     case TOKEN_PERCENT:
         emitByte(parser, OP_MODULO);
@@ -494,7 +494,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_IF]               = {NULL,         NULL,      PREC_NONE},
     [TOKEN_IMPORT]           = {NULL,         NULL,      PREC_NONE},
     [TOKEN_IN]               = {NULL,         NULL,      PREC_NONE},
-    [TOKEN_INSTANCEOF]       = {NULL,         binary,    PREC_INSTANCEOF},
+    [TOKEN_IS]               = {NULL,         binary,    PREC_IS},
     [TOKEN_NEXT]             = {NULL,         NULL,      PREC_NONE},
     [TOKEN_NIL]              = {literal,      NULL,      PREC_NONE},
     [TOKEN_OPERATOR]         = {NULL,         NULL,      PREC_NONE},

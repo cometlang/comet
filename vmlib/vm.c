@@ -1068,7 +1068,7 @@ static InterpretResult run(VM *vm)
             push(vm, peek(vm, 1));
             break;
         }
-        case OP_INSTANCEOF:
+        case OP_IS:
         {
             VALUE rhs = peek(vm, 1);
             VALUE lhs = peek(vm, 0);

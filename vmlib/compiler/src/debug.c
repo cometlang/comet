@@ -206,8 +206,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_DUP_TOP", offset);
     case OP_DUP_TWO:
         return simpleInstruction("OP_DUP_TWO", offset);
-    case OP_INSTANCEOF:
-        return simpleInstruction("OP_INSTANCEOF", offset);
+    case OP_IS:
+        return simpleInstruction("OP_IS", offset);
     case OP_PUSH_EXCEPTION_HANDLER:
         return exceptionHandlerInstruction("OP_PUSH_EXCEPTION_HANDLER", chunk, offset);
     case OP_POP_EXCEPTION_HANDLER:

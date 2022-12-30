@@ -3,7 +3,7 @@ class SomeClass
 }
 
 var instance = SomeClass()
-var inherits = instance instanceof Object
+var inherits = instance is Object
 
 print(inherits)
 print(instance.hash())

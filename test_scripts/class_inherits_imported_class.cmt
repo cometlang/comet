@@ -6,6 +6,6 @@ class final SomeOtherClass : imported.SomeClass {
 
 var instance = SomeOtherClass()
 
-assert(instance instanceof imported.SomeClass)
+assert(instance is imported.SomeClass)
 
 print("Class Inherits Imported Class Tests Passed!")

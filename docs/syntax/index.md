@@ -10,7 +10,7 @@ Comments use the `#` character and go to the end of the line.  There are no bloc
 
 ## Keywords
 
-`as`, `catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `foreach`, `function`, `if`, `import`, `in`, `instanceof`, `next`, `nil`, `operator`, `rethrow`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
+`as`, `catch`, `class`, `else`, `enum`, `false`, `finally` `for`, `foreach`, `function`, `if`, `import`, `in`, `is`, `next`, `nil`, `operator`, `rethrow`, `return`, `self`, `super`, `throw`, `true`, `try`, `var`, `while`
 
 ## Literals
 
@@ -48,7 +48,7 @@ Literal hashes can be declare with `{}` for an empty hash or `{key1: val1, key2:
 - `<` less than
 - `>=` greater than or equal to
 - `<=` less than or equal to
-- `instanceof` compares an instance to see if it is an instance of the given class, including its inheritance hierarchy, e.g. `a instanceof Number`
+- `is` compares an instance to see if it is an instance of the given class, including its inheritance hierarchy, e.g. `a is Number`
 
 ### Logical
 - `&&` logical and

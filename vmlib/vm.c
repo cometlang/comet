@@ -424,7 +424,17 @@ static bool callNumberOperator(VM* vm, Value receiver, int argCount, OPERATOR op
     {
         if (!IS_NUMBER(args[0]))
         {
-            throw_exception_native(vm, "ArgumentException", "Argument to 'Number.%s' must also be a number.  Got '%s'", getOperatorString(operator), getClassNameFromInstance(args[0]));
+            if (operator == OPERATOR_EQUALS)
+            {
+                push_to(vm, FALSE_VAL, argCount + 1);
+                popMany(vm, argCount);
+                return true;
+            }
+            throw_exception_native(vm,
+                "ArgumentException",
+                "Argument to 'Number.%s' must also be a number.  Got '%s'",
+                getOperatorString(operator),
+                getClassNameFromInstance(args[0]));
         }
     }
     VALUE result = number_operator(vm, receiver, args, operator);

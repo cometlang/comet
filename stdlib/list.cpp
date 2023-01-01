@@ -218,19 +218,20 @@ static VALUE is_lhs_less_than_or_equal_to_rhs(VM *vm, VALUE lhs, VALUE rhs, VALU
 
 static VALUE get_compare_func(VM *vm, VALUE self)
 {
+    VALUE compare_func = NIL_VAL;
     if (IS_INSTANCE(self) || IS_NATIVE_INSTANCE(self))
     {
-        VALUE compare_func = AS_INSTANCE(self)->klass->operators[OPERATOR_LESS_EQUAL];
+        compare_func = AS_INSTANCE(self)->klass->operators[OPERATOR_LESS_EQUAL];
         if (compare_func == NIL_VAL)
         {
-            runtimeError(
+            throw_exception_native(
                 vm,
                 "ArgumentException",
                 "%s doesn't implement <= as required for sorting",
                 getClassNameFromInstance(self));
         }
     }
-    return NIL_VAL;
+    return compare_func;
 }
 
 static void insertion_sort(VM *vm, const ListData *data, int left, int right)

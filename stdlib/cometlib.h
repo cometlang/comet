@@ -28,6 +28,7 @@ extern "C" {
     void init_enum(VM* vm);
     void init_set(VM* vm);
     void init_env(VM* vm);
+    void init_directory(VM* vm);
     void bootstrap_number(VM* vm);
     void complete_number(VM* vm);
     void bootstrap_iterable(VM* vm);

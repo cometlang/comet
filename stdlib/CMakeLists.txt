@@ -14,6 +14,7 @@ set(SOURCE
   _init.c
   boolean.c
   datetime.cpp
+  directory.cpp
   duration.cpp
   enum.c
   env.cpp

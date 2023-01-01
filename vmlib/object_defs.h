@@ -50,6 +50,7 @@ typedef enum
     CLS_BOOLEAN,
     CLS_COND_VAR,
     CLS_DATETIME,
+    CLS_DIRECTORY,
     CLS_DURATION,
     CLS_ENUM,
     CLS_ENUM_VALUE,

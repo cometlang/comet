@@ -5,6 +5,7 @@
 - [Object](object.md)
 - [Boolean](boolean.md)
 - [Datetime](datetime.md)
+- [Directory](directory.md)
 - [Enum](enum.md)
 - [Exception](exception.md)
 - [File](file.md)

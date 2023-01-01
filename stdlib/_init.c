@@ -36,4 +36,5 @@ void init_stdlib(VM *vm)
     init_thread_sync(vm);
     init_env(vm);
     init_set(vm);
+    init_directory(vm);
 }

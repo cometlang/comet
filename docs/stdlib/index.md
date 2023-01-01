@@ -10,6 +10,7 @@
 - [Exception](exception.md)
 - [File](file.md)
 - [Hash](hash.md)
+- [Image](image.md)
 - [Iterable](iterable.md)
 - [List](list.md)
 - [Nil](nil.md)
@@ -19,6 +20,10 @@
 - [String](string.md)
 - [Thread](thread.md)
 - [Thread Synchronisation Primitives](thread_synchronisation.md)
+
+# Modules
+- [csv](csv.md)
+- [json](json.md)
 
 # Functions
 ## clock

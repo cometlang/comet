@@ -1080,8 +1080,8 @@ static InterpretResult run(VM *vm)
         }
         case OP_IS:
         {
-            VALUE rhs = peek(vm, 1);
-            VALUE lhs = peek(vm, 0);
+            VALUE rhs = peek(vm, 0);
+            VALUE lhs = peek(vm, 1);
             push_to(vm, instanceof(lhs, rhs), 2);
             pop(vm);
             break;

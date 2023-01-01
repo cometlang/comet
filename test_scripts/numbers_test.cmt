@@ -12,8 +12,8 @@ assert(4 > 3)
 assert(4 >= 3)
 assert(0 == 0)
 
-assert(Number.parse("3") instanceof Number)
-assert(Number.parse("three").nil?())
+assert(Number.parse("3") is Number, 'parsed number should be a number')
+assert(Number.parse("three").nil?(), "String that can't parse into a number, should be nil")
 
 var num = Number.parse('6')
 assert(num < 8)

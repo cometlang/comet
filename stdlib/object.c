@@ -22,7 +22,7 @@ VALUE instanceof(VALUE self, VALUE klass)
             current_klass = current_klass->super_;
         }
     }
-    else if (IS_NUMBER(self)) {
+    else if (IS_NUMBER(self) && IS_NATIVE_CLASS(klass)) {
         if (AS_CLASS(klass)->classType == CLS_NUMBER) {
             return TRUE_VAL;
         }
@@ -61,6 +61,10 @@ VALUE obj_hash(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argument
 
 VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (IS_NUMBER(self))
+    {
+        return copyString(vm, "Number instance", 15);
+    }
     ObjInstance *instance = AS_INSTANCE(self);
 #ifdef WIN32
 #define string_len 256
@@ -74,6 +78,10 @@ VALUE obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
 
 VALUE cls_to_string(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (IS_NUMBER(klass))
+    {
+        return copyString(vm, "Number class", 12);
+    }
 #ifdef WIN32
 #define string_len 256
 #else

@@ -206,6 +206,12 @@ void printObject(Value value)
         printf("%.17g", number_get_value(value));
         return;
     }
+    else if (IS_NIL(value))
+    {
+        printf("nil");
+        return;
+    }
+
     switch (OBJ_TYPE(value))
     {
     case OBJ_CLASS:

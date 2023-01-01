@@ -1,2 +1,4 @@
 var ex = Exception("This is a native property")
 print(ex.message())
+assert(ex.message() == "This is a native property")
+print("Native field accessor test passed")

@@ -25,7 +25,6 @@ void init_file(VM* vm)
     defineNativeMethod(vm, klass, &file_sync, "sync", 0, false);
     defineNativeMethod(vm, klass, &file_flush, "flush", 0, false);
     defineNativeMethod(vm, klass, &file_static_exists_q, "exists?", 1, true);
-    defineNativeMethod(vm, klass, &file_static_directory_q, "directory?", 1, true);
     defineNativeMethod(vm, klass, &file_static_file_q, "file?", 1, true);
     defineNativeMethod(vm, klass, &file_static_read_all_lines, "read_all_lines", 1, true);
     defineNativeMethod(vm, klass, &file_static_delete, "delete", 1, true);

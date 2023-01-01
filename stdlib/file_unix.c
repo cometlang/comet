@@ -124,18 +124,6 @@ VALUE file_static_exists_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_c
     return FALSE_VAL;
 }
 
-VALUE file_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
-{
-    struct stat statbuf;
-    if (stat(string_get_cstr(arguments[0]), &statbuf) == 0)
-    {
-        if (statbuf.st_mode & __S_IFDIR)
-            return TRUE_VAL;
-        return FALSE_VAL;
-    }
-    return FALSE_VAL;
-}
-
 VALUE file_static_file_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
     struct stat statbuf;

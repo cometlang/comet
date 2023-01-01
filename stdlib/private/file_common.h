@@ -38,7 +38,6 @@ void file_destructor(void* data);
 
 VALUE file_static_open(VM* vm, VALUE klass, int arg_count, VALUE *arguments);
 VALUE file_static_exists_q(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
-VALUE file_static_directory_q(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_file_q(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_read_all_lines(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 VALUE file_static_delete(VM* vm, VALUE klass, int arg_count, VALUE* arguments);

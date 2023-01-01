@@ -35,10 +35,19 @@ VALUE dir_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
     return result;
 }
 
+VALUE dir_static_directory_q(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+{
+    const char *path = string_get_cstr(arguments[0]);
+    if (std::filesystem::is_directory(path))
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_directory(VM* vm)
 {
     VALUE klass = defineNativeClass(vm, "Directory", NULL, NULL, NULL, "Object", CLS_DIRECTORY, sizeof(DirectoryData), false);
     defineNativeMethod(vm, klass, &dir_list, "list", 1, true);
+    defineNativeMethod(vm, klass, &dir_static_directory_q, "directory?", 1, true);
 }
 
 }

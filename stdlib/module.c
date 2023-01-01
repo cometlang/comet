@@ -1,5 +1,6 @@
 #include "comet.h"
 #include "comet_stdlib.h"
+#include "list.h"
 
 static VALUE klass;
 
@@ -62,6 +63,37 @@ void module_mark_contents(VALUE self)
     markValue(OBJ_VAL(data->main));
 }
 
+VALUE module_functions(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    VALUE result = list_create(vm);
+    push(vm, result);
+    module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, self);
+    VALUE keys = list_create(vm);
+    push(vm, keys);
+    tableGetKeys(&data->obj.fields, vm, keys);
+    VALUE iter = list_iterable_iterator(vm, keys, 0, NULL);
+    push(vm, iter);
+    VALUE has_next = list_iterator_has_next_p(vm, iter, 0, NULL);
+    while (has_next == TRUE_VAL)
+    {
+        VALUE field = list_iterator_get_next(vm, iter, 0, NULL);
+        push(vm, field);
+        VALUE val;
+        tableGet(&data->obj.fields, field, &val);
+        if (IS_BOUND_METHOD(val) || IS_FUNCTION(val) || IS_CLOSURE(val) ||
+            IS_NATIVE(val) || IS_NATIVE_METHOD(val))
+        {
+            list_add(vm, result, 1, &field);
+        }
+        pop(vm); // field
+        has_next = list_iterator_has_next_p(vm, iter, 0, NULL);
+    }
+
+    pop(vm); // iter
+    pop(vm); // keys
+    return pop(vm); // result
+}
+
 void init_module(VM *vm)
 {
     klass = defineNativeClass(
@@ -74,4 +106,5 @@ void init_module(VM *vm)
         CLS_MODULE,
         sizeof(module_data_t),
         true);
+    defineNativeMethod(vm, klass, &module_functions, "functions", 0, false);
 }

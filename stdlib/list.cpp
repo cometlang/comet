@@ -12,6 +12,7 @@ extern "C" {
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
+#include "list.h"
 
 
 typedef struct list_node

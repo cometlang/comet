@@ -98,16 +98,18 @@ void string_constructor(void *instanceData)
 VALUE string_create(VM *vm, char *chars, int length)
 {
     VALUE string = OBJ_VAL(newInstance(vm, AS_CLASS(string_class)));
+    push(vm, string);
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, string);
     data->chars = chars;
     data->length = length;
     data->hash = string_hash_cstr(data->chars, length);
 
-    return string;
+    return pop(vm);
 }
 
 const char *string_get_cstr(VALUE self)
 {
+    DEBUG_ASSERT(instanceof(self, string_class));
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     return data->chars;
 }

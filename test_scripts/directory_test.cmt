@@ -1,0 +1,6 @@
+Directory.create('test')
+Directory.remove('test')
+assert(Directory.directory?('test') == false)
+
+var dir = Directory('.')
+print(dir.to_string())

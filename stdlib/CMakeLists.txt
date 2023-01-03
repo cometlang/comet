@@ -19,7 +19,7 @@ set(SOURCE
   enum.c
   env.cpp
   exception.c
-  file_common.c
+  file_common.cpp
   functions.c
   hash.cpp
   image.c

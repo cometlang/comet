@@ -1,0 +1,37 @@
+assert(true == true)
+assert(false == false)
+assert(false != true)
+
+var test_true = [
+    'true', 'True', 'tRue', 'trUe', 'truE',
+    'TRue', 'tRUe', 'trUE', 'TrUe', 'tRuE', 'TruE',
+    'TRUe', 'TRuE', 'TRUE'
+]
+foreach (var test in test_true) {
+    var result = Boolean.parse(test)
+    assert(result == true)
+}
+
+var test_false = [
+    'False', 'false', 'FALSE', 'fAlse'
+]
+foreach (var test in test_false) {
+    var result = Boolean.parse(test)
+    assert(result == false)
+}
+
+var test_bad = [
+    'bad', 'falsey', 'truthy'
+]
+
+foreach (var test in test_bad) {
+    var thrown = false
+    try {
+        Boolean.parse(test)
+    }
+    catch (ArgumentException as e) {
+        thrown = true
+    }
+    assert(thrown, 'parsing a non-bool value should throw an Argument exception: ' + test)
+}
+print('Boolean test passed!')

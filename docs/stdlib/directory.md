@@ -4,7 +4,9 @@
 inherits [Object](object.md)
 
 ### methods
-
+- `parent()` converts the directory to an absolute path and returns the parent
+- `absolute()` gets the absolute path representing the directory path
+- `to_string()` returns the path of the directory as a [String](string.md)
 
 ### static methods
 - `list(path)` returns a [List](list.md) of [Strings](string.md) containing the contents of the directory.  Does not include the pseudo paths of '.' and '..'

@@ -1,4 +1,12 @@
 #include <stdio.h>
+#if defined(_WIN32) || defined(_WIN64) 
+#  include <string.h>
+#  define strcasecmp _stricmp 
+#  define strncasecmp _strnicmp 
+#else
+#  include <strings.h>
+#endif
+
 
 #include "cometlib.h"
 #include "comet_stdlib.h"
@@ -24,8 +32,16 @@ VALUE boolean_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     return copyString(vm, "false", 5);
 }
 
-VALUE boolean_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE boolean_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
 {
+    const char *to_comp = string_get_cstr(arguments[0]);
+    if (strcasecmp(to_comp, "true") == 0) {
+        return TRUE_VAL;
+    }
+    else if (strcasecmp(to_comp, "false") == 0) {
+        return FALSE_VAL;
+    }
+    throw_exception_native(vm, "ArgumentException", "Can't parse %s to a boolean", to_comp);
     return NIL_VAL;
 }
 

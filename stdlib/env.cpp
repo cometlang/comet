@@ -45,8 +45,10 @@ void init_env(VM *vm)
     VALUE klass = defineNativeClass(vm, "EnvVars", NULL, NULL, NULL, NULL, CLS_ENV, 0, false);
     defineNativeOperator(vm, klass, &env_set_value, 2, OPERATOR_INDEX_ASSIGN);
     defineNativeOperator(vm, klass, &env_get_value, 1, OPERATOR_INDEX);
-    Obj *instance = newInstance(vm, AS_CLASS(klass));
-    addGlobal(copyString(vm, "ENV", 3), OBJ_VAL(instance));
+    VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(klass)));
+    push(vm, instance);
+    addGlobal(copyString(vm, "ENV", 3), instance);
+    pop(vm);
 }
 
 }

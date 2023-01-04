@@ -1,6 +1,8 @@
 Directory.create('test')
+assert(Directory.directory?('test') == true, 'directory should have been created')
 Directory.remove('test')
-assert(Directory.directory?('test') == false)
+assert(Directory.directory?('test') == false, 'directory should have been deleted')
 
 var dir = Directory('.')
 print(dir.to_string())
+print(dir.absolute())

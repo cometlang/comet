@@ -8,17 +8,32 @@ extern "C" {
 typedef struct dirData
 {
     ObjInstance obj;
-    std::filesystem::path path;
+    std::filesystem::path* path;
 } DirectoryData;
 
 static VALUE klass;
+
+void dir_constructor(void *instanceData)
+{
+    DirectoryData *data = (DirectoryData *)instanceData;
+    data->path = nullptr;
+}
+
+void dir_destructor(void *instanceData)
+{
+    DirectoryData *data = (DirectoryData *)instanceData;
+    if (data->path != nullptr)
+    {
+        delete data->path;
+    }
+}
 
 VALUE directory_create(VM *vm, const std::filesystem::path& path)
 {
     VALUE dir = OBJ_VAL(newInstance(vm, AS_CLASS(klass)));
     push(vm, dir);
     DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, dir);
-    data->path = path;
+    data->path = new std::filesystem::path(path);
 
     return pop(vm);
 }
@@ -27,21 +42,28 @@ static VALUE dir_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *
 {
     DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, self);
     const char *path = string_get_cstr(arguments[0]);
-    data->path = std::filesystem::path(path);
+    data->path = new std::filesystem::path(path);
     return NIL_VAL;
+}
+
+static VALUE dir_absolute(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, self);
+    auto parent = std::filesystem::canonical(*data->path);
+    return directory_create(vm, parent);
 }
 
 static VALUE dir_parent(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, self);
-    auto parent = data->path.parent_path();
+    auto parent = std::filesystem::canonical(*data->path).parent_path();
     return directory_create(vm, parent);
 }
 
 static VALUE dir_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, self);
-    std::string path = data->path.string();
+    std::string path = data->path->string();
     return copyString(vm, path.c_str(), path.length());
 }
 
@@ -99,11 +121,12 @@ VALUE dir_static_create(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_coun
 
 void init_directory(VM* vm)
 {
-    klass = defineNativeClass(vm, "Directory", NULL, NULL, NULL, "Object", CLS_DIRECTORY, sizeof(DirectoryData), true);
+    klass = defineNativeClass(vm, "Directory", dir_constructor, dir_destructor, NULL, "Object", CLS_DIRECTORY, sizeof(DirectoryData), true);
     defineNativeMethod(vm, klass, &dir_init, "init", 1, false);
     defineNativeMethod(vm, klass, &dir_parent, "parent", 0, false);
+    defineNativeMethod(vm, klass, &dir_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, klass, &dir_absolute, "absolute", 0, false);
     defineNativeMethod(vm, klass, &dir_list, "list", 1, true);
-    defineNativeMethod(vm, klass, &dir_to_string, "to_string", 0, true);
     defineNativeMethod(vm, klass, &dir_static_directory_q, "directory?", 1, true);
     defineNativeMethod(vm, klass, &dir_static_remove, "remove", 1, true);
     defineNativeMethod(vm, klass, &dir_static_remove, "delete", 1, true);

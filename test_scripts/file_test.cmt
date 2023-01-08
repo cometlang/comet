@@ -7,7 +7,9 @@ file.close()
 var lines = File.read_all_lines(FILE_NAME)
 foreach (var line in lines)
 {
-    print(line)
+    assert(line == 'This is a test file')
 }
 
 File.delete(FILE_NAME)
+
+print('File test passed!')

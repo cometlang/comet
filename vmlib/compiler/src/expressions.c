@@ -20,7 +20,7 @@ static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
             expression(parser);
             if (argCount == MAX_ARGS)
             {
-                error(parser, "Cannot have more than 16 arguments.");
+                error(parser, "Cannot have more than 255 arguments.");
             }
             argCount++;
         } while (match(parser, TOKEN_COMMA));

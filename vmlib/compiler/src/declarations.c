@@ -213,7 +213,7 @@ void function(Parser *parser, FunctionType type)
                 errorAtCurrent(parser, "Cannot have more than 255 parameters.");
             }
 
-            uint8_t paramConstant = parseVariable(parser, "Expect parameter name.");
+            uint8_t paramConstant = parseVariable(parser, "Expected a parameter name.");
             defineVariable(parser, paramConstant);
             if (match(parser, TOKEN_EQUAL))
             {
@@ -246,7 +246,7 @@ void function(Parser *parser, FunctionType type)
 
 void functionDeclaration(Parser *parser)
 {
-    uint8_t global = parseVariable(parser, "Expect function name.");
+    uint8_t global = parseVariable(parser, "Expected a function name");
     markInitialized(parser);
     function(parser, TYPE_FUNCTION);
     defineVariable(parser, global);
@@ -254,13 +254,13 @@ void functionDeclaration(Parser *parser)
 
 void enumDeclaration(Parser *parser)
 {
-    uint8_t enumName = parseVariable(parser, "Expect enum name");
+    uint8_t enumName = parseVariable(parser, "Expected an enum name");
     namedVariable(parser, syntheticToken("Enum"), false);
     emitBytes(parser, OP_CALL, 0);
     emitByte(parser, OP_DUP_TOP); // Duplicate the enum instance, so the pop leaves it for the return value of assignment
     defineVariable(parser, enumName);
 
-    consume(parser, TOKEN_LEFT_BRACE, "Expect '{' after enum declaration");
+    consume(parser, TOKEN_LEFT_BRACE, "Expected '{' after enum declaration");
     int64_t current_value = -1;
     while (!check(parser, TOKEN_RIGHT_BRACE) && !check(parser, TOKEN_EOF))
     {
@@ -274,7 +274,7 @@ void enumDeclaration(Parser *parser)
             {
                 current_value = strtol(parser->current.start, NULL, 10);
                 if (errno == ERANGE)
-                    error(parser, "Expect an integer for the enum value");
+                    error(parser, "Expected an integer for the enum value");
                 advance(parser);
             }
             else
@@ -291,18 +291,18 @@ void enumDeclaration(Parser *parser)
 
             if (!match(parser, TOKEN_COMMA) && !check(parser, TOKEN_RIGHT_BRACE))
             {
-                error(parser, "Expect ',' between enum values");
+                error(parser, "Expected ',' between enum values");
                 break;
             }
         }
     }
-    consume(parser, TOKEN_RIGHT_BRACE, "Expect '}' after enum body.");
+    consume(parser, TOKEN_RIGHT_BRACE, "Expected '}' after enum body");
     emitByte(parser, OP_POP);
 }
 
 void varDeclaration(Parser *parser)
 {
-    uint8_t global = parseVariable(parser, "Expect variable name.");
+    uint8_t global = parseVariable(parser, "Expected a variable name");
 
     if (match(parser, TOKEN_EQUAL))
     {

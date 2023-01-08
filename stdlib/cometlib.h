@@ -33,6 +33,7 @@ extern "C" {
     void complete_number(VM* vm);
     void bootstrap_iterable(VM* vm);
     void complete_iterable(VM* vm);
+    void init_string_builder(VM *vm);
 
     VALUE callable_p(VM* vm, int arg_count, VALUE* args);
 

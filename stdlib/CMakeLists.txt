@@ -32,6 +32,7 @@ set(SOURCE
   set.c
   socket.c
   string.c
+  string_builder.c
   system.c
   thread.c
   thread_synchronisation_common.c

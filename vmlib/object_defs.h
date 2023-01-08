@@ -70,6 +70,7 @@ typedef enum
     CLS_SET,
     CLS_SOCKET,
     CLS_STRING,
+    CLS_STRING_BUILDER,
     CLS_THREAD,
     CLS_USER_DEF,
 } ClassType;

@@ -5,6 +5,7 @@
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
+#include "string_builder.h"
 
 #include "utf8proc.h"
 
@@ -514,12 +515,6 @@ VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_coun
     return FALSE_VAL;
 }
 
-VALUE string_format(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
-{
-    return arguments[0];
-}
-
-
 static bool string_iter_get_next(StringIterator *iter)
 {
     if (iter->remaining <= 0)
@@ -645,6 +640,65 @@ VALUE string_less_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count
     if (compare_to(self, arguments[0]) <= 0)
         return TRUE_VAL;
     return FALSE_VAL;
+}
+
+void add_output_string_to_builder(VM *vm, VALUE builder, VALUE obj)
+{
+    call_function(vm, obj, common_strings[STRING_TO_STRING], 0, NULL);
+    VALUE string = peek(vm, 0);
+    VALUE iterator = string_iterator(vm, string, 0, NULL);
+    push(vm, iterator);
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
+    while(string_iter_get_next(iter))
+    {
+        string_builder_add_codepoint(builder, iter->current_codepoint);
+    }
+    pop(vm); // iterator
+    pop(vm); // string
+}
+
+VALUE string_format(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
+{
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
+    VALUE iterator = string_iterator(vm, arguments[0], 0, NULL);
+    push(vm, iterator);
+    VALUE builder = create_string_builder(vm);
+    push(vm, builder);
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
+    while (string_iter_get_next(iter))
+    {
+        if (iter->current_codepoint == '{')
+        {
+            char *end;
+            long index = strtol(&iter->string->chars[iter->offset], &end, 10);
+            iter->offset += end - &iter->string->chars[iter->offset];
+            if (!string_iter_get_next(iter) || iter->current_codepoint != '}')
+            {
+                throw_exception_native(
+                    vm,
+                    "FormatException",
+                    "Unterminated formatting placeholder");
+                return NIL_VAL;
+            }
+            else if (index >= arg_count - 1)
+            {
+                throw_exception_native(
+                    vm,
+                    "FormatException",
+                    "Not enough arguments for the index %ld", index);
+                return NIL_VAL;
+            }
+            add_output_string_to_builder(vm, builder, arguments[index+1]);
+        }
+        else
+        {
+            string_builder_add_codepoint(builder, iter->current_codepoint);
+        }
+    }
+    VALUE result = string_builder_to_string(vm, builder, 0, NULL);
+    pop(vm); // builder
+    pop(vm); // iterator
+    return result;
 }
 
 void init_string(VM *vm, VALUE obj_klass)

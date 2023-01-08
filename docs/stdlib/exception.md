@@ -21,5 +21,6 @@ Exception(message)
  - `KeyNotFoundException`
  - `IndexOutOfBoundsException`
  - `MethodNotFoundException`
- - `ImportError`
+ - `ImportException`
  - `ThreadException`
+ - `FormatException`

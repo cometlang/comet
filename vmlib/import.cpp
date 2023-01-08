@@ -79,7 +79,7 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
     filesystem::path candidate = resolve_import_path(relative_to_filename, to_import_path);
     if (!filesystem::exists(candidate))
     {
-        throw_exception_native(vm, "ImportError", "Could not import '%s'", to_import_path);
+        throw_exception_native(vm, "ImportException", "Could not import '%s'", to_import_path);
         return NIL_VAL;
     }
     string absolute_path = filesystem::canonical(candidate).string();

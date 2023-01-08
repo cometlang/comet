@@ -18,7 +18,7 @@ If given an `initial_capactiy` then the list will be pre-allocated to contain th
 - `to_string()` returns a string representation of the list
 - `size()` returns the number of items stored in the list
 - `length()` alias for `size()`
-- `sort() sorts the list in-place and returns a reference to the list. It uses Timsort, a stable sort running in O(n log n) time.
+- `sort()` sorts the list in-place and returns a reference to the list. It uses Timsort, a stable sort running in O(n log n) time.
 - `filter()` takes a callable object which is called with every item, returning `true` if the item should be part of the list returned.  The list returned is a new object and the initial list is left unchanged.
 - `map(lambda)` returns a list of values as mapped by the lambda, which is called with each item in the list
 - `reduce(initial, lambda)` given an intial value, the lambda is called with the current reduction, each item in the list, and the index in the list, e.g. `list.reduce(0, |current, item, index| { return curent + 1 })`

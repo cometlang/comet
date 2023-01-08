@@ -41,7 +41,7 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "KeyNotFoundException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "IndexOutOfBoundsException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "MethodNotFoundException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "ImportError", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "ImportException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "ThreadException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "FormatException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
 }

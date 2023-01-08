@@ -13,6 +13,7 @@
 - [Image](image.md)
 - [Iterable](iterable.md)
 - [List](list.md)
+- [Module](module.md)
 - [Nil](nil.md)
 - [Number](number.md)
 - [Set](set.md)

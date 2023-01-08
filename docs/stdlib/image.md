@@ -16,4 +16,8 @@ The coordinate system for the images starts with 0,0 at the bottom-left and ends
 ### methods
  - `set_pixel(x, y, r, g, b)` sets the pixel colour at coordinates x, y to the colour values (0-255) of r,g,b
  - `write_to_file(filename, format)` writes the image to the filename, in the given format (a value of the `IMAGE_FORMAT` enum)
+ - `width()` gets the number of pixels in the x axis of the image
+ - `height()` gets the number of pixels in the y axis of the image
 
+### static methods
+ - `read(filename)` reads the image

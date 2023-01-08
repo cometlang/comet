@@ -4,8 +4,8 @@
 inherits [Object](object.md)
 
 ### methods
-- `parent()` converts the directory to an absolute path and returns the parent
-- `absolute()` gets the absolute path representing the directory path
+- `parent()` converts the directory to an absolute path and returns the parent Directory
+- `absolute()` gets the Directory representing the absolute path
 - `to_string()` returns the path of the directory as a [String](string.md)
 
 ### static methods

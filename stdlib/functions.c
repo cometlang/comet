@@ -136,9 +136,11 @@ VALUE get_password(VM *vm, int arg_count, VALUE *args)
         printf("%s", string_get_cstr(peek(vm, 0)));
         pop(vm);
     }
-    fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
+    char *result = fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
     set_stdin_echo(true);
-    return copyString(vm, input_line, strlen(input_line));
+    if (result == NULL)
+        return NIL_VAL;
+    return copyString(vm, result, strlen(result));
 }
 
 VALUE input(VM *vm, int arg_count, VALUE *args)
@@ -149,8 +151,10 @@ VALUE input(VM *vm, int arg_count, VALUE *args)
         printf("%s", string_get_cstr(peek(vm, 0)));
         pop(vm);
     }
-    fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
-    return copyString(vm, input_line, strlen(input_line));
+    char *result = fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
+    if (result == NULL)
+        return NIL_VAL;
+    return copyString(vm, result, strlen(result));
 }
 
 #if DEBUG_TRACE_EXECUTION

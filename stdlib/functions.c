@@ -1,10 +1,15 @@
 #include "cometlib.h"
 #include "comet.h"
+#include "comet_stdlib.h"
 
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+
+VALUE std_streams;
+#define STD_STREAM_OUT 0
+#define STD_STREAM_ERR 1
 
 static Value clockNative(VM *vm, int UNUSED(argCount), Value UNUSED(*args))
 {
@@ -21,6 +26,23 @@ static VALUE printNative(VM *vm, int arg_count, VALUE *args)
     }
     printf("\n");
     fflush(stdout);
+    return NIL_VAL;
+}
+
+static VALUE print_to(VM *vm, int arg_count, VALUE *args)
+{
+    uint64_t stream_val = enumvalue_get_value(args[0]);
+    FILE *stream = stdout;
+    if (stream_val == STD_STREAM_ERR)
+        stream = stderr;
+    for (int i = 1; i < arg_count; i++)
+    {
+        call_function(vm, args[i], common_strings[STRING_TO_STRING], 0, NULL);
+        fprintf(stream, "%s", string_get_cstr(peek(vm, 0)));
+        pop(vm);
+    }
+    fprintf(stream, "\n");
+    fflush(stream);
     return NIL_VAL;
 }
 
@@ -78,8 +100,16 @@ VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
 
 void init_functions(VM *vm)
 {
+    std_streams = enum_create(vm);
+    push(vm, std_streams);
+    addGlobal(copyString(vm, "STD_STREAM", 10), std_streams);
+    enum_add_value(vm, std_streams, "IN", 1);
+    enum_add_value(vm, std_streams, "OUT", 2);
+    pop(vm);
+
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
+    defineNativeFunction(vm, "print_to", &print_to);
     defineNativeFunction(vm, "assert", &assertNative);
     defineNativeFunction(vm, "callable?", &callable_p);
     defineNativeFunction(vm, "sleep", &fn_sleep);

@@ -67,4 +67,8 @@ assert(val == 97)
 var formatted = String.format("Hello: {0}{1}", 12345, 6789)
 assert(formatted == 'Hello: 123456789')
 print(formatted)
+
+formatted = String.format("Hello: {{0}}{0}", 12345)
+assert(formatted == 'Hello: {0}12345')
+print(formatted)
 print("String test passed!")

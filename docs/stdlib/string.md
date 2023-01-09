@@ -27,6 +27,7 @@ All strings are UTF-8 encoded
 - `format(msg, ...)` formats a string, replacing instances of `{n}` with the nth (zero-based) index of
     argument after msg.  e.g. `String.format('this is {0} string with {0} replacement', 'a')` results in
     `'this is a string with a replacement'`
+    a `{` or `}` can be escaped by doubling them up.  e.g. `String.format('this is {{0}} string with {0} replacement', a)` results in `'this is {0} string with a replacement'`
 
 ### operators
 - `==` compares if the two strings are equal in a case-sensitive manner

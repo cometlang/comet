@@ -533,6 +533,23 @@ static bool string_iter_get_next(StringIterator *iter)
     return true;
 }
 
+static utf8proc_int32_t string_iter_peek_next(StringIterator *iter)
+{
+    if (iter->remaining <= 0)
+        return -1;
+    utf8proc_int32_t result;
+    utf8proc_ssize_t bytes_read;
+    bytes_read = utf8proc_iterate(
+            (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
+            iter->remaining,
+            &result);
+    if (bytes_read == -1)
+    {
+        return -1;
+    }
+    return result;
+}
+
 VALUE string_substring(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
@@ -669,26 +686,39 @@ VALUE string_format(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments
     {
         if (iter->current_codepoint == '{')
         {
-            char *end;
-            long index = strtol(&iter->string->chars[iter->offset], &end, 10);
-            iter->offset += end - &iter->string->chars[iter->offset];
-            if (!string_iter_get_next(iter) || iter->current_codepoint != '}')
+            if (iter->remaining > 0 && string_iter_peek_next(iter) == '{')
             {
-                throw_exception_native(
-                    vm,
-                    "FormatException",
-                    "Unterminated formatting placeholder");
-                return NIL_VAL;
+                string_iter_get_next(iter);
+                string_builder_add_codepoint(builder, iter->current_codepoint);
             }
-            else if (index >= arg_count - 1)
+            else
             {
-                throw_exception_native(
-                    vm,
-                    "FormatException",
-                    "Not enough arguments for the index %ld", index);
-                return NIL_VAL;
+                char *end;
+                long index = strtol(&iter->string->chars[iter->offset], &end, 10);
+                iter->offset += end - &iter->string->chars[iter->offset];
+                if (!string_iter_get_next(iter) || iter->current_codepoint != '}')
+                {
+                    throw_exception_native(
+                        vm,
+                        "FormatException",
+                        "Unterminated formatting placeholder");
+                    return NIL_VAL;
+                }
+                else if (index >= arg_count - 1)
+                {
+                    throw_exception_native(
+                        vm,
+                        "FormatException",
+                        "Not enough arguments for the index %ld", index);
+                    return NIL_VAL;
+                }
+                add_output_string_to_builder(vm, builder, arguments[index+1]);
             }
-            add_output_string_to_builder(vm, builder, arguments[index+1]);
+        }
+        else if (iter->current_codepoint == '}' && iter->remaining > 0 && string_iter_peek_next(iter) == '}')
+        {
+            string_iter_get_next(iter);
+            string_builder_add_codepoint(builder, iter->current_codepoint);
         }
         else
         {

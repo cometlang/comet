@@ -1,11 +1,18 @@
-#include "cometlib.h"
-#include "comet.h"
-#include "comet_stdlib.h"
+#ifdef WIN32
+#include <windows.h>
+#else
+#include <termios.h>
+#include <unistd.h>
+#endif
 
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdlib.h>
+
+#include "cometlib.h"
+#include "comet.h"
+#include "comet_stdlib.h"
 
 VALUE std_streams;
 #define STD_STREAM_OUT 0
@@ -90,6 +97,62 @@ VALUE fn_exit(VM UNUSED(*vm), int UNUSED(arg_count), VALUE *args)
     exit(exit_status);
 }
 
+// https://stackoverflow.com/a/1455007/4780928
+static void set_stdin_echo(bool enable)
+{
+#ifdef WIN32
+    HANDLE hStdin = GetStdHandle(STD_INPUT_HANDLE);
+    DWORD mode;
+    GetConsoleMode(hStdin, &mode);
+
+    if( !enable )
+        mode &= ~ENABLE_ECHO_INPUT;
+    else
+        mode |= ENABLE_ECHO_INPUT;
+
+    SetConsoleMode(hStdin, mode );
+
+#else
+    struct termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
+    if( !enable )
+        tty.c_lflag &= ~ECHO;
+    else
+        tty.c_lflag |= ECHO;
+
+    (void) tcsetattr(STDIN_FILENO, TCSANOW, &tty);
+#endif
+}
+
+#define MAX_INPUT_LINE_SIZE 512
+char input_line[MAX_INPUT_LINE_SIZE];
+
+VALUE get_password(VM *vm, int arg_count, VALUE *args)
+{
+    set_stdin_echo(false);
+    if (arg_count == 1)
+    {
+        call_function(vm, args[0], common_strings[STRING_TO_STRING], 0, NULL);
+        printf("%s", string_get_cstr(peek(vm, 0)));
+        pop(vm);
+    }
+    fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
+    set_stdin_echo(true);
+    return copyString(vm, input_line, strlen(input_line));
+}
+
+VALUE input(VM *vm, int arg_count, VALUE *args)
+{
+    if (arg_count == 1)
+    {
+        call_function(vm, args[0], common_strings[STRING_TO_STRING], 0, NULL);
+        printf("%s", string_get_cstr(peek(vm, 0)));
+        pop(vm);
+    }
+    fgets(input_line, MAX_INPUT_LINE_SIZE, stdin);
+    return copyString(vm, input_line, strlen(input_line));
+}
+
 #if DEBUG_TRACE_EXECUTION
 VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
 {
@@ -104,12 +167,14 @@ void init_functions(VM *vm)
     push(vm, std_streams);
     addGlobal(copyString(vm, "STD_STREAM", 10), std_streams);
     enum_add_value(vm, std_streams, "IN", 1);
-    enum_add_value(vm, std_streams, "OUT", 2);
+    enum_add_value(vm, std_streams, "ERR", 2);
     pop(vm);
 
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
     defineNativeFunction(vm, "print_to", &print_to);
+    defineNativeFunction(vm, "input", &input);
+    defineNativeFunction(vm, "get_password", &get_password);
     defineNativeFunction(vm, "assert", &assertNative);
     defineNativeFunction(vm, "callable?", &callable_p);
     defineNativeFunction(vm, "sleep", &fn_sleep);

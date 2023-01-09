@@ -33,6 +33,15 @@
 ## print
 - `print([...])` print every argument by first calling `to_string()` on it first, ending with a newline
 
+## print_to
+- `print_to(STD_STREAM, [...])` print every argument by first calling `to_string()` on it first, ending with a newline.  It will print it to the given stream.  The options are STD_STREAM.OUT and STD_STREAM.ERR
+
+## input
+- `input([prompt])` print the prompt (no newline) if given and then wait for a line of input, returning it as a [String](string.md).  Gets a maximum of 512 bytes in one line.
+
+## get_password
+- `input([prompt])` print the prompt (no newline) if given and then wait for a line of input, returning it as a [String](string.md).  Does not echo the input.  Gets a maximum of 512 bytes in one line.
+
 ## assert
 - `assert(value)` if value is falsy, then an AssertionException is thrown
 

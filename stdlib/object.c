@@ -106,6 +106,15 @@ VALUE obj_methods(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VAL
     return pop(vm);
 }
 
+VALUE obj_fields(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    VALUE list = list_create(vm);
+    push(vm, list);
+    ObjInstance *obj = AS_INSTANCE(self);
+    tableGetKeys(&obj->fields, vm, list);
+    return pop(vm);
+}
+
 void init_object(VM *vm, VALUE klass)
 {
     defineNativeMethod(vm, klass, &obj_hash, "hash", 0, false);
@@ -115,5 +124,6 @@ void init_object(VM *vm, VALUE klass)
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
     defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
     defineNativeMethod(vm, klass, &obj_methods, "methods", 0, false);
+    defineNativeMethod(vm, klass, &obj_methods, "fields", 0, false);
     defineNativeOperator(vm, klass, &obj_equals, 1, OPERATOR_EQUALS);
 }

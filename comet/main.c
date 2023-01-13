@@ -42,12 +42,27 @@ static void repl()
     }
 }
 
+static void defineMain(Value main)
+{
+    Value main_varname = copyString(&virtualMachine, "__MAIN__", 8);
+    push(&virtualMachine, main_varname);
+    // This is the fully resolved, canonical path - the same as how __FILE__ will be defined
+    // to_import might be relative or an unresolved library path
+    const char *main_filename = module_filename(main);
+    Value main_varvalue = copyString(&virtualMachine, main_filename, strlen(main_filename));
+    push(&virtualMachine, main_varvalue);
+    addGlobal(main_varname, main_varvalue);
+    popMany(&virtualMachine, 2);
+}
+
 static void runFile(const char *path)
 {
     Value to_import = copyString(&virtualMachine, path, strlen(path));
     push(&virtualMachine, to_import);
     Value main = import_from_file(&virtualMachine, NULL, to_import);
+    defineMain(main);
     pop(&virtualMachine);
+
     InterpretResult result = interpret(&virtualMachine, main);
 
     if (result == INTERPRET_COMPILE_ERROR) exit(65);

@@ -222,6 +222,16 @@ static void string(Parser *parser, bool UNUSED(canAssign))
     emitConstant(parser, parseString(parser));
 }
 
+static void replacement(Parser *parser, bool UNUSED(canAssign))
+{
+    if (parser->previous.type == TOKEN_FILE_NAME)
+    {
+        Value filename = copyString(
+        parser->compilation_thread, parser->filename, strlen(parser->filename));
+        emitConstant(parser, filename);
+    }
+}
+
 static void or_(Parser *parser, bool UNUSED(canAssign))
 {
     int elseJump = emitJump(parser, OP_JUMP_IF_FALSE);
@@ -482,6 +492,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_IDENTIFIER]       = {variable,     NULL,      PREC_NONE},
     [TOKEN_STRING]           = {string,       NULL,      PREC_NONE},
     [TOKEN_NUMBER]           = {number,       NULL,      PREC_NONE},
+    [TOKEN_FILE_NAME]        = {replacement,  NULL,      PREC_NONE},
     // Keywords
     [TOKEN_AS]               = {NULL,         NULL,      PREC_NONE},
     [TOKEN_CLASS]            = {NULL,         NULL,      PREC_NONE},

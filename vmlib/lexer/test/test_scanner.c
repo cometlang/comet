@@ -45,6 +45,7 @@ char *token_strings[NUM_TOKENS] =
     [TOKEN_IDENTIFIER] = "something",
     [TOKEN_STRING] = "'a string'",
     [TOKEN_NUMBER] = "123456",
+    [TOKEN_FILE_NAME] = "__FILE__",
     [TOKEN_AS] = "as",
     [TOKEN_BREAK] = "break",
     [TOKEN_CLASS] = "class",

@@ -1,0 +1,2 @@
+print(__MAIN__)
+print(__FILE__)

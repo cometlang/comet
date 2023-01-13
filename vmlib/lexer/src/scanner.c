@@ -288,6 +288,8 @@ static TokenType_t identifierType(Scanner *scanner)
         return checkKeyword(scanner, 1, 2, "ar", TOKEN_VAR);
     case 'w':
         return checkKeyword(scanner, 1, 4, "hile", TOKEN_WHILE);
+    case '_':
+        return checkKeyword(scanner, 1, 7, "_FILE__", TOKEN_FILE_NAME);
     }
     return TOKEN_IDENTIFIER;
 }

@@ -334,8 +334,15 @@ If you have caught an exception and wish to re-throw it, but maintain the previo
 
 ## Imports
 
-Currently, imports are done with a string that represents a path and a variable-naming identifier. e.g.
-`import './module.cmt' as module_var`.  The path can be relative or absolute and needn't include the extension `.cmt`.
+imports are written with (an expression that results in) a string that represents a path and a variable-naming identifier. e.g. `import './module.cmt' as module_var`.  The path can be relative or absolute and needn't include the extension `.cmt`.
+
+The paths searched are (in order):
+1. The directory in which the file containing the import statement is contained
+1. The directory in the environment variable COMET_LIB_DIR
+1. OS-dependent directory
+  - Unix - /usr/local/lib/comet
+  - Windows - C:\comet
+1. The current working directory
 
 
 ## Native Enhancements

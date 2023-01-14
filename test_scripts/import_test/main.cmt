@@ -1,3 +1,7 @@
 import './secondary' as secondary
 
-secondary.print_something()
+if (__MAIN__ == __FILE__) {
+    secondary.print_something()
+} else {
+    print("nothing")
+}

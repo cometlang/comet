@@ -69,6 +69,12 @@ static filesystem::path resolve_import_path(const char *relative_to_filename, co
         return candidate;
     }
 
+    candidate = filesystem::current_path() / import_path;
+    if (filesystem::exists(candidate))
+    {
+        return candidate;
+    }
+
     return filesystem::path();
 }
 

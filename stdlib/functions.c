@@ -157,6 +157,12 @@ VALUE input(VM *vm, int arg_count, VALUE *args)
     return copyString(vm, result, strlen(result));
 }
 
+VALUE call_func(VM *vm, int arg_count, VALUE *args)
+{
+    call_function(vm, args[0], args[1], arg_count - 2, &args[2]);
+    return pop(vm);
+}
+
 #if DEBUG_TRACE_EXECUTION
 VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
 {
@@ -174,6 +180,7 @@ void init_functions(VM *vm)
     enum_add_value(vm, std_streams, "ERR", 2);
     pop(vm);
 
+    defineNativeFunction(vm, "call_function", &call_func);
     defineNativeFunction(vm, "clock", &clockNative);
     defineNativeFunction(vm, "print", &printNative);
     defineNativeFunction(vm, "print_to", &print_to);

@@ -319,6 +319,7 @@ void importStatement(Parser *parser)
     emitByte(parser, OP_POP);
     uint8_t global = parseVariable(parser, "Expected a variable name for the imported module.");
     defineVariable(parser, global);
+    emitByte(parser, OP_POP);
 }
 
 void nextStatement(Parser *parser)

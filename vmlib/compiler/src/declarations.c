@@ -148,7 +148,6 @@ void classDeclaration(Parser *parser)
             error(parser, "A class cannot inherit from itself.");
         }
 
-        beginScope(parser);
         variable(parser, false);
         if (match(parser, TOKEN_DOT) && match(parser, TOKEN_IDENTIFIER)) {
             uint8_t name = identifierConstant(parser, &parser->previous);
@@ -157,9 +156,9 @@ void classDeclaration(Parser *parser)
     }
     else
     {
-        beginScope(parser);
         namedVariable(parser, syntheticToken("Object"), false);
     }
+    beginScope(parser);
 
     // Store the superclass in a local variable named "super".
     int local = addLocal(parser, syntheticToken("super"));

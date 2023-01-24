@@ -65,10 +65,15 @@ var val = 'a'.value()
 assert(val == 97)
 
 var formatted = String.format("Hello: {0}{1}", 12345, 6789)
-assert(formatted == 'Hello: 123456789')
 print(formatted)
+assert(formatted == 'Hello: 123456789', 'formatted string did not match')
 
 formatted = String.format("Hello: {{0}}{0}", 12345)
-assert(formatted == 'Hello: {0}12345')
 print(formatted)
+assert(formatted == 'Hello: {0}12345', 'formatted string did not match')
+
+formatted = String.format('Strüng mit unic{0}de', 'ö')
+print(formatted)
+assert(formatted == 'Strüng mit unicöde', 'Unicode formatted string did not match')
+
 print("String test passed!")

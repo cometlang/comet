@@ -106,7 +106,7 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
         else
         {
             push(vm, module);
-            addModule(module, copyString(vm, full_path, strlen(full_path)));
+            addModule(module, full_path_val);
             pop(vm);
         }
     }

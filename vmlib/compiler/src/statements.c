@@ -313,13 +313,12 @@ void rethrowStatement(Parser *parser)
 void importStatement(Parser *parser)
 {
     expression(parser);
-    consume(parser, TOKEN_AS, "Expected 'as' after the module to import");
     emitByte(parser, OP_IMPORT);
     // Imports are a function that return NIL, so ditch the nil from the stack
     emitByte(parser, OP_POP);
+    consume(parser, TOKEN_AS, "Expected 'as' after the module to import");
     uint8_t global = parseVariable(parser, "Expected a variable name for the imported module.");
     defineVariable(parser, global);
-    emitByte(parser, OP_POP);
 }
 
 void nextStatement(Parser *parser)

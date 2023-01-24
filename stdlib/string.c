@@ -519,12 +519,11 @@ static bool string_iter_get_next(StringIterator *iter)
 {
     if (iter->remaining <= 0)
         return false;
-    utf8proc_ssize_t bytes_read;
-    bytes_read = utf8proc_iterate(
+    utf8proc_ssize_t bytes_read = utf8proc_iterate(
             (const utf8proc_uint8_t *)&iter->string->chars[iter->offset],
             iter->remaining,
             &iter->current_codepoint);
-    if (bytes_read == -1)
+    if (bytes_read < 0 || iter->current_codepoint <= 0)
     {
         return false;
     }

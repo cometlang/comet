@@ -126,8 +126,12 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_EQUAL", offset);
     case OP_GREATER:
         return simpleInstruction("OP_GREATER", offset);
+    case OP_GREATER_EQUAL:
+        return simpleInstruction("OP_GREATER_EQUAL", offset);
     case OP_LESS:
         return simpleInstruction("OP_LESS", offset);
+    case OP_LESS_EQUAL:
+        return simpleInstruction("OP_LESS_EQUAL", offset);
     case OP_ADD:
         return simpleInstruction("OP_ADD", offset);
     case OP_SUBTRACT:
@@ -215,7 +219,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     case OP_PROPAGATE_EXCEPTION:
         return simpleInstruction("OP_PROPAGATE_EXCEPTION", offset);
     case OP_IMPORT:
-        return constantInstruction("OP_IMPORT", chunk, offset);
+        return simpleInstruction("OP_IMPORT", offset);
     case OP_SPLAT:
         return simpleInstruction("OP_SPLAT", offset);
     default:

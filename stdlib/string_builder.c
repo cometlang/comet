@@ -36,6 +36,7 @@ void string_builder_add_codepoint(VALUE self, utf8proc_int32_t codepoint)
     {
         size_t new_size = data->size + BASE_CODEPOINT_ALLOCATION;
         data->codepoints = GROW_ARRAY(data->codepoints, utf8proc_int32_t, data->size, new_size);
+        data->size = new_size;
     }
     data->codepoints[data->index++] = codepoint;
 }
@@ -43,10 +44,12 @@ void string_builder_add_codepoint(VALUE self, utf8proc_int32_t codepoint)
 VALUE string_builder_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringBuilderData_t *data = GET_NATIVE_INSTANCE_DATA(StringBuilderData_t, self);
+    utf8proc_uint8_t temp[4];
     size_t length = 0;
     for (size_t i = 0; i < data->index; i++)
     {
-        length += utf8proc_charwidth(data->codepoints[i]);
+        utf8proc_ssize_t char_size = utf8proc_encode_char(data->codepoints[i], &temp[0]);
+        length += char_size;
     }
     char *output = ALLOCATE(char, length + 1);
     int output_offset = 0;
@@ -55,7 +58,7 @@ VALUE string_builder_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE 
         output_offset += utf8proc_encode_char(data->codepoints[j], (utf8proc_uint8_t *)&output[output_offset]);
     }
     output[output_offset] = 0;
-    return takeString(vm, output, length);
+    return copyString(vm, output, length);
 }
 
 VALUE create_string_builder(VM *vm)

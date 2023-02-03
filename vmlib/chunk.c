@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "chunk.h"
 #include "mem.h"
@@ -36,4 +37,14 @@ void freeChunk(Chunk *chunk)
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
     freeValueArray(&chunk->constants);
     initChunk(chunk, NULL);
+}
+
+void print_constants(Chunk *chunk)
+{
+    for (int i = 0; i < chunk->constants.count; i++)
+    {
+        printf("%d: ", i);
+        printObject(chunk->constants.values[i]);
+        printf("\n");
+    }
 }

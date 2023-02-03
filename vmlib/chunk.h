@@ -81,4 +81,6 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line);
 
 void freeChunk(Chunk *chunk);
 
+void print_constants(Chunk *chunk);
+
 #endif

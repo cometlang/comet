@@ -1,0 +1,15 @@
+class SomeClass
+{
+    init(param) {
+        print('inside SomeClass constuctor: ', param)
+    }
+}
+
+class final FinalClass : SomeClass
+{
+    init(param) {
+        super.init(param)
+    }
+}
+
+var instance = FinalClass("hello")

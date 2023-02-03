@@ -10,7 +10,6 @@ typedef struct ClassCompiler
     struct ClassCompiler *enclosing;
 
     Token name;
-    bool hasSuperclass;
 } ClassCompiler;
 
 typedef struct LoopCompiler

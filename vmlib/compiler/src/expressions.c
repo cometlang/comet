@@ -257,10 +257,6 @@ static void super_(Parser *parser, bool UNUSED(canAssign))
     {
         error(parser, "Cannot use 'super' outside of a class.");
     }
-    else if (!parser->currentClass->hasSuperclass)
-    {
-        error(parser, "Cannot use 'super' in a class with no superclass.");
-    }
 
     consume(parser, TOKEN_DOT, "Expect '.' after 'super'.");
     consume(parser, TOKEN_IDENTIFIER, "Expect superclass method name.");
@@ -271,11 +267,10 @@ static void super_(Parser *parser, bool UNUSED(canAssign))
 
     if (match(parser, TOKEN_LEFT_PAREN))
     {
-        uint8_t argCount = argumentList(parser, TOKEN_RIGHT_PAREN);
-
         pushSuperclass(parser);
-        emitBytes(parser, OP_GET_SUPER, argCount);
-        emitByte(parser, name);
+        emitBytes(parser, OP_GET_SUPER, name);
+        uint8_t argCount = argumentList(parser, TOKEN_RIGHT_PAREN);
+        emitBytes(parser, OP_CALL, argCount);
     }
     else
     {

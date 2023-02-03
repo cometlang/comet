@@ -134,7 +134,6 @@ void classDeclaration(Parser *parser)
 
     ClassCompiler classCompiler;
     classCompiler.name = parser->previous;
-    classCompiler.hasSuperclass = true;
     classCompiler.enclosing = parser->currentClass;
     parser->currentClass = &classCompiler;
 

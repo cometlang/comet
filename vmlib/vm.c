@@ -366,6 +366,7 @@ static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, in
     {
         runtimeError(vm, "%s expects at least %u argument(s), but was given %d\n",
                      string_get_cstr(method->name), method->arity, argCount);
+        return false;
     }
     Value result = method->function(vm, receiver, argCount, vm->stackTop - argCount);
     push_to(vm, result, argCount + 1);
@@ -653,7 +654,7 @@ void print_stack(VM *vm)
     CallFrame *frame = updateFrame(vm);
     if (vm->frameCount > 0) {
         disassembleInstruction(&frame->closure->function->chunk,
-                            (int)(frame->ip - 1 - frame->closure->function->chunk.code));
+                            (int)(frame->ip - frame->closure->function->chunk.code));
     }
     printf("id: 0x%X ", get_current_thread_id());
     for (Value *slot = vm->stack; slot < vm->stackTop; slot++)
@@ -1126,6 +1127,7 @@ static InterpretResult run(VM *vm)
                     ObjFunction *mod_main = module_get_main(imported);
                     ObjClosure *closure = newClosure(vm, mod_main);
                     call(vm, closure, 0);
+                    push(vm, NIL_VAL);
                     frame = updateFrame(vm);
                 }
                 else
@@ -1152,6 +1154,10 @@ static InterpretResult run(VM *vm)
             // -1 because we already had "one" argument
             frame->bonusSplatArgCount += (length - 1);
             break;
+        }
+        default:
+        {
+            runtimeError(vm, "Unknown instruction: %u", instruction);
         }
         }
         if (vm->frameCount == 0)

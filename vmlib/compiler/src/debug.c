@@ -23,7 +23,7 @@ static int invokeInstruction(const char *name, Chunk *chunk,
     printf("%-16s (%d args) %4d '", name, argCount, constant);
     printObject(chunk->constants.values[constant]);
     printf("'\n");
-    return offset + 3;
+    return offset + 3 + argCount;
 }
 
 static int simpleInstruction(const char *name, int offset)

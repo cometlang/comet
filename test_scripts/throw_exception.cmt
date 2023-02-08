@@ -1,1 +1,9 @@
-throw Exception()
+function test_throwing_exceptions() {
+    try {
+        throw Exception()
+        assert(false, 'Code after an exception is thrown should be unreachable')
+    } catch (Exception as ex) {
+        assert(true, 'Inside the exception handler')
+    }
+}
+

@@ -804,8 +804,7 @@ static InterpretResult run(VM *vm)
                 push_to(vm, value, 1);
                 break;
             }
-
-            if (!bindMethod(vm, instance->klass, name))
+            else if (!bindMethod(vm, instance->klass, name))
             {
                 return INTERPRET_RUNTIME_ERROR;
             }

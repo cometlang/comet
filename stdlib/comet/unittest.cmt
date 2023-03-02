@@ -1,6 +1,6 @@
 class _That {
     init(value) {
-        self.value
+        self.value = value
     }
 
     is_nil(message=nil) {
@@ -20,6 +20,18 @@ class _That {
             assert(value(self.value) == true, message)
         } else {
             is_equal_to(value, message)
+        }
+    }
+
+    throws(message=nil) {
+        if (!callable?(self.value)) {
+            throw ArgumentException(String.format('throws() expects a callable to assert, but got {0}', self.value))
+        }
+        try {
+            self.value()
+            assert(false, message)
+        } catch (Exception as ex) {
+            assert(true, message)
         }
     }
 }

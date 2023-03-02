@@ -1,9 +1,8 @@
+import 'unittest' as unittest
+
 function test_throwing_exceptions() {
-    try {
+    unittest.Assert.that(| | {
         throw Exception()
-        assert(false, 'Code after an exception is thrown should be unreachable')
-    } catch (Exception as ex) {
-        assert(true, 'Inside the exception handler')
-    }
+    }).throws()
 }
 

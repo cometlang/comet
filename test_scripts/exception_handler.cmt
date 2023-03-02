@@ -18,4 +18,14 @@ function second_function()
     throw Exception("My exception has a message")
 }
 
+function test_function() {
+    try {
+        print("inside the try")
+    }
+    finally {
+        print('finally after try')
+    }
+}
+
 first_function()
+test_function()

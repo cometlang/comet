@@ -253,9 +253,11 @@ void tryStatement(Parser *parser)
     emitByte(parser, OP_POP_EXCEPTION_HANDLER);
     int successJump = emitJump(parser, OP_JUMP);
     match(parser, TOKEN_EOL);
+    bool tryBlockCompleted = false;
 
     if (match(parser, TOKEN_CATCH))
     {
+        tryBlockCompleted = true;
         beginScope(parser);
         consume(parser, TOKEN_LEFT_PAREN, "Expect '(' after catch");
         consume(parser, TOKEN_IDENTIFIER, "Expect type name to catch");
@@ -279,6 +281,7 @@ void tryStatement(Parser *parser)
 
     if (match(parser, TOKEN_FINALLY))
     {
+        tryBlockCompleted = true;
         // If we arrive here from either the try or handler blocks, then we don't
         // want to continue propagating the exception
         emitByte(parser, OP_FALSE);
@@ -291,6 +294,11 @@ void tryStatement(Parser *parser)
         emitByte(parser, OP_PROPAGATE_EXCEPTION);
         patchJump(parser, continueExecution);
         emitByte(parser, OP_POP);
+    }
+
+    if (tryBlockCompleted == false)
+    {
+        errorAtCurrent(parser, "A try statement requires a catch, finally or both");
     }
 }
 

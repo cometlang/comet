@@ -80,7 +80,7 @@ static bool propagateException(VM *vm)
         for (int numHandlers = frame->handlerCount; numHandlers > 0; numHandlers--)
         {
             ExceptionHandler handler = frame->handlerStack[numHandlers - 1];
-            if (instanceof(exception, handler.klass) == TRUE_VAL)
+            if (handler.klass != NIL_VAL && instanceof(exception, handler.klass) == TRUE_VAL)
             {
                 frame->ip = &frame->closure->function->chunk.code[handler.handlerAddress];
                 return true;
@@ -1089,16 +1089,20 @@ static InterpretResult run(VM *vm)
         }
         case OP_PUSH_EXCEPTION_HANDLER:
         {
-            VALUE type = READ_CONSTANT();
+            uint8_t constantIndex = READ_BYTE();
+            VALUE type = NIL_VAL;
             uint16_t handlerAddress = READ_SHORT();
             uint16_t finallyAddress = READ_SHORT();
-            Value value;
-            if ((!findModuleVariable(frame->closure->function->module, type, &value) &&
-                 !findGlobal(type, &value)) ||
-                (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
-            {
-                runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
-                return INTERPRET_RUNTIME_ERROR;
+            Value value = NIL_VAL;
+            if (constantIndex != 0xff) {
+                type = frame->closure->function->chunk.constants.values[constantIndex];
+                if ((!findModuleVariable(frame->closure->function->module, type, &value) &&
+                    !findGlobal(type, &value)) ||
+                    (!IS_CLASS(value) && !IS_NATIVE_CLASS(value)))
+                {
+                    runtimeError(vm, "'%s' is not a type to catch", string_get_cstr(type));
+                    return INTERPRET_RUNTIME_ERROR;
+                }
             }
             pushExceptionHandler(vm, value, handlerAddress, finallyAddress);
             break;

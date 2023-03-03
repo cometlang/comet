@@ -519,6 +519,8 @@ void finalizeGarbageCollection(void)
     threads = NULL;
     thread_capacity = 0;
     num_threads = 0;
+    // pretend we're permanently collecting garbage, so we don't accidentally start collecting again
+    collecting_garbage = true;
     MUTEX_UNLOCK(gc_lock);
     MUTEX_DESTROY(gc_lock);
 }

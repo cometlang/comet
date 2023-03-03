@@ -279,7 +279,7 @@ static void super_(Parser *parser, bool UNUSED(canAssign))
     }
 }
 
-static void self(Parser *parser, bool canAssign)
+static void self(Parser *parser, bool UNUSED(canAssign))
 {
     if (parser->currentClass == NULL)
     {
@@ -287,7 +287,7 @@ static void self(Parser *parser, bool canAssign)
     }
     else
     {
-        variable(parser, canAssign);
+        variable(parser, false); // It's never possible to re-assign self.
     }
 }
 

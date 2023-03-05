@@ -1,11 +1,13 @@
+import 'unittest' as unittest
 import 'class_inherits_object' as imported
 
 class final SomeOtherClass : imported.SomeClass {
 
 }
 
-var instance = SomeOtherClass()
 
-assert(instance is imported.SomeClass)
+function test_class_can_inherit_imported_class() {
+    var instance = SomeOtherClass()
+    unittest.Assert.that(instance).is_of_type(imported.SomeClass)
+}
 
-print("Class Inherits Imported Class Tests Passed!")

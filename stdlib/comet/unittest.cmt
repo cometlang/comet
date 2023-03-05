@@ -31,14 +31,25 @@ class _That {
             self.value()
             assert(false, message)
         } catch (Exception as ex) {
+            if (ex is AssertionException) {
+                rethrow ex
+            }
             assert(true, message)
         }
+    }
+
+    is_of_type(type, message=nil) {
+        assert(self.value is type, message)
     }
 }
 
 class Assert {
     static that(value) {
         return _That(value)
+    }
+
+    static fail(message) {
+        assert(false, message)
     }
 }
 

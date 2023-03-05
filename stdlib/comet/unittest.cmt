@@ -11,6 +11,14 @@ class _That {
         assert(self.value == expected, message)
     }
 
+    is_true(message=nil) {
+        assert(self.value, message)
+    }
+
+    is_false(message=nil) {
+        assert(!self.value, message)
+    }
+
     contains(expected, message=nil) {
         assert(self.value.contains?(expected), message)
     }

@@ -1,79 +1,113 @@
-var normal_string = 'This is a string'
-print(normal_string)
-print(normal_string.length())
+import 'unittest' as unittest
+
+function test_ascii_length() {
+    var normal_string = 'This is a string'
+    unittest.Assert.that(normal_string.length()).is_equal_to(16)
+}
 
 var utf8_string = "This is ä ütf-8 string Encyclöpædiä"
-print(utf8_string)
-print(utf8_string.length())
-var utf8_upper = utf8_string.to_upper()
-print("Upper: ", utf8_upper)
-print("Lower: ", utf8_upper.to_lower())
-assert(utf8_string.contains?('ü'))
-
-assert(("this is" + " a string") == 'this is a string')
-var concat = 'this'
-concat += ' is '
-concat += 'a string'
-print("'", concat, "'")
-assert(concat == 'this is a string')
-
-assert("   'left trimmed'".left_trim() == "'left trimmed'")
-assert("'right trimmed'   ".right_trim() == "'right trimmed'")
-assert("   'trimmed'   ".trim() == "'trimmed'")
-assert("   'trimmed'\n".trim() == "'trimmed'")
-
-print("this is a string...".ends_with?('ing...'))
-print("this is a string...".ends_with?('not this'))
-
-print("this is a string...".starts_with?('this'))
-print("this is a string...".starts_with?('not this'))
-
-print("this;is;a;string;;that;should;be;split".split(';'))
-
-print("Iteration start")
-foreach(var char in utf8_string)
-    print(char)
-print("Iteration complete")
-
-print("This has an\nescaped newline in it")
-print("This has an \\ escaped escape in it")
-
-var replaced = "this;is;a;string;;that;should;be;replaced".replace(';', ' ')
-print("'", replaced, "'")
-assert(replaced == "this is a string  that should be replaced")
-
-var ooooo = utf8_string[10]
-print(ooooo)
-assert(ooooo == "ü")
-
-try
-{
-    utf8_string[42]
-    assert(false, 'should not get here - exception should be thrown')
-}
-catch (IndexOutOfBoundsException)
-{
-    print("Correctly out of bounds")
+function test_unicode_length() {
+    unittest.Assert.that(utf8_string.length()).is_equal_to(35)
 }
 
-var super_string = 'abc0123456789cba'
-var sub = super_string.substring(3, 10)
-print('sub: ', sub)
-assert(sub == '0123456789')
+function test_to_upper_with_unicode() {
+    var utf8_upper = utf8_string.to_upper()
+    unittest.Assert.that(utf8_upper).is_equal_to("THIS IS Ä ÜTF-8 STRING ENCYCLÖPÆDIÄ")
+}
 
-var val = 'a'.value()
-assert(val == 97)
+function test_to_lower_with_unicode() {
+    var utf8_lower = "THIS IS Ä ÜTF-8 STRING ENCYCLÖPÆDIÄ".to_lower()
+    unittest.Assert.that(utf8_lower).is_equal_to("this is ä ütf-8 string encyclöpædiä")
+}
 
-var formatted = String.format("Hello: {0}{1}", 12345, 6789)
-print(formatted)
-assert(formatted == 'Hello: 123456789', 'formatted string did not match')
+function test_inline_concatenation() {
+    unittest.Assert.that("this is" + " a string").is_equal_to('this is a string')
+}
 
-formatted = String.format("Hello: {{0}}{0}", 12345)
-print(formatted)
-assert(formatted == 'Hello: {0}12345', 'formatted string did not match')
+function test_multiple_concatenation() {
+    var concat = 'this'
+    concat += ' is '
+    concat += 'a string'
+    unittest.Assert.that(concat).is_equal_to('this is a string')
+}
 
-formatted = String.format('Strüng mit unic{0}de', 'ö')
-print(formatted)
-assert(formatted == 'Strüng mit unicöde', 'Unicode formatted string did not match')
+function test_trim() {
+    unittest.Assert.that("   'left trimmed'".left_trim()).is_equal_to("'left trimmed'")
+    unittest.Assert.that("'right trimmed'   ".right_trim()).is_equal_to("'right trimmed'")
+    unittest.Assert.that("   'trimmed'   ".trim()).is_equal_to("'trimmed'")
+    unittest.Assert.that("   'trimmed'\n".trim()).is_equal_to("'trimmed'")
+}
 
-print("String test passed!")
+function test_ends_with?() {
+    unittest.Assert.that("this is a string...".ends_with?('ing...')).is_true()
+    unittest.Assert.that("this is a string...".ends_with?('not this')).is_false()
+}
+
+function test_starts_with?() {
+    unittest.Assert.that("this is a string...".starts_with?('this')).is_true()
+    unittest.Assert.that("this is a string...".starts_with?('not this')).is_false()
+}
+
+function test_split() {
+    var split = "this;is;a;string;;that;should;be;split".split(';')
+    unittest.Assert.that(split[2]).is_equal_to('a')
+    unittest.Assert.that(split.length()).is_equal_to(8)
+}
+
+function test_iteration() {
+    var i = 0
+    foreach(var char in utf8_string) {
+        unittest.Assert.that(char).is_equal_to(utf8_string[i])
+        i += 1
+    }
+    unittest.Assert.that(i).is_equal_to(utf8_string.length())
+}
+
+function test_escape() {
+    var multiline = "This has an
+escaped newline in it"
+    var escaped = "This has an\nescaped newline in it"
+    unittest.Assert.that(escaped).is_equal_to(multiline)
+}
+
+function test_replace() {
+    var replaced = "this;is;a;string;;that;should;be;replaced".replace(';', ' ')
+    unittest.Assert.that(replaced).is_equal_to("this is a string  that should be replaced")
+}
+
+function test_index() {
+    var ooooo = utf8_string[10]
+    unittest.Assert.that(ooooo).is_equal_to("ü")
+}
+
+function test_out_of_bounds() {
+    unittest.Assert.that(| | {
+        utf8_string[42]
+    }).throws()
+}
+
+function test_substring() {
+    var super_string = 'abc0123456789cba'
+    var sub = super_string.substring(3, 10)
+    unittest.Assert.that(sub).is_equal_to('0123456789')
+}
+
+function test_ascii_value() {
+    var val = 'a'.value()
+    unittest.Assert.that(val).is_equal_to(97)
+}
+
+function test_format() {
+    var formatted = String.format("Hello: {0}{1}", 12345, 6789)
+    unittest.Assert.that(formatted).is_equal_to('Hello: 123456789', 'formatted string did not match')
+}
+
+function test_format_with_escape_sequence() {
+    var formatted = String.format("Hello: {{0}}{0}", 12345)
+    unittest.Assert.that(formatted).is_equal_to('Hello: {0}12345', 'formatted string did not match')
+}
+
+function test_format_with_unicode() {
+    var formatted = String.format('Strīng mit unic{0}de', 'ö')
+    unittest.Assert.that(formatted).is_equal_to('Strīng mit unicöde', 'Unicode formatted string did not match')
+}

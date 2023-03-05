@@ -525,6 +525,7 @@ static bool invoke(VM *vm, Value name, int argCount)
         if (!findGlobal(copyString(vm, "Number", 6), &numberClass))
         {
             runtimeError(vm, "Couldn't find the Number class!");
+            return false;
         }
         klass = AS_CLASS(numberClass);
     }

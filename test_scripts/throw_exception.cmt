@@ -1,8 +1,26 @@
 import 'unittest' as unittest
 
+class NestedException : Exception {}
+
+function nested_exception_handler_order() {
+    try {
+        try {
+            throw Exception()
+        } catch (NestedException as nested) {
+            unittest.Assert.fail(nested.message)
+        }
+    } catch (Exception as ex) {
+        throw NestedException("Should not be caught")
+    }
+}
+
+
 function test_throwing_exceptions() {
     unittest.Assert.that(| | {
         throw Exception()
     }).throws()
 }
 
+function test_nested_exception_handlers() {
+    unittest.Assert.that(nested_exception_handler_order).throws()
+}

@@ -1,7 +1,13 @@
+import 'unittest' as unittest
+
+var made_it_to_super = false
+var param_correct = false
+
 class SomeClass
 {
     init(param) {
-        print('inside SomeClass constuctor: ', param)
+        made_it_to_super = true
+        param_correct = (param == "hello")
     }
 }
 
@@ -12,4 +18,8 @@ class final FinalClass : SomeClass
     }
 }
 
-var instance = FinalClass("hello")
+function test_class_inherits_constructor() {
+    var instance = FinalClass("hello")
+    unittest.Assert.that(made_it_to_super)
+    unittest.Assert.that(param_correct)
+}

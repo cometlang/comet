@@ -5,6 +5,7 @@ enable_language(CXX)
 enable_testing()
 
 if (WIN32)
+add_compile_definitions(WIN32=1)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 else()
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -ggdb3 -Wall -Wextra -Werror")

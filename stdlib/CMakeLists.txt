@@ -39,6 +39,7 @@ set(SOURCE
 )
 
 if (WIN32)
+add_compile_definitions(WIN32=1)
 list(APPEND SOURCE file_win.c thread_synchronisation_win.c)
 else()
 list(APPEND SOURCE file_unix.c thread_synchronisation_unix.c)

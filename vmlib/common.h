@@ -17,7 +17,7 @@
 #define MAX_ARGS (UINT8_MAX)
 
 #ifndef UNUSED
-# ifdef WIN32
+# if defined(WIN32) || defined(_WIN32)
 #  include <Windows.h>
 #  define UNUSED(x) UNREFERENCED_PARAMETER(x)
 # else

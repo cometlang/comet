@@ -3,6 +3,7 @@ enable_language(C)
 
 add_executable(comet main.c)
 if (WIN32)
+add_compile_definitions(WIN32=1)
 target_link_libraries(comet PRIVATE stdlib vmlib)
 else()
 target_link_libraries(comet PRIVATE stdlib vmlib m c)

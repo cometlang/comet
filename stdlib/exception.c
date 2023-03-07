@@ -5,7 +5,7 @@
 
 VALUE exception_init(VM *vm, VALUE UNUSED(self), int arg_count, VALUE UNUSED(*arguments))
 {
-    if (arg_count == 1)
+    if (arg_count == 1 && IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_STRING))
     {
         setNativeProperty(vm, self, "_message", arguments[0]);
     }

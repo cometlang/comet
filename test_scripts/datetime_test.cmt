@@ -1,10 +1,12 @@
-var dt = DateTime.now()
-print(dt)
+import 'unittest' as unittest
 
-print(dt.year())
-print(dt.month())
-print(dt.day())
-print(dt.hours())
-print(dt.minutes())
-print(dt.seconds())
-print(dt.milliseconds())
+function test_create_from_integers() {
+    var datetime = DateTime(2023, 3, 7, 18, 15, 35, 102)
+    unittest.Assert.that(datetime.year()).is_equal_to(2023, "year")
+    unittest.Assert.that(datetime.month()).is_equal_to(3, "month")
+    unittest.Assert.that(datetime.day()).is_equal_to(7, "day")
+    unittest.Assert.that(datetime.hours()).is_equal_to(18)
+    unittest.Assert.that(datetime.minutes()).is_equal_to(15)
+    unittest.Assert.that(datetime.seconds()).is_equal_to(35)
+    unittest.Assert.that(datetime.milliseconds()).is_equal_to(102)
+}

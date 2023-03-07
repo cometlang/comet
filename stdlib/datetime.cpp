@@ -30,7 +30,6 @@ static date::hh_mm_ss<milliseconds> get_time(VALUE self)
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
     auto local = data->point.get_local_time();
     auto dp = date::floor<date::days>(local);
-    date::year_month_day ymd{dp};
     return date::hh_mm_ss{date::floor<milliseconds>(local - dp)};
 }
 
@@ -109,6 +108,28 @@ static VALUE datetime_static_now(VM *vm, VALUE klass, int UNUSED(arg_count), VAL
     return OBJ_VAL(instance);
 }
 
+static VALUE datetime_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    int year = 0;
+    unsigned int month = 0, day = 0, hours = 0, mins = 0, seconds = 0, millis = 0;
+    if (arg_count > 0) year = number_get_value(arguments[0]);
+    if (arg_count > 1) month = number_get_value(arguments[1]);
+    if (arg_count > 2) day = number_get_value(arguments[2]);
+    if (arg_count > 3) hours = number_get_value(arguments[3]);
+    if (arg_count > 4) mins = number_get_value(arguments[4]);
+    if (arg_count > 5) seconds = number_get_value(arguments[5]);
+    if (arg_count > 6) millis = number_get_value(arguments[6]);
+    std::chrono::system_clock::time_point dateTime =
+        date::sys_days(date::year(year) / date::month(month) / date::day(day))
+        + std::chrono::hours(hours)
+        + std::chrono::minutes(mins)
+        + std::chrono::seconds(seconds)
+        + std::chrono::milliseconds(millis);
+    DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
+    data->point = date::zoned_time{dateTime};
+    return datetime_static_now(vm, OBJ_VAL(AS_INSTANCE(self)->klass), 0, NULL);
+}
+
 static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
@@ -152,6 +173,7 @@ void init_datetime(VM *vm)
 {
     datetime_class = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
     defineNativeMethod(vm, datetime_class, &datetime_static_now, "now", 0, true);
+    defineNativeMethod(vm, datetime_class, &datetime_init, "init", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_to_string, "to_string", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_year, "year", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_month, "month", 0, false);

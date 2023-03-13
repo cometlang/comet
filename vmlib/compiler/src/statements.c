@@ -360,6 +360,13 @@ static void breakStatement(Parser *parser)
         return;
     }
 
+    // Discard any locals created inside the loop.
+    for (int i = parser->currentFunction->localCount - 1;
+        i >= 0 && parser->currentFunction->locals[i].depth > parser->currentLoop->loopScopeDepth;
+        i--) {
+        emitByte(parser, OP_POP);
+    }
+
     parser->currentLoop->breakJump = emitJump(parser, OP_JUMP);
 }
 

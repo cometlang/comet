@@ -1,15 +1,18 @@
+import 'unittest' as unittest
+
 class SomeClass
 {
 }
 
-var instance = SomeClass()
-var inherits = instance is Object
-
-print(inherits)
-print(instance.hash())
-print(instance.to_string())
-assert(instance.nil?() == false)
 
 class final FinalClass
 {
+}
+
+function test_object_inheritance() {
+    var instance = SomeClass()
+    unittest.Assert.that(instance).is_of_type(Object)
+    unittest.Assert.that(instance.hash()).is_of_type(Number)
+    unittest.Assert.that(instance.to_string()).is_of_type(String)
+    unittest.Assert.that(instance).is_not_nil()
 }

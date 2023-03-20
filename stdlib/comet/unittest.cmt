@@ -7,6 +7,10 @@ class _That {
         assert(self.value.nil?(), message)
     }
 
+    is_not_nil(message=nil) {
+        assert(self.value.nil?() == false, message)
+    }
+
     is_equal_to(expected, message=nil) {
         assert(self.value == expected, message)
     }

@@ -1,3 +1,5 @@
+import 'unittest' as unittest
+
 class TestClass
 {
     init()
@@ -6,9 +8,8 @@ class TestClass
         self.prop = 0
     }
 
-    print_object()
+    do_thing()
     {
-        print(self.item)
         self.prop += 1
     }
 
@@ -18,8 +19,9 @@ class TestClass
     }
 }
 
-var test = TestClass()
-test.print_object()
-assert(test.get_item() == "initializer")
-assert(test.prop == 1)
-print('class with field test passed!')
+function test_class_with_field() {
+    var test = TestClass()
+    test.do_thing()
+    unittest.Assert.that(test.get_item()).is_equal_to("initializer")
+    unittest.Assert.that(test.prop).is_equal_to(1)
+}

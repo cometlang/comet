@@ -1,7 +1,11 @@
-var a = true ? 'pass' : 'fail'
-assert(a == 'pass')
+import 'unittest' as unittest
 
-var b = false ? 'fail' : 'pass'
-assert(b == 'pass')
+function test_positive_ternary() {
+    var a = true ? 'pass' : 'fail'
+    unittest.Assert.that(a).is_equal_to('pass')
+}
 
-print('Ternary test passed!')
+function test_negative_ternary() {
+    var b = false ? 'fail' : 'pass'
+    unittest.Assert.that(b).is_equal_to('pass')
+}

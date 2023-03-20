@@ -1,21 +1,20 @@
-var number = 3
+import 'unittest' as unittest
 
-number += 2
-assert(number == 5)
-print(number)
+function test_variables() {
+    var number = 3
 
-number -= 1
-assert(number == 4)
-print(number)
+    number += 2
+    unittest.Assert.that(number).is_equal_to(5)
 
-number /= 2
-assert(number == 2)
-print(number)
+    number -= 1
+    unittest.Assert.that(number).is_equal_to(4)
 
-number *= 3
-assert(number == 6)
-print(number)
+    number /= 2
+    unittest.Assert.that(number).is_equal_to(2)
 
-number %= 4
-assert(number == 2)
-print(number)
+    number *= 3
+    unittest.Assert.that(number).is_equal_to(6)
+
+    number %= 4
+    unittest.Assert.that(number).is_equal_to(2)
+}

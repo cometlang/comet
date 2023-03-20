@@ -1,6 +1,12 @@
+import 'unittest' as unittest
+
 class Exception_a : Exception {}
 
 class Exception_b : Exception {}
+
+var exception_a_handler_hit = false
+var exception_a_finally_hit = false
+var exception_b_finally_hit = false
 
 
 function function_a()
@@ -11,12 +17,11 @@ function function_a()
     }
     catch (Exception_a as ex)
     {
-        print(ex)
-        print("Exception a handler")
+        exception_a_handler_hit = true
     }
     finally
     {
-        print("a finally")
+        exception_a_finally_hit = true
     }
 }
 
@@ -28,11 +33,11 @@ function function_b()
     }
     catch (Exception_b)
     {
-        print("Exception b handler")
+        unittest.Assert.fail()
     }
     finally
     {
-        print("b finally")
+        exception_b_finally_hit = true
     }
 }
 
@@ -41,4 +46,10 @@ function function_c()
     throw Exception_a()
 }
 
-function_a()
+
+function test_complex_exceptions() {
+    function_a()
+    unittest.Assert.that(exception_a_handler_hit).is_true()
+    unittest.Assert.that(exception_a_finally_hit).is_true()
+    unittest.Assert.that(exception_b_finally_hit).is_true()
+}

@@ -1,3 +1,5 @@
+import 'unittest' as unittest
+
 class TestClass
 {
     init()
@@ -16,8 +18,9 @@ class TestClass
     }
 }
 
-var test = TestClass()
-test.append("hello")
+function test_class_with_operator() {
+    var test = TestClass()
+    test.append("hello")
 
-print(test[0])
-assert(test[0] == "hello")
+    unittest.Assert.that(test[0]).is_equal_to("hello")
+}

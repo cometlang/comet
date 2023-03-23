@@ -372,7 +372,7 @@ Token scanToken(Scanner *scanner)
     switch (c)
     {
     case '(':
-        return makeToken(scanner, TOKEN_LEFT_PAREN);
+        return makeToken(scanner, match(scanner, '|') ? TOKEN_LAMBDA_ARGS_OPEN : TOKEN_LEFT_PAREN);
     case ')':
         return makeToken(scanner, TOKEN_RIGHT_PAREN);
     case '{':
@@ -410,7 +410,12 @@ Token scanToken(Scanner *scanner)
     case '?':
         return makeToken(scanner, TOKEN_QUESTION_MARK);
     case '|':
-        return makeToken(scanner, match(scanner, '|') ? TOKEN_LOGICAL_OR : TOKEN_VBAR);
+        if (match(scanner, '|'))
+            return makeToken(scanner, TOKEN_LOGICAL_OR);
+        else if (match(scanner, ')'))
+            return makeToken(scanner, TOKEN_LAMBDA_ARGS_CLOSE);
+        else
+            return makeToken(scanner, TOKEN_VBAR);
     case '&':
         return makeToken(scanner, match(scanner, '&') ? TOKEN_LOGICAL_AND : TOKEN_BITWISE_AND);
     case '!':

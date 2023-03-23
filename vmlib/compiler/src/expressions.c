@@ -409,7 +409,7 @@ static void lambda(Parser *parser, bool UNUSED(canAssign))
     initCompiler(&compiler, TYPE_LAMBDA, parser);
     beginScope(parser);
 
-    if (!check(parser, TOKEN_VBAR))
+    if (!check(parser, TOKEN_LAMBDA_ARGS_CLOSE))
     {
         do
         {
@@ -423,7 +423,7 @@ static void lambda(Parser *parser, bool UNUSED(canAssign))
             defineVariable(parser, paramConstant);
         } while (match(parser, TOKEN_COMMA));
     }
-    consume(parser, TOKEN_VBAR, "Expect '|' after lambda parameters.");
+    consume(parser, TOKEN_LAMBDA_ARGS_CLOSE, "Expect '|)' after lambda parameters.");
 
     // The body.
     match(parser, TOKEN_EOL);
@@ -459,7 +459,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_STAR]             = {unary,        binary,    PREC_FACTOR},
     [TOKEN_COLON]            = {NULL,         NULL,      PREC_NONE},
     [TOKEN_EOL]              = {NULL,         NULL,      PREC_NONE},
-    [TOKEN_VBAR]             = {lambda,       binary,    PREC_BITWISE_OR},
+    [TOKEN_VBAR]             = {NULL,         binary,    PREC_BITWISE_OR},
     [TOKEN_PERCENT]          = {NULL,         binary,    PREC_FACTOR},
     [TOKEN_QUESTION_MARK]    = {NULL,         ternary,   PREC_TERNARY},
     // One or two character tokens.
@@ -483,6 +483,8 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_BITWISE_NEGATE]   = {unary,        NULL,      PREC_UNARY},
     [TOKEN_BITSHIFT_LEFT]    = {NULL,         binary,    PREC_BITSHIFT},
     [TOKEN_BITSHIFT_RIGHT]   = {NULL,         binary,    PREC_BITSHIFT},
+    [TOKEN_LAMBDA_ARGS_OPEN] = {lambda,       NULL,      PREC_NONE},
+    [TOKEN_LAMBDA_ARGS_CLOSE] = {NULL,       NULL,      PREC_NONE},
     // Literals
     [TOKEN_IDENTIFIER]       = {variable,     NULL,      PREC_NONE},
     [TOKEN_STRING]           = {string,       NULL,      PREC_NONE},

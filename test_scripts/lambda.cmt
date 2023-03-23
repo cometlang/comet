@@ -1,7 +1,23 @@
+import 'unittest' as unittest
+
 function callee(lambda) {
-    lambda("This is from inside the lamda")
+    lambda(true)
 }
 
-callee(|string| {
-    print(string)
-})
+function test_basic_args() {
+    callee((|result|) {
+        unittest.Assert.that(result).is_true()
+    })
+}
+
+function calls_lambda(lambda) {
+    var result = lambda()
+    unittest.Assert.that(result).is_true()
+} 
+
+function test_empty_args() {
+    calls_lambda((||) {
+        return true
+    })
+}
+

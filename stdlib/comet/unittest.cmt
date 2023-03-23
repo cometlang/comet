@@ -63,6 +63,8 @@ class Assert {
     static fail(message) {
         assert(false, message)
     }
+
+    static pass() {}
 }
 
 if (__MAIN__ == __FILE__) {

@@ -92,4 +92,7 @@ if (__MAIN__ == __FILE__) {
         }
     }
     print(String.format('{0}/{1} tests passed', passed, total))
+    if (passed != total) {
+        exit(128)
+    }
 }

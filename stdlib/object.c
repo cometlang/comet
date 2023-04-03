@@ -131,6 +131,6 @@ void init_object(VM *vm, VALUE klass)
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
     defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
     defineNativeMethod(vm, klass, &obj_methods, "methods", 0, false);
-    defineNativeMethod(vm, klass, &obj_methods, "fields", 0, false);
+    defineNativeMethod(vm, klass, &obj_fields, "fields", 0, false);
     defineNativeOperator(vm, klass, &obj_equals, 1, OPERATOR_EQUALS);
 }

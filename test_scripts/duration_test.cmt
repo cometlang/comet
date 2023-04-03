@@ -1,0 +1,16 @@
+import 'unittest' as unittest
+
+var start = DateTime(2023, 4, 4, 6, 7, 33)
+var end = DateTime(2023, 4, 4, 6, 8, 12)
+
+var duration = end - start
+
+function test_duration_creation() {
+    unittest.Assert.that(duration.nanoseconds).is_equal_to(39_000_000_000)
+    unittest.Assert.that(duration.milliseconds).is_equal_to(39_000)
+    unittest.Assert.that(duration.seconds).is_equal_to(39)
+}
+
+function test_duration_to_string() {
+    unittest.Assert.that(duration.to_string()).is_equal_to('39000000000ns')
+}

@@ -16,7 +16,7 @@ function nested_exception_handler_order() {
 
 
 function test_throwing_exceptions() {
-    unittest.Assert.that(| | {
+    unittest.Assert.that((||) {
         throw Exception()
     }).throws()
 }

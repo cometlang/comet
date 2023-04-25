@@ -81,7 +81,7 @@ function test_index() {
 }
 
 function test_out_of_bounds() {
-    unittest.Assert.that(| | {
+    unittest.Assert.that((||) {
         utf8_string[42]
     }).throws()
 }

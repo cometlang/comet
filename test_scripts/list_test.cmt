@@ -18,13 +18,13 @@ by default")
 print(list)
 print(list[4])
 
-var filtered_list = ['a', 1, 'a', '2', 3, 'a'].filter(|item| {
+var filtered_list = ['a', 1, 'a', '2', 3, 'a'].filter((|item|) {
     return item == 'a'
 })
 
 print(filtered_list)
 
-var sum = [1, 2, 3, 4, 5].reduce(0, |accumulator, item, index| {
+var sum = [1, 2, 3, 4, 5].reduce(0, (|accumulator, item, index|) {
     return accumulator + item
 })
 assert(sum == 15, 'Sum must be 15')

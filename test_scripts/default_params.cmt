@@ -1,10 +1,10 @@
-function default_params(number=1234, string='string', bool=false, list=[], hash={})
-{
-    print(number)
-    print(string)
-    print(bool)
-    print(list)
-    print(hash)
-}
+import 'unittest' as unittest
 
-default_params()
+function test_default_params(number=1234, string='string', bool=false, list=[], hash={})
+{
+    unittest.Assert.that(number).is_equal_to(1234)
+    unittest.Assert.that(string).is_equal_to('string')
+    unittest.Assert.that(bool).is_equal_to(false)
+    unittest.Assert.that(list).is_empty()
+    unittest.Assert.that(hash).is_empty()
+}

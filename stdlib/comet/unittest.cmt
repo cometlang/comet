@@ -53,6 +53,10 @@ class _That {
     is_of_type(type, message=nil) {
         assert(self.value is type, message)
     }
+
+    is_empty(message=nil) {
+        assert(self.value.empty?(), message)
+    }
 }
 
 class Assert {

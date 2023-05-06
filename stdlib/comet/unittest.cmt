@@ -50,6 +50,21 @@ class _That {
         }
     }
 
+    does_not_throw(message=nil) {
+        if (!callable?(self.value)) {
+            throw ArgumentException(String.format('does_not_throw() expects a callable to assert, but got {0}', self.value))
+        }
+        try {
+            self.value()
+            assert(true, message)
+        } catch (Exception as ex) {
+            if (ex is AssertionException) {
+                rethrow ex
+            }
+            assert(false, message)
+        }
+    }
+
     is_of_type(type, message=nil) {
         assert(self.value is type, message)
     }

@@ -27,6 +27,15 @@ VALUE exception_get_stacktrace(VM *vm, VALUE self)
     return getNativeProperty(vm, self, "stacktrace");
 }
 
+VALUE argument_nil_exception_throw_if_nil(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
+{
+    if (arguments[0] == NIL_VAL)
+    {
+        throw_exception_native(vm, "ArgumentNilException", "Argument cannot be nil");
+    }
+    return NIL_VAL;
+}
+
 void init_exception(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, NULL, CLS_EXCEPTION, 0, false);
@@ -35,6 +44,9 @@ void init_exception(VM *vm)
 
     defineNativeClass(vm, "AssertionException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "ArgumentException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    VALUE argNilExKlass = defineNativeClass(vm, "ArgumentNilException", NULL, NULL, NULL, "ArgumentException", CLS_EXCEPTION, 0, false);
+    defineNativeMethod(vm, argNilExKlass, &argument_nil_exception_throw_if_nil, "throw_if_nil", 1, true);
+
     defineNativeClass(vm, "IOException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "SocketException", NULL, NULL, NULL, "IOException", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "TimeoutException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);

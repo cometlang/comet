@@ -1,0 +1,13 @@
+import 'unittest' as unittest
+
+function test_argument_nil_throws_when_nil() {
+    unittest.Assert.that((||) {
+        ArgumentNilException.throw_if_nil(nil)
+    }).throws()
+}
+
+function test_argument_nil_does_not_throw_when_not_nil() {
+    unittest.Assert.that((||) {
+        ArgumentNilException.throw_if_nil("this is not nil")
+    }).does_not_throw()
+}

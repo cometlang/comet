@@ -1,0 +1,92 @@
+import 'unittest' as unittest
+
+function test_argument_nil_throws_when_nil() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil(nil)
+    }).throws()
+}
+
+function test_argument_nil_does_not_throw_when_not_nil() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil("this is not nil")
+    }).does_not_throw()
+}
+
+function test_throw_if_nil_or_whitespace_nil_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace(nil)
+    }).throws()
+}
+
+function test_throw_if_nil_or_whitespace_whitespace_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace("   \n\t")
+    }).throws()
+}
+
+function test_throw_if_nil_or_whitespace_empty_string_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace("")
+    }).throws()
+}
+
+function test_throw_if_nil_or_whitespace_not_nil_does_not_throw() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace("this is not nil")
+    }).does_not_throw()
+}
+
+
+function test_throw_if_nil_or_empty_nil_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_empty("this is not nil")
+    }).does_not_throw()
+}
+
+function test_throw_if_nil_or_empty_empty_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace("")
+    }).throws()
+}
+
+function test_throw_if_nil_or_empty_empty_collection_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_whitespace([])
+    }).throws()
+}
+
+function test_throw_if_nil_or_empty_not_empty_does_not_throw() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_empty("this is not empty")
+    }).does_not_throw()
+}
+
+function test_throw_if_nil_or_empty_whitespace_does_not_throw() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_nil_or_empty("   \n\t")
+    }).does_not_throw()
+}
+
+function test_throw_if_empty_empty_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_empty("")
+    }).throws()
+}
+
+function test_throw_if_empty_empty_collection_throws() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_empty({})
+    }).throws()
+}
+
+function test_throw_if_empty_nil_does_not_throw() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_empty(nil)
+    }).does_not_throw()
+}
+
+function test_throw_if_empty_not_empty_does_not_throw() {
+    unittest.Assert.that((||) {
+        ArgumentException.throw_if_empty(["this is a string"])
+    }).does_not_throw()
+}

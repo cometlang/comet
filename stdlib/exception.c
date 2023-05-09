@@ -27,12 +27,61 @@ VALUE exception_get_stacktrace(VM *vm, VALUE self)
     return getNativeProperty(vm, self, "stacktrace");
 }
 
-VALUE argument_nil_exception_throw_if_nil(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
+VALUE argument_exception_throw_if_nil(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *arguments)
 {
     if (arguments[0] == NIL_VAL)
     {
-        throw_exception_native(vm, "ArgumentNilException", "Argument cannot be nil");
+        throw_exception_native(vm, "ArgumentException", "Argument cannot be nil");
     }
+    return NIL_VAL;
+}
+
+VALUE argument_exception_throw_if_empty(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
+{
+    call_function(vm, arguments[0], common_strings[STRING_EMPTY_Q], 0, NULL);
+    if (pop(vm) == TRUE_VAL)
+    {
+        throw_exception_native(vm, "ArgumentException", "Argument cannot be empty");
+    }
+    return NIL_VAL;
+}
+
+VALUE argument_exception_throw_if_nil_or_empty(VM* vm, VALUE klass, int arg_count, VALUE* arguments)
+{
+    if (arguments[0] == NIL_VAL)
+    {
+        throw_exception_native(vm, "ArgumentException", "Argument cannot be nil");
+        return NIL_VAL;
+    }
+    return argument_exception_throw_if_empty(vm, klass, arg_count, arguments);
+}
+
+VALUE argument_exception_throw_if_nil_or_whitespace(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* arguments)
+{
+    if (arguments[0] == NIL_VAL)
+    {
+        throw_exception_native(vm, "ArgumentException", "Argument cannot be nil");
+    }
+    else if (IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_STRING))
+    {
+        call_function(vm, arguments[0], common_strings[STRING_EMPTY_Q], 0, NULL);
+        if (pop(vm) == TRUE_VAL)
+        {
+            throw_exception_native(vm, "ArgumentException", "Argument cannot be empty");
+            return NIL_VAL;
+        }
+        call_function(vm, arguments[0], copyString(vm, "whitespace?", 11), 0, NULL);
+        if (pop(vm) == TRUE_VAL)
+        {
+            throw_exception_native(vm, "ArgumentException", "Argument cannot be whitespace");
+            return NIL_VAL;
+        }
+    }
+    else
+    {
+        throw_exception_native(vm, "ArgumentException", "Cannot check for whitespace with a non-string argument, got %s", getClassNameFromInstance(arguments[0]));
+    }
+
     return NIL_VAL;
 }
 
@@ -43,9 +92,11 @@ void init_exception(VM *vm)
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
     defineNativeClass(vm, "AssertionException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    defineNativeClass(vm, "ArgumentException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
-    VALUE argNilExKlass = defineNativeClass(vm, "ArgumentNilException", NULL, NULL, NULL, "ArgumentException", CLS_EXCEPTION, 0, false);
-    defineNativeMethod(vm, argNilExKlass, &argument_nil_exception_throw_if_nil, "throw_if_nil", 1, true);
+    VALUE argExKlass = defineNativeClass(vm, "ArgumentException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeMethod(vm, argExKlass, &argument_exception_throw_if_nil, "throw_if_nil", 1, true);
+    defineNativeMethod(vm, argExKlass, &argument_exception_throw_if_nil_or_whitespace, "throw_if_nil_or_whitespace", 1, true);
+    defineNativeMethod(vm, argExKlass, &argument_exception_throw_if_nil_or_empty, "throw_if_nil_or_empty", 1, true);
+    defineNativeMethod(vm, argExKlass, &argument_exception_throw_if_empty, "throw_if_empty", 1, true);
 
     defineNativeClass(vm, "IOException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "SocketException", NULL, NULL, NULL, "IOException", CLS_EXCEPTION, 0, false);

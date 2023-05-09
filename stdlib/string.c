@@ -730,6 +730,23 @@ VALUE string_format(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments
     return result;
 }
 
+VALUE string_whitespace_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    VALUE iterator = string_iterator(vm, self, 0, NULL);
+    push(vm, iterator);
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, iterator);
+    while (string_iter_get_next(iter))
+    {
+        if (!is_whitespace(iter->current_codepoint))
+        {
+            pop(vm);
+            return FALSE_VAL;
+        }
+    }
+    pop(vm);
+    return TRUE_VAL;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -758,6 +775,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeMethod(vm, string_class, &string_iterator, "iterator", 0, false);
     defineNativeMethod(vm, string_class, &string_substring, "substring", 1, false);
     defineNativeMethod(vm, string_class, &string_value, "value", 0, false);
+    defineNativeMethod(vm, string_class, &string_whitespace_q, "whitespace?", 0, false);
     defineNativeMethod(vm, string_class, &string_format, "format", 1, true);
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);

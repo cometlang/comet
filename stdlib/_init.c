@@ -10,6 +10,7 @@ void init_comet(VM* vm)
     common_strings[STRING_HASH] = copyString(vm, "hash", 4);
     common_strings[STRING_TO_STRING] = copyString(vm, "to_string", 9);
     common_strings[STRING_LAMBDA] = copyString(vm, "|lambda|", 8);
+    common_strings[STRING_EMPTY_Q] = copyString(vm, "empty?", 6);
 }
 
 void init_stdlib(VM *vm)

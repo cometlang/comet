@@ -102,8 +102,8 @@ if (__MAIN__ == __FILE__) {
                 } catch (Exception as ex) {
                     tests[test_name] = false
                     print(String.format('⨯ {0} failed', test_name))
-                    print(ex.class_name(), ':')
-                    print(ex.stacktrace)
+                    print_to(STD_STREAM.ERR, ex.class_name(), ':')
+                    print_to(STD_STREAM.ERR, ex.stacktrace)
                 }
             }
         }

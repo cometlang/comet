@@ -176,8 +176,8 @@ void init_functions(VM *vm)
     std_streams = enum_create(vm);
     push(vm, std_streams);
     addGlobal(copyString(vm, "STD_STREAM", 10), std_streams);
-    enum_add_value(vm, std_streams, "IN", 1);
-    enum_add_value(vm, std_streams, "ERR", 2);
+    enum_add_value(vm, std_streams, "OUT", STD_STREAM_OUT);
+    enum_add_value(vm, std_streams, "ERR", STD_STREAM_ERR);
     pop(vm);
 
     defineNativeFunction(vm, "call_function", &call_func);

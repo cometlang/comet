@@ -1202,7 +1202,15 @@ void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *a
     }
     else
     {
-        runtimeError(frame, "Invoke of method failed\n");
+        push(vm, NIL_VAL);
+        if (isObjOfStdlibClassType(method, CLS_STRING))
+        {
+            runtimeError(vm, "Function call failed: %s", string_get_cstr(method));
+        }
+        else
+        {
+            runtimeError(vm, "Function call failed");
+        }
     }
     deregister_thread(frame);
     free(frame);

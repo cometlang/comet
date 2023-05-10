@@ -1,4 +1,4 @@
-class _That {
+class Assert {
     init(value) {
         self.value = value
     }
@@ -72,11 +72,9 @@ class _That {
     is_empty(message=nil) {
         assert(self.value.empty?(), message)
     }
-}
 
-class Assert {
     static that(value) {
-        return _That(value)
+        return Assert(value)
     }
 
     static fail(message) {

@@ -24,3 +24,4 @@ Exception(message)
  - `ImportException`
  - `ThreadException`
  - `FormatException`
+ - `InvokeException`

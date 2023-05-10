@@ -3,8 +3,10 @@
 # Classes
 
 - [Object](object.md)
+- [ArgumentException](argument_exception.md)
 - [Boolean](boolean.md)
 - [Datetime](datetime.md)
+- [Duration](duration.md)
 - [Directory](directory.md)
 - [Enum](enum.md)
 - [Exception](exception.md)
@@ -26,6 +28,7 @@
 # Modules
 - [csv](csv.md)
 - [json](json.md)
+- [unittest](unittest.md)
 
 # Functions
 ## clock

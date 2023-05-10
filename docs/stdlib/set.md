@@ -4,3 +4,5 @@
 inherits [Iterable](iterable.md)
 final
 
+WARNING: known to be broken
+

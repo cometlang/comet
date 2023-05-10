@@ -22,6 +22,7 @@ All strings are UTF-8 encoded
 - `length()` returns the number of codepoints (~letters) in the string.
 - `count()` alias of length()
 - `number?()` returns true if the string _only_ contains characters that can be parsed into a single number
+- `whitespace?()` returns true if the string _only_ contains whitespace characters
 
 ### static methods
 - `format(msg, ...)` formats a string, replacing instances of `{n}` with the nth (zero-based) index of

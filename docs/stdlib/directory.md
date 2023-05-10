@@ -1,6 +1,6 @@
 [up](index.md)
 
-## File
+## Directory
 inherits [Object](object.md)
 
 ### methods

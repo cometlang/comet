@@ -282,7 +282,7 @@ Lambda functions are anonymous functions that can access the current lexical sco
 
 ```
 var my_string = 'This is a cool string'
-var my_lambda = |arg1, arg2[, ...]| {
+var my_lambda = (|arg1, arg2[, ...]|) {
     print(arg1, arg2)
     printf(my_string)
 }
@@ -348,3 +348,15 @@ The paths searched are (in order):
 ## Native Enhancements
 
 It's totally possible to implement classes as native libraries (see the stdlib).  It's not possible to do exception handling in native code, however.  You can even make calls into the non-native code, so long as you have access to it.
+
+## Interpreter-defined variables
+- `__MAIN__` the absolute file path as a String of the script given to the interpreter to execute
+- `__FILE__` the absolute file path as a String of the current script file
+
+Therefore, if you want to run some code _only_ if the script is being run as the main script, use the following construct: 
+
+```
+if (__MAIN__ == __FILE__) {
+    ...
+}
+```

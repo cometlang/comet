@@ -128,7 +128,7 @@ static VALUE duration_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count
 {
     DurationData *data = GET_NATIVE_INSTANCE_DATA(DurationData, OBJ_VAL(self));
     std::ostringstream out;
-    out << std::make_shared<std::chrono::nanoseconds>(data->duration);
+    out << std::chrono::nanoseconds(data->duration).count() << "ns";
     auto output = out.str();
     return copyString(vm, output.c_str(), output.length());
 }

@@ -675,6 +675,11 @@ void add_output_string_to_builder(VM *vm, VALUE builder, VALUE obj)
 
 VALUE string_format(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+    {
+        throw_exception_native(vm, "ArgumentException", "First arg to String.format should be a string");
+        return NIL_VAL;
+    }
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, arguments[0]);
     VALUE iterator = string_iterator(vm, arguments[0], 0, NULL);
     push(vm, iterator);

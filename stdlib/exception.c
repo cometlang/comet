@@ -107,4 +107,5 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "ImportException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "ThreadException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "FormatException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "InvokeException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
 }

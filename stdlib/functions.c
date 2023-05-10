@@ -58,7 +58,7 @@ static VALUE assertNative(VM *vm, int UNUSED(arg_count), VALUE *args)
     if (bool_is_falsey(args[0]))
     {
         const char *message = "assert failed";
-        if (arg_count == 2)
+        if (arg_count == 2 && args[1] != NIL_VAL)
             message = string_get_cstr(args[1]);
         throw_exception_native(vm, "AssertionException", message);
     }

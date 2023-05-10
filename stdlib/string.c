@@ -5,28 +5,12 @@
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
+#include "comet_string.h"
 #include "string_builder.h"
 
 #include "utf8proc.h"
 
 static VALUE string_iterator_class;
-
-typedef struct
-{
-    ObjInstance obj;
-    size_t length;
-    char *chars;
-    uint32_t hash;
-} StringData;
-
-typedef struct
-{
-    ObjInstance obj;
-    StringData *string;
-    utf8proc_int32_t current_codepoint;
-    utf8proc_ssize_t remaining;
-    utf8proc_ssize_t offset;
-} StringIterator;
 
 static VALUE string_class;
 
@@ -515,7 +499,7 @@ VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_coun
     return FALSE_VAL;
 }
 
-static bool string_iter_get_next(StringIterator *iter)
+bool string_iter_get_next(StringIterator *iter)
 {
     if (iter->remaining <= 0)
         return false;

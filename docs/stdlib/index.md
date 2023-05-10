@@ -19,6 +19,7 @@
 - [Set](set.md)
 - [Socket](socket.md)
 - [String](string.md)
+- [StringBuilder](string_builder.md)
 - [Thread](thread.md)
 - [Thread Synchronisation Primitives](thread_synchronisation.md)
 

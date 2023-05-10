@@ -2,6 +2,7 @@
 
 #include "cometlib.h"
 #include "comet_stdlib.h"
+#include "comet_string.h"
 #include "string_builder.h"
 
 #define BASE_CODEPOINT_ALLOCATION 16
@@ -61,6 +62,18 @@ VALUE string_builder_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE 
     return copyString(vm, output, length);
 }
 
+VALUE string_builder_append(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    push(vm, string_iterator(vm, arguments[0], 0, NULL));
+    StringIterator *iter = GET_NATIVE_INSTANCE_DATA(StringIterator, peek(vm, 0));
+    while (string_iter_get_next(iter))
+    {
+        string_builder_add_codepoint(self, iter->current_codepoint);
+    }
+    pop(vm);
+    return NIL_VAL;
+}
+
 VALUE create_string_builder(VM *vm)
 {
     VALUE builder = OBJ_VAL(newInstance(vm, AS_CLASS(string_builder_klass)));
@@ -83,4 +96,7 @@ void init_string_builder(VM *vm)
         sizeof(StringBuilderData_t),
         true);
     defineNativeMethod(vm, string_builder_klass, &string_builder_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, string_builder_klass, &string_builder_append, "append", 1, false);
+    
+    defineNativeOperator(vm, string_builder_klass, &string_builder_append, 1, OPERATOR_PLUS);
 }

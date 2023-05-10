@@ -1,0 +1,15 @@
+import 'unittest' as unittest
+
+
+function test_string_builder_append() {
+    var builder = StringBuilder()
+
+    builder.append("a")
+    builder.append("b")
+    builder.append("c")
+    builder.append("ä")
+    builder.append("ē")
+    builder.append("íñ")
+
+    unittest.Assert.that(builder.to_string()).is_equal_to("abcäēíñ")
+}

@@ -1,15 +1,20 @@
-var FILE_NAME = 'test.txt'
+import 'unittest' as unittest
 
-var file = File.open(FILE_NAME, FOPEN.READ_WRITE)
-file.write("This is a test file")
-file.close()
+function test_files() {
+    var FILE_NAME = 'test.txt'
 
-var lines = File.read_all_lines(FILE_NAME)
-foreach (var line in lines)
-{
-    assert(line == 'This is a test file')
+    var file = File.open(FILE_NAME, FOPEN.READ_WRITE)
+    file.write("This is a test file")
+    file.close()
+    unittest.Assert.that(File.exists?(FILE_NAME)).is_true()
+
+    var lines = File.read_all_lines(FILE_NAME)
+    foreach (var line in lines)
+    {
+        unittest.Assert.that(line).is_equal_to('This is a test file')
+    }
+
+    File.delete(FILE_NAME)
+    unittest.Assert.that(File.exists?(FILE_NAME)).is_false()
 }
 
-File.delete(FILE_NAME)
-
-print('File test passed!')

@@ -20,6 +20,8 @@ jobs:
       if: ${{ runner.os == 'Linux' }}
     - run: cmake --build build --target ALL_BUILD --target RUN_TESTS
       if: ${{ runner.os == 'Windows' }}
+    - run: COMET_LIB_DIR=stdlib/comet build/comet/comet stdlib/comet/unittest.cmt test_scripts/*.cmt
+      if: ${{ runner.os == 'Linux' }}
 
   build-release:
     runs-on: ${{ matrix.os }}

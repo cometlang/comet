@@ -1,6 +1,10 @@
-var some_hash = {
-    "key": "value",
-    "other key" : "other value",
-}
+import 'unittest' as unittest
 
-print(some_hash)
+function test_static_hash_inititalisation() {
+    var some_hash = {
+        "key": "value",
+        "other key" : "other value",
+    }
+
+    unittest.Assert.that(some_hash['key']).is_equal_to('value')
+}

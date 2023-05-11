@@ -1,3 +1,5 @@
+import 'unittest' as unittest
+
 enum MY_ENUM {
     zero,
     one,
@@ -6,12 +8,30 @@ enum MY_ENUM {
     five,
 }
 
-print(MY_ENUM.zero)
-print(MY_ENUM.one)
-print(MY_ENUM.two)
-print("Three is deliberately missing")
-print(MY_ENUM.four)
-print(MY_ENUM.five)
+function test_enum_to_string() {
+    unittest.Assert.that(MY_ENUM.one.to_string()).is_equal_to('one:1')
+}
 
-print(MY_ENUM.parse("four"))
-print(MY_ENUM.parse(5))
+function test_enum_value() {
+    unittest.Assert.that(MY_ENUM.two.value).is_equal_to(2)
+}
+
+function test_enum_name() {
+    unittest.Assert.that(MY_ENUM.two.name).is_equal_to('two')
+}
+
+function test_enum_parse_string() {
+    unittest.Assert.that(MY_ENUM.parse('four')).is_equal_to(MY_ENUM.four)
+}
+
+function test_enum_parse_number() {
+    unittest.Assert.that(MY_ENUM.parse(5)).is_equal_to(MY_ENUM.five)
+}
+
+function test_enum_count() {
+    unittest.Assert.that(MY_ENUM.count()).is_equal_to(5)
+}
+
+function test_enum_contains() {
+    unittest.Assert.that(MY_ENUM).contains(MY_ENUM.four)
+}

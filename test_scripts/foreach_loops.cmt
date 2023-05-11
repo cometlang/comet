@@ -1,12 +1,23 @@
-var str = "T H I S"
-foreach(var char in str)
-{
-    if (char == ' ')
+import 'unittest' as unittest
+
+function test_foreach_loop() {
+    var list = []
+
+    var str = "T H I S"
+    foreach(var char in str)
     {
-        next
+        if (char == ' ')
+        {
+            next
+        }
+        else
+        {
+            list.push(char)
+        }
     }
-    else
-    {
-        print(char)
+
+    foreach (var char in list) {
+        unittest.Assert.that(char).is_not_equal_to(' ')
     }
 }
+

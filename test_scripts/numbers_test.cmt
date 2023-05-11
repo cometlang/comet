@@ -1,40 +1,65 @@
-assert(1 + 1 == 2)
-assert(4 / 2 == 2)
-assert(1 * 2 == 2)
-assert(4 - 2 == 2)
-assert(6 % 4 == 2)
+import 'unittest' as unittest
 
-assert(2_000_000 == 2000000)
+function test_basic_math_operators() {
+    unittest.Assert.that(1 + 1).is_equal_to(2)
+    unittest.Assert.that(4 / 2).is_equal_to(2)
+    unittest.Assert.that(1 * 2).is_equal_to(2)
+    unittest.Assert.that(4 - 2).is_equal_to(2)
+    unittest.Assert.that(6 % 4).is_equal_to(2)
+}
 
-assert(3 < 4)
-assert(3 <= 3)
-assert(4 > 3)
-assert(4 >= 3)
-assert(0 == 0)
+function test_parsing_with_underscores() {
+    unittest.Assert.that(2_000_000).is_equal_to(2000000)
+}
 
-assert(Number.parse("3") is Number, 'parsed number should be a number')
-assert(Number.parse("three").nil?(), "String that can't parse into a number, should be nil")
+function test_comparison_operators() {
+    unittest.Assert.that(3 < 4).is_true()
+    unittest.Assert.that(3 <= 3).is_true()
+    unittest.Assert.that(4 > 3).is_true()
+    unittest.Assert.that(4 >= 3).is_true()
+    unittest.Assert.that(0 == 0).is_true()
+}
 
-var num = Number.parse('6')
-assert(num < 8)
+function test_number_parse() {
+    unittest.Assert.that(Number.parse("3")).is_of_type(Number, 'parsed number should be a number')
+    unittest.Assert.that(Number.parse("three")).is_nil("String that can't parse into a number, should be nil")
+}
 
-assert(0xff == 255)
+function test_parsed_number_acts_like_a_number() {
+    var num = Number.parse('6')
+    unittest.Assert.that(num < 8).is_true()
+}
 
-assert(3 & 2 == 2)
-assert(3 ^ 1 == 2)
-assert(2 | 1 == 3)
-assert(2 << 1 == 4)
-assert(2 >> 1 == 1)
+function test_hexadecimal_numbers() {
+    unittest.Assert.that(0xff).is_equal_to(255)
+}
 
-assert(2.power(2) == 4)
-assert(4.square_root() == 2)
-assert(4.even?())
-assert(!3.even?())
+function test_binary_operators() {
+    unittest.Assert.that(3 & 2).is_equal_to(2)
+    unittest.Assert.that(3 ^ 1).is_equal_to(2)
+    unittest.Assert.that(2 | 1).is_equal_to(3)
+    unittest.Assert.that(2 << 1).is_equal_to(4)
+    unittest.Assert.that(2 >> 1).is_equal_to(1)
+}
 
-assert(Number.min(Number.random(), 0) == 0)
-assert(Number.max(Number.random(), 1) == 1)
+function test_complicated_math_functions() {
+    unittest.Assert.that(2.power(2)).is_equal_to(4)
+    unittest.Assert.that(4.square_root()).is_equal_to(2)
+}
 
-print((-42).absolute_value())
-assert((-42).absolute_value() == 42)
+function test_even?() {
+    unittest.Assert.that(4.even?()).is_true()
+    unittest.Assert.that(3.even?()).is_false()
+}
 
-print("Numbers test passed!")
+function test_min() {
+    unittest.Assert.that(Number.min(Number.random(), 0)).is_equal_to(0)
+}
+
+function test_max() {
+    unittest.Assert.that(Number.max(Number.random(), 1)).is_equal_to(1)
+}
+
+function test_absolute_value() {
+    unittest.Assert.that((-42).absolute_value()).is_equal_to(42)
+}

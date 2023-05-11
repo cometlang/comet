@@ -14,11 +14,9 @@ install(TARGETS comet
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib)
 
-if (NOT VERSION)
 set (git_cmd "git")
 execute_process(COMMAND "git" "describe" "--tags"
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE VERSION)
-endif()
 
 target_compile_definitions(comet PRIVATE VERSION_STRING=${VERSION})

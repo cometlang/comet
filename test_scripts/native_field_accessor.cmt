@@ -1,4 +1,7 @@
-var ex = Exception("This is a native property")
-print(ex.message())
-assert(ex.message() == "This is a native property")
-print("Native field accessor test passed")
+import 'unittest' as unittest
+
+function test_native_property_accessor() {
+    var ex = Exception("This is a native property")
+    unittest.Assert.that(ex.message()).is_equal_to("This is a native property")
+    unittest.Assert.that(ex._message).is_equal_to("This is a native property")
+}

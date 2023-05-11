@@ -1068,6 +1068,15 @@ static InterpretResult run(VM *vm)
             }
             return INTERPRET_RUNTIME_ERROR;
         }
+        case OP_RETHROW:
+        {
+            if (propagateException(vm))
+            {
+                frame = updateFrame(vm);
+                break;
+            }
+            return INTERPRET_RUNTIME_ERROR;
+        }
         case OP_DUP_TOP:
         {
             push(vm, peek(vm, 0));

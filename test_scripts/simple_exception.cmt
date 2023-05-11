@@ -1,3 +1,0 @@
-var ex = Exception("exception message")
-
-print(ex.message())

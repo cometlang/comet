@@ -1,16 +1,16 @@
+import 'unittest' as unittest
+
 function first_function()
 {
     try
     {
-        print("This is before the function call")
         second_function()
-        print("This is after the function call")
     }
-    catch (Exception)
+    catch (Exception as ex)
     {
-        print("This is the first exception handler")
+        unittest.Assert.that(ex.message()).is_equal_to('My exception has a message')
+        rethrow ex
     }
-    print("This is after the handler")
 }
 
 function second_function()
@@ -18,14 +18,15 @@ function second_function()
     throw Exception("My exception has a message")
 }
 
-function test_function() {
+function test_empty_try_finally() {
     try {
-        print("inside the try")
+        var message = "inside the try"
     }
     finally {
-        print('finally after try')
+        var message = 'finally after try'
     }
 }
 
-first_function()
-test_function()
+function test_exception_handling() {
+    unittest.Assert.that(first_function).throws()
+}

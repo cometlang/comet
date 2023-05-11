@@ -50,6 +50,7 @@ typedef enum
     OP_INDEX_ASSIGN,
     OP_DEFINE_OPERATOR,
     OP_THROW,
+    OP_RETHROW,
     OP_DUP_TOP,
     OP_DUP_TWO,
     OP_IS,

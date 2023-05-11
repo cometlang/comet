@@ -315,7 +315,7 @@ void rethrowStatement(Parser *parser)
     expression(parser);
     if (!check(parser, TOKEN_EOF))
         consume(parser, TOKEN_EOL, "Only one statement per line allowed");
-    emitByte(parser, OP_PROPAGATE_EXCEPTION);
+    emitByte(parser, OP_RETHROW);
 }
 
 void importStatement(Parser *parser)

@@ -1,0 +1,11 @@
+import 'unittest' as unittest
+import 'import_test/secondary' as secondary
+
+function test_import() {
+    unittest.Assert.that(secondary).is_of_type(Module)
+}
+
+function test_module_index_operator() {
+    var print_something = secondary['print_something']
+    unittest.Assert.that(print_something).is_callable()
+}

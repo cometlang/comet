@@ -130,6 +130,21 @@ VALUE module_filename_field(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNU
     return copyString(vm, data->filename, strlen(data->filename));
 }
 
+VALUE module_index(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, self);
+    VALUE result;
+    if (tableGet(&data->obj.fields, arguments[0], &result))
+    {
+        return result;
+    }
+    else if (tableGet(&data->obj.klass->methods, arguments[0], &result))
+    {
+        return result;
+    }
+    return NIL_VAL;
+}
+
 void init_module(VM *vm)
 {
     klass = defineNativeClass(
@@ -145,4 +160,6 @@ void init_module(VM *vm)
     defineNativeMethod(vm, klass, &module_functions, "functions", 0, false);
     defineNativeMethod(vm, klass, &module_fields, "fields", 0, false);
     defineNativeMethod(vm, klass, &module_filename_field, "filename", 0, false);
+
+    defineNativeOperator(vm, klass, &module_index, 1, OPERATOR_INDEX);
 }

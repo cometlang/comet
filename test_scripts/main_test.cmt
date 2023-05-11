@@ -1,2 +1,17 @@
-print(__MAIN__)
-print(__FILE__)
+import 'unittest' as unittest
+
+if (__MAIN__ == __FILE__) {
+    function test_main() {
+        unittest.Assert.pass()
+    }
+}
+else if (__MAIN__.ends_with?('unittest.cmt')) {
+    function test_main_under_test() {
+        unittest.Assert.pass()
+    }
+}
+else {
+    function test_main() {
+        unittest.Assert.fail()
+    }
+}

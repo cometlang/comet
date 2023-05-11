@@ -23,6 +23,10 @@ class Assert {
         assert(!self.value, message)
     }
 
+    is_callable(message=nil) {
+        assert(callable?(self.value))
+    }
+
     contains(expected, message=nil) {
         assert(self.value.contains?(expected), message)
     }

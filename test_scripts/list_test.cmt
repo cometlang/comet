@@ -1,70 +1,85 @@
-# print("This should not be shown")
-var test = []
-test.add("hi")
-print(test[0])
+import 'unittest' as unittest
 
-var list = List()
+function test_basic_list() {
+    var test = []
+    test.add("hi")
+    unittest.Assert.that(test[0]).is_equal_to('hi')
+}
 
-list.add("This")
-list.add("is")
-list.add("a")
-list.add("list")
+function test_multiple_additions() {
+    var list = List()
 
-list.add("strings
+    list.add("This")
+    list.add("is")
+    list.add("a")
+    list.add("list")
+
+    list.add("strings
 are
 multi-line
 by default")
 
-print(list)
-print(list[4])
-
-var filtered_list = ['a', 1, 'a', '2', 3, 'a'].filter((|item|) {
-    return item == 'a'
-})
-
-print(filtered_list)
-
-var sum = [1, 2, 3, 4, 5].reduce(0, (|accumulator, item, index|) {
-    return accumulator + item
-})
-assert(sum == 15, 'Sum must be 15')
-
-var subscript = List(3)
-subscript[2] = 0
-subscript[2] += 1
-assert(subscript[2] == 1, 'subscript should be 1')
-
-var to_sort = [
-    35, 13, 10, 41, 64, 36, 12, 51,
-     3, 42, 56, 34, 55, 19,  9, 31,
-    24,  8,  6, 21, 40, 54, 17, 61,
-    58, 47, 18, 11,  4, 26, 48, 14,
-    53, 30, 57, 52, 45, 20, 29, 46,
-    63, 27, 59, 49, 43, 16,  2,  1,
-    23, 39, 38,  7,  5, 37, 28, 44,
-    33, 62, 32, 22, 15, 60, 50, 25,
-]
-
-to_sort.sort()
-
-for(var i = 0; i < 64; i += 1) {
-    assert(to_sort[i] == i+1)
+    unittest.Assert.that(list[4]).is_equal_to('strings\nare\nmulti-line\nby default')
 }
-print(to_sort)
 
-var to_sort_str = [
-    '35', '13', '10', '41', '64', '36', '12', '51',
-    '03', '42', '56', '34', '55', '19', '09', '31',
-    '24', '08', '06', '21', '40', '54', '17', '61',
-    '58', '47', '18', '11', '04', '26', '48', '14',
-    '53', '30', '57', '52', '45', '20', '29', '46',
-    '63', '27', '59', '49', '43', '16', '02', '01',
-    '23', '39', '38', '07', '05', '37', '28', '44',
-    '33', '62', '32', '22', '15', '60', '50', '25',
-]
-to_sort_str.sort()
+function test_filter() {
+    var filtered_list = ['a', 1, 'a', '2', 3, 'a'].filter((|item|) {
+        return item == 'a'
+    })
 
-for(var i = 0; i < 64; i += 1) {
-    assert(Number.parse(to_sort_str[i]) == i+1)
+    unittest.Assert.that(filtered_list.length()).is_equal_to(3)
+    unittest.Assert.that(filtered_list[0]).is_equal_to('a')
+    unittest.Assert.that(filtered_list[1]).is_equal_to('a')
+    unittest.Assert.that(filtered_list[2]).is_equal_to('a')
 }
-print('list test passed!')
+
+function test_reduce() {
+    var sum = [1, 2, 3, 4, 5].reduce(0, (|accumulator, item, index|) {
+        return accumulator + item
+    })
+    unittest.Assert.that(sum).is_equal_to(15, 'Sum must be 15')
+}
+
+function test_subscript_operation() {
+    var subscript = List(3)
+    subscript[2] = 0
+    subscript[2] += 1
+    unittest.Assert.that(subscript[2]).is_equal_to(1, 'subscript should be 1')
+}
+
+function test_sort_numbers() {
+    var to_sort = [
+        35, 13, 10, 41, 64, 36, 12, 51,
+        3, 42, 56, 34, 55, 19,  9, 31,
+        24,  8,  6, 21, 40, 54, 17, 61,
+        58, 47, 18, 11,  4, 26, 48, 14,
+        53, 30, 57, 52, 45, 20, 29, 46,
+        63, 27, 59, 49, 43, 16,  2,  1,
+        23, 39, 38,  7,  5, 37, 28, 44,
+        33, 62, 32, 22, 15, 60, 50, 25,
+    ]
+
+    to_sort.sort()
+
+    for(var i = 0; i < 64; i += 1) {
+        unittest.Assert.that(to_sort[i]).is_equal_to(i+1)
+    }
+}
+
+function test_sort_strings() {
+    var to_sort_str = [
+        '35', '13', '10', '41', '64', '36', '12', '51',
+        '03', '42', '56', '34', '55', '19', '09', '31',
+        '24', '08', '06', '21', '40', '54', '17', '61',
+        '58', '47', '18', '11', '04', '26', '48', '14',
+        '53', '30', '57', '52', '45', '20', '29', '46',
+        '63', '27', '59', '49', '43', '16', '02', '01',
+        '23', '39', '38', '07', '05', '37', '28', '44',
+        '33', '62', '32', '22', '15', '60', '50', '25',
+    ]
+    to_sort_str.sort()
+
+    for(var i = 0; i < 64; i += 1) {
+        unittest.Assert.that(Number.parse(to_sort_str[i])).is_equal_to(i+1)
+    }
+}

@@ -15,6 +15,10 @@ class Assert {
         assert(self.value == expected, message)
     }
 
+    is_not_equal_to(expected, message=nil) {
+        assert(self.value != expected, message)
+    }
+
     is_true(message=nil) {
         assert(self.value, message)
     }

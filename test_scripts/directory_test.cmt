@@ -1,8 +1,16 @@
-Directory.create('test')
-assert(Directory.directory?('test') == true, 'directory should have been created')
-Directory.remove('test')
-assert(Directory.directory?('test') == false, 'directory should have been deleted')
+import 'unittest' as unittest
 
-var dir = Directory('.')
-print(dir.to_string())
-print(dir.absolute())
+var TEST_DIR_NAME = 'test_dir'
+
+function test_directory_creation_and_deletion() {
+    unittest.Assert.that(Directory.directory?(TEST_DIR_NAME)).is_false('directory should not exist before the test')
+    Directory.create(TEST_DIR_NAME)
+    unittest.Assert.that(Directory.directory?(TEST_DIR_NAME)).is_true('directory should have been created')
+    Directory.remove(TEST_DIR_NAME)
+    unittest.Assert.that(Directory.directory?(TEST_DIR_NAME)).is_false('directory should have been deleted')
+}
+
+function test_directory_absolute_path() {
+    var dir = Directory('.')
+    unittest.Assert.that(dir.absolute().to_string()).is_not_equal_to('.')
+}

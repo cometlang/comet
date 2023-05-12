@@ -1,3 +1,5 @@
+import 'unittest' as unittest
+
 function test_image() {
 	var width = 200
 	var height = 100
@@ -13,9 +15,9 @@ function test_image() {
 	image.write_to_file("test.jpg", IMAGE_FORMAT.JPEG)
 	image.write_to_file("test.bmp", IMAGE_FORMAT.BMP)
 
-	assert(File.exists?('test.png'))
-	assert(File.exists?('test.jpg'))
-	assert(File.exists?('test.bmp'))
+	unittest.Assert.that(File.exists?('test.png')).is_true()
+	unittest.Assert.that(File.exists?('test.jpg')).is_true()
+	unittest.Assert.that(File.exists?('test.bmp')).is_true()
 
 	File.delete('test.png')
 	File.delete('test.jpg')

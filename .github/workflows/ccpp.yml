@@ -33,27 +33,36 @@ jobs:
     - uses: actions/checkout@v3
       with:
         submodules: recursive
-    - name: Get the version
-      id: get_version
-      run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
     - name: build
       shell: bash
-      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0" -DVERSION=${{ steps.get_version.outputs.VERSION }}
+      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0" -DVERSION=${{ github.ref_name }}
     - run: cmake --build release --target all
       if: ${{ runner.os == 'Linux' }}
+    - run: cmake --build release --target ALL_BUILD --config Release
+      if: ${{ runner.os == 'Windows' }}
+
+    - name: Create-Archive-Linux
+      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
+      shell: bash
+      run: zip -j comet_linux_${{ github.ref_name }}.zip release/comet/comet stdlib/comet/*.cmt
+
     - name: Release-Linux
       uses: softprops/action-gh-release@v0.1.15
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
       with:
-        files: |
-          ./release/comet/comet
-          ./stdlib/comet/*.cmt
-    - run: cmake --build release --target ALL_BUILD --target RUN_TESTS --config Release
-      if: ${{ runner.os == 'Windows' }}
+        files: comet_linux_${{ github.ref_name }}.zip
+
+    - name: Create-Archive-Windows
+      shell: powershell
+      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
+      run: |
+        mkdir output
+        cp release\comet\Release\comet.exe output
+        cp stdlib\comet\*.cmt output
+        Compress-Archive -Path output\* -DestinationPath comet_windows_${{ github.ref_name }}.zip
+
     - name: Release-Windows
       uses: softprops/action-gh-release@v0.1.15
       if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
       with:
-        files: |
-          ./release/comet/Release/comet.exe
-          ./stdlib/comet/*.cmt
+        files: comet_windows_${{ github.ref_name }}.zip

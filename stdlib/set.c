@@ -103,6 +103,12 @@ static void adjust_capacity(VM *vm, SetData *data)
             current = current->next;
         }
     }
+    if (data->entries != NULL)
+    {
+        FREE_ARRAY(SetEntry *, data->entries, data->capacity);
+    }
+    data->capacity = new_capacity;
+    data->entries = new_entries;
 }
 
 VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
@@ -298,6 +304,9 @@ void init_set(VM *vm)
     defineNativeMethod(vm, klass, &set_to_list, "to_list", 0, false);
     defineNativeMethod(vm, klass, &set_iterable_empty_p, "empty?", 0, false);
     defineNativeMethod(vm, klass, &set_iterable_count, "count", 0, false);
+
+    defineNativeOperator(vm, klass, &set_union, 1, OPERATOR_PLUS);
+    defineNativeOperator(vm, klass, &set_difference, 1, OPERATOR_MINUS);
 
     set_iterator_class = defineNativeClass(
         vm,

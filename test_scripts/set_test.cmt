@@ -1,0 +1,19 @@
+import 'unittest' as unittest
+
+function test_set_creation_strings() {
+    var set = Set()
+    set.add('a')
+    set.add('a')
+    set.add('a')
+
+    unittest.Assert.that(set.count()).is_equal_to(1)
+}
+
+function test_set_creation_numbers() {
+    var set = Set()
+    set.add(1)
+    set.add(1)
+    set.add(1)
+
+    unittest.Assert.that(set.count()).is_equal_to(1)
+}

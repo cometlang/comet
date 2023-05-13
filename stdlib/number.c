@@ -222,7 +222,7 @@ void bootstrap_number(VM *vm)
 
 void complete_number(VM *vm)
 {
-    completeNativeClassDefinition(vm, number_class, NULL);
+    completeNativeClassDefinition(vm, number_class, "Object");
     defineNativeMethod(vm, number_class, &number_to_string, "to_string", 0, false);
     defineNativeMethod(vm, number_class, &number_parse, "parse", 1, true);
     defineNativeMethod(vm, number_class, &number_random, "random", 0, true);

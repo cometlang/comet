@@ -52,8 +52,8 @@ static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
     {
         return number_get_value(lhs) == number_get_value(rhs);
     }
-    if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)) &&
-        (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
+    else if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)) &&
+             (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
     {
         ObjInstance *obj = AS_INSTANCE(lhs);
         call_function(vm, lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
@@ -94,6 +94,7 @@ static void adjust_capacity(VM *vm, SetData *data)
 {
     int new_capacity = GROW_CAPACITY(data->capacity);
     SetEntry **new_entries = ALLOCATE(SetEntry *, new_capacity);
+    memset(new_entries, 0, new_capacity * sizeof(SetEntry *));
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *current = data->entries[i];

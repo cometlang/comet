@@ -1,9 +1,9 @@
 #!/usr/bin/comet
-import Module
+import 'module' as Module
 
 class MyClass : SomeOtherClass
 {
-    public constructor(a)
+    init(a)
     {
         self.a = a
         self.list = []
@@ -11,28 +11,28 @@ class MyClass : SomeOtherClass
         self.set = Set()
     }
 
-    private this_is_a_method()
+    this_is_a_method()
     {
         print("interpolated string ${self.a}")
         print('literal string')
     }
 
-    public this_is_a_different_method(a, b=1, c=nil)
+    this_is_a_different_method(a, b=1, c=nil)
     {
         while (expression)
         {
-            self.my_iterative_method(|something| {
+            self.my_iterative_method((|something|) {
                 print(something)
             })
         }
     }
 
-    protected this_method_is_destructive!()
+    this_method_is_destructive!()
     {
 
     }
 
-    public this_method_returns_a_bool?()
+    this_method_returns_a_bool?()
     {
         return false
     }
@@ -42,7 +42,7 @@ class MyClass : SomeOtherClass
         print('This overloads how the operator identifier[1] will function')
     }
 
-    public my_iterative_method(func)
+    my_iterative_method(func)
     {
         foreach(var item in self.list)
         {

@@ -17,3 +17,66 @@ function test_set_creation_numbers() {
 
     unittest.Assert.that(set.count()).is_equal_to(1)
 }
+
+function test_set_union() {
+    var lhs = Set()
+    var rhs = Set()
+
+    lhs.add('a')
+    lhs.add('b')
+    lhs.add('c')
+
+    rhs.add('c')
+    rhs.add('d')
+    rhs.add('e')
+
+    # act
+    var result = lhs.union(rhs)
+
+    # assert
+    unittest.Assert.that(result.count()).is_equal_to(5)
+    unittest.Assert.that(result).contains('a')
+    unittest.Assert.that(result).contains('b')
+    unittest.Assert.that(result).contains('c')
+    unittest.Assert.that(result).contains('d')
+    unittest.Assert.that(result).contains('e')
+}
+
+function test_set_intersect() {
+    var lhs = Set()
+    var rhs = Set()
+
+    lhs.add('a')
+    lhs.add('b')
+    lhs.add('c')
+
+    rhs.add('c')
+    rhs.add('d')
+    rhs.add('e')
+
+    # act
+    var result = lhs.intersect(rhs)
+
+    # assert
+    unittest.Assert.that(result).has_count(1)
+    unittest.Assert.that(result).contains('c')
+}
+
+function test_set_difference() {
+    var lhs = Set()
+    var rhs = Set()
+
+    lhs.add('a')
+    lhs.add('b')
+    lhs.add('c')
+
+    rhs.add('c')
+
+    # act
+    var result = lhs.difference(rhs)
+
+    # assert
+    unittest.Assert.that(result).has_count(2)
+    unittest.Assert.that(result).contains('a')
+    unittest.Assert.that(result).contains('b')
+}

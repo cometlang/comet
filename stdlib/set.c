@@ -1,6 +1,7 @@
 #include "comet.h"
 #include "comet_stdlib.h"
 
+static VALUE set_class;
 static VALUE set_iterator_class;
 
 typedef struct _set_entry
@@ -41,6 +42,18 @@ void set_destructor(void *data)
     {
         FREE_ARRAY(SetEntry, set_data->entries, set_data->capacity);
     }
+}
+
+VALUE set_create(VM *vm)
+{
+    VALUE set = OBJ_VAL(newInstance(vm, AS_CLASS(set_class)));
+    push(vm, set);
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, set);
+    data->capacity = 0;
+    data->count = 0;
+    data->entries = NULL;
+
+    return pop(vm);
 }
 
 static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
@@ -162,19 +175,83 @@ VALUE set_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE set_union(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return NIL_VAL;
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *current = data->entries[i];
+        while (current != NULL)
+        {
+            if (compare_objects(vm, current->key, arguments[0]))
+                return TRUE_VAL;
+            current = current->next;
+        }
+    }
+    return FALSE_VAL;
+}
+
+VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    VALUE result = set_create(vm);
+    push(vm, result);
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *entry = data->entries[i];
+        while (entry != NULL && entry->key != NIL_VAL)
+        {
+            set_add(vm, result, 1, &entry->key);
+            entry = entry->next;
+        }
+    }
+    SetData *other = GET_NATIVE_INSTANCE_DATA(SetData, arguments[0]);
+    for (int i = 0; i < other->capacity; i++)
+    {
+        SetEntry *entry = other->entries[i];
+        while (entry != NULL && entry->key != NIL_VAL)
+        {
+            set_add(vm, result, 1, &entry->key);
+            entry = entry->next;
+        }
+    }
+    return pop(vm);
 }
 
 VALUE set_intersect(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    VALUE result = set_create(vm);
+    push(vm, result);
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *entry = data->entries[i];
+        while (entry != NULL)
+        {
+            if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == TRUE_VAL)
+                set_add(vm, result, 1, &entry->key);
+            entry = entry->next;
+        }
+    }
+    return pop(vm);
 }
 
 VALUE set_difference(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    return NIL_VAL;
+    VALUE result = set_create(vm);
+    push(vm, result);
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *entry = data->entries[i];
+        while (entry != NULL)
+        {
+            if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == FALSE_VAL)
+                set_add(vm, result, 1, &entry->key);
+            entry = entry->next;
+        }
+    }
+    return pop(vm);
 }
 
 VALUE set_to_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -208,22 +285,6 @@ VALUE set_iterable_iterator(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNU
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, obj);
     iter->set = self;
     return OBJ_VAL(obj);
-}
-
-VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
-    for (int i = 0; i < data->capacity; i++)
-    {
-        SetEntry *current = data->entries[i];
-        while (current != NULL)
-        {
-            if (compare_objects(vm, current->key, arguments[0]))
-                return TRUE_VAL;
-            current = current->next;
-        }
-    }
-    return FALSE_VAL;
 }
 
 void set_mark_contents(VALUE self)
@@ -287,7 +348,7 @@ void mark_set_iterator(VALUE self)
 
 void init_set(VM *vm)
 {
-    VALUE klass = defineNativeClass(
+    set_class = defineNativeClass(
         vm,
         "Set",
         &set_constructor,
@@ -297,17 +358,18 @@ void init_set(VM *vm)
         CLS_SET,
         sizeof(SetData),
         true);
-    defineNativeMethod(vm, klass, &set_add, "add", 1, false);
-    defineNativeMethod(vm, klass, &set_remove, "remove", 1, false);
-    defineNativeMethod(vm, klass, &set_union, "union", 1, false);
-    defineNativeMethod(vm, klass, &set_intersect, "intersect", 1, false);
-    defineNativeMethod(vm, klass, &set_difference, "difference", 1, false);
-    defineNativeMethod(vm, klass, &set_to_list, "to_list", 0, false);
-    defineNativeMethod(vm, klass, &set_iterable_empty_p, "empty?", 0, false);
-    defineNativeMethod(vm, klass, &set_iterable_count, "count", 0, false);
+    defineNativeMethod(vm, set_class, &set_add, "add", 1, false);
+    defineNativeMethod(vm, set_class, &set_remove, "remove", 1, false);
+    defineNativeMethod(vm, set_class, &set_union, "union", 1, false);
+    defineNativeMethod(vm, set_class, &set_intersect, "intersect", 1, false);
+    defineNativeMethod(vm, set_class, &set_difference, "difference", 1, false);
+    defineNativeMethod(vm, set_class, &set_to_list, "to_list", 0, false);
+    defineNativeMethod(vm, set_class, &set_iterable_empty_p, "empty?", 0, false);
+    defineNativeMethod(vm, set_class, &set_iterable_count, "count", 0, false);
 
-    defineNativeOperator(vm, klass, &set_union, 1, OPERATOR_PLUS);
-    defineNativeOperator(vm, klass, &set_difference, 1, OPERATOR_MINUS);
+    defineNativeOperator(vm, set_class, &set_union, 1, OPERATOR_BITWISE_OR);
+    defineNativeOperator(vm, set_class, &set_intersect, 1, OPERATOR_BITWISE_AND);
+    defineNativeOperator(vm, set_class, &set_difference, 1, OPERATOR_MINUS);
 
     set_iterator_class = defineNativeClass(
         vm,

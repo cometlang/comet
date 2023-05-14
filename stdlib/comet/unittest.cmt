@@ -35,6 +35,10 @@ class Assert {
         assert(self.value.contains?(expected), message)
     }
 
+    has_count(expected_count, message=nil) {
+        assert(self.value.count() == expected_count, message)
+    }
+
     matches(value, message=nil) {
         if (callable?(value)) {
             assert(value(self.value) == true, message)

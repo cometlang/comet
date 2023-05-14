@@ -31,11 +31,15 @@ VALUE completeNativeClassDefinition(VM *vm, VALUE klass_, const char *super_name
         {
             super_name = "Object";
         }
-        if (!findGlobal(copyString(vm, super_name, (int)strlen(super_name)), &parent))
+        Value superClassName = copyString(vm, super_name, (int)strlen(super_name));
+        push(vm, superClassName);
+        if (!findGlobal(superClassName, &parent))
         {
+            pop(vm);
             runtimeError(vm, "Could not inherit from unknown class '%s'", super_name);
             return NIL_VAL;
         }
+        pop(vm);
 
         ObjClass *parent_class = AS_CLASS(parent);
 

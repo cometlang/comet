@@ -3,11 +3,27 @@
 #include "cometlib.h"
 #include "native.h"
 
-VALUE exception_init(VM *vm, VALUE UNUSED(self), int arg_count, VALUE UNUSED(*arguments))
+VALUE exception_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     if (arg_count == 1 && IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_STRING))
     {
         setNativeProperty(vm, self, "_message", arguments[0]);
+    }
+    return NIL_VAL;
+}
+
+VALUE ooce_exception_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
+{
+    if (arg_count == 1 && IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_STRING))
+    {
+        setNativeProperty(vm, self, "_message", arguments[0]);
+    }
+    else
+    {
+        VALUE message = copyString(vm, "++?????++ Redo from start", 25);
+        push(vm, message);
+        setNativeProperty(vm, self, "_message", message);
+        pop(vm);
     }
     return NIL_VAL;
 }
@@ -88,7 +104,7 @@ VALUE argument_exception_throw_if_nil_or_whitespace(VM* vm, VALUE klass, int UNU
 void init_exception(VM *vm)
 {
     VALUE klass = defineNativeClass(vm, "Exception", NULL, NULL, NULL, NULL, CLS_EXCEPTION, 0, false);
-    defineNativeMethod(vm, klass, &exception_init, "init", 1, false);
+    defineNativeMethod(vm, klass, &exception_init, "init", 0, false);
     defineNativeMethod(vm, klass, &exception_get_message, "message", 0, false);
 
     defineNativeClass(vm, "AssertionException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
@@ -108,4 +124,7 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "ThreadException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "FormatException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "InvokeException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+
+    VALUE ooceKlass = defineNativeClass(vm, "OutOfCheeseError", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeMethod(vm, ooceKlass, &ooce_exception_init, "init", 0, false);
 }

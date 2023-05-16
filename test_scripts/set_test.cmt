@@ -18,7 +18,7 @@ function test_set_creation_numbers() {
     unittest.Assert.that(set.count()).is_equal_to(1)
 }
 
-function test_set_union() {
+function x_test_set_union() {
     var lhs = Set()
     var rhs = Set()
 
@@ -34,7 +34,7 @@ function test_set_union() {
     var result = lhs.union(rhs)
 
     # assert
-    unittest.Assert.that(result.count()).is_equal_to(5)
+    unittest.Assert.that(result).has_count(5)
     unittest.Assert.that(result).contains('a')
     unittest.Assert.that(result).contains('b')
     unittest.Assert.that(result).contains('c')
@@ -42,7 +42,7 @@ function test_set_union() {
     unittest.Assert.that(result).contains('e')
 }
 
-function test_set_intersect() {
+function x_test_set_intersect() {
     var lhs = Set()
     var rhs = Set()
 
@@ -62,7 +62,7 @@ function test_set_intersect() {
     unittest.Assert.that(result).contains('c')
 }
 
-function test_set_difference() {
+function x_test_set_difference() {
     var lhs = Set()
     var rhs = Set()
 

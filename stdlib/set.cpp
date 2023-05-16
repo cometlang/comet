@@ -1,3 +1,10 @@
+#include <string>
+#include <sstream>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "comet.h"
 #include "comet_stdlib.h"
 
@@ -132,10 +139,10 @@ VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     {
         adjust_capacity(vm, data);
     }
-    SetEntry new_entry;
-    new_entry.next = NULL;
-    new_entry.key = arguments[0];
-    if (insert(vm, data->entries, data->capacity, &new_entry))
+    SetEntry *new_entry = ALLOCATE(SetEntry, 1);
+    new_entry->next = NULL;
+    new_entry->key = arguments[0];
+    if (insert(vm, data->entries, data->capacity, new_entry))
     {
         data->count++;
         return TRUE_VAL;
@@ -178,15 +185,14 @@ VALUE set_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
-    for (int i = 0; i < data->capacity; i++)
+    call_function(vm, arguments[0], common_strings[STRING_HASH], 0, NULL);
+    uint32_t index = ((uint32_t) number_get_value(peek(vm, 0))) % data->capacity;
+    SetEntry *current = data->entries[index];
+    while (current != NULL)
     {
-        SetEntry *current = data->entries[i];
-        while (current != NULL)
-        {
-            if (compare_objects(vm, current->key, arguments[0]))
-                return TRUE_VAL;
-            current = current->next;
-        }
+        if (compare_objects(vm, current->key, arguments[0]))
+            return TRUE_VAL;
+        current = current->next;
     }
     return FALSE_VAL;
 }
@@ -199,7 +205,7 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL && entry->key != NIL_VAL)
+        while (entry != NULL)
         {
             set_add(vm, result, 1, &entry->key);
             entry = entry->next;
@@ -209,7 +215,7 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < other->capacity; i++)
     {
         SetEntry *entry = other->entries[i];
-        while (entry != NULL && entry->key != NIL_VAL)
+        while (entry != NULL)
         {
             set_add(vm, result, 1, &entry->key);
             entry = entry->next;
@@ -218,17 +224,17 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return pop(vm);
 }
 
-VALUE set_intersect(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_intersect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     VALUE result = set_create(vm);
     push(vm, result);
-    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, arguments[0]);
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
         while (entry != NULL)
         {
-            if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == TRUE_VAL)
+            if (set_iterable_contains_q(vm, self, 1, &entry->key) == TRUE_VAL)
                 set_add(vm, result, 1, &entry->key);
             entry = entry->next;
         }
@@ -236,7 +242,7 @@ VALUE set_intersect(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), V
     return pop(vm);
 }
 
-VALUE set_difference(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+VALUE set_difference(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     VALUE result = set_create(vm);
     push(vm, result);
@@ -269,6 +275,31 @@ VALUE set_to_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argum
         }
     }
     return pop(vm);
+}
+
+VALUE set_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
+    std::stringstream stream;
+    stream << "{";
+    int found = 0;
+    for (int i = 0; i < data->capacity; i++)
+    {
+        SetEntry *entry = data->entries[i];
+        while (entry != NULL)
+        {
+            call_function(vm, data->entries[i]->key, common_strings[STRING_TO_STRING], 0, NULL);
+            stream << string_get_cstr(peek(vm, 0));
+            if (found != data->count - 1)
+                stream << ", ";
+            pop(vm);
+            entry = entry->next;
+            found++;
+        }
+    }
+    stream << "}";
+    std::string result = stream.str();
+    return copyString(vm, result.c_str(), result.length());
 }
 
 VALUE set_iterable_empty_p(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -364,6 +395,7 @@ void init_set(VM *vm)
     defineNativeMethod(vm, set_class, &set_intersect, "intersect", 1, false);
     defineNativeMethod(vm, set_class, &set_difference, "difference", 1, false);
     defineNativeMethod(vm, set_class, &set_to_list, "to_list", 0, false);
+    defineNativeMethod(vm, set_class, &set_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, set_class, &set_iterable_empty_p, "empty?", 0, false);
     defineNativeMethod(vm, set_class, &set_iterable_count, "count", 0, false);
 
@@ -384,3 +416,7 @@ void init_set(VM *vm)
     defineNativeMethod(vm, set_iterator_class, &set_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, set_iterator_class, &set_iterator_get_next, "get_next", 0, false);
 }
+
+#ifdef __cplusplus
+}
+#endif

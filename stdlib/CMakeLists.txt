@@ -29,7 +29,7 @@ set(SOURCE
   nil.c
   number.c
   object.c
-  set.c
+  set.cpp
   socket.c
   string.c
   string_builder.c

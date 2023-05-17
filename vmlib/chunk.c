@@ -12,8 +12,14 @@ void initChunk(Chunk *chunk, const char *filename)
     chunk->capacity = 0;
     chunk->code = NULL;
     chunk->lines = NULL;
+    chunk->execution_counts = NULL;
     chunk->filename = filename;
     initValueArray(&chunk->constants);
+}
+
+void recordInstructionExecuted(Chunk *chunk, size_t instruction)
+{
+    chunk->execution_counts[(uint16_t)instruction]++;
 }
 
 void writeChunk(Chunk *chunk, uint8_t byte, int line)
@@ -24,10 +30,12 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line)
         chunk->capacity = GROW_CAPACITY(oldCapacity);
         chunk->code = GROW_ARRAY(chunk->code, uint8_t, oldCapacity, chunk->capacity);
         chunk->lines = GROW_ARRAY(chunk->lines, int, oldCapacity, chunk->capacity);
+        chunk->execution_counts = GROW_ARRAY(chunk->execution_counts, uint16_t, oldCapacity, chunk->capacity);
     }
 
     chunk->code[chunk->count] = byte;
     chunk->lines[chunk->count] = line;
+    chunk->execution_counts[chunk->count] = 0;
     chunk->count++;
 }
 
@@ -35,6 +43,7 @@ void freeChunk(Chunk *chunk)
 {
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
+    FREE_ARRAY(uint16_t, chunk->execution_counts, chunk->capacity);
     freeValueArray(&chunk->constants);
     initChunk(chunk, NULL);
 }

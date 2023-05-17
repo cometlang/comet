@@ -72,6 +72,7 @@ typedef struct
     int capacity;
     ValueArray constants;
     int *lines;
+    uint16_t *execution_counts;
     uint8_t *code;
     const char *filename;
 } Chunk;
@@ -83,5 +84,7 @@ void writeChunk(Chunk *chunk, uint8_t byte, int line);
 void freeChunk(Chunk *chunk);
 
 void print_constants(Chunk *chunk);
+
+void recordInstructionExecuted(Chunk *chunk, size_t instruction);
 
 #endif

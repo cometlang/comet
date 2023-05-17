@@ -3,3 +3,4 @@ bin/
 build/
 release/
 .vs/
+comet/.coverage

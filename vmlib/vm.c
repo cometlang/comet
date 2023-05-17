@@ -700,8 +700,11 @@ static InterpretResult run(VM *vm)
             print_stack(vm);
         }
 #endif
-        uint8_t instruction;
-        switch (instruction = READ_BYTE())
+        uint8_t instruction = READ_BYTE();
+        ObjFunction *function = frame->closure->function;
+        size_t instruction_pointer = frame->ip - function->chunk.code - 1;
+        recordInstructionExecuted(&function->chunk, instruction_pointer);
+        switch (instruction)
         {
         case OP_CONSTANT:
         {

@@ -84,10 +84,15 @@ static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
     return false;
 }
 
+static uint32_t getIndex(VM *vm, Value value, int capacity)
+{
+    call_function(vm, value, common_strings[STRING_HASH], 0, NULL);
+    return ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
+}
+
 static bool insert(VM *vm, SetEntry **entries, int capacity, SetEntry *entry)
 {
-    call_function(vm, entry->key, common_strings[STRING_HASH], 0, NULL);
-    uint32_t index = ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
+    uint32_t index = getIndex(vm, entry->key, capacity);
     pop(vm);
     if (entries[index] == NULL)
     {
@@ -185,8 +190,7 @@ VALUE set_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
-    call_function(vm, arguments[0], common_strings[STRING_HASH], 0, NULL);
-    uint32_t index = ((uint32_t) number_get_value(peek(vm, 0))) % data->capacity;
+    uint32_t index = getIndex(vm, arguments[0], data->capacity);
     SetEntry *current = data->entries[index];
     while (current != NULL)
     {

@@ -6,7 +6,7 @@ function test_set_creation_strings() {
     set.add('a')
     set.add('a')
 
-    unittest.Assert.that(set.count()).is_equal_to(1)
+    unittest.Assert.that(set).has_count(1)
 }
 
 function test_set_creation_numbers() {
@@ -15,7 +15,7 @@ function test_set_creation_numbers() {
     set.add(1)
     set.add(1)
 
-    unittest.Assert.that(set.count()).is_equal_to(1)
+    unittest.Assert.that(set).has_count(1)
 }
 
 function x_test_set_union() {

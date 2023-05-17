@@ -35,6 +35,10 @@ class Assert {
         assert(self.value.contains?(expected), message)
     }
 
+    does_not_contain(expected, message=nil) {
+        assert(!self.value.contains?(expected), message)
+    }
+
     has_count(expected_count, message=nil) {
         assert(self.value.count() == expected_count, message)
     }

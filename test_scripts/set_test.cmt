@@ -59,6 +59,7 @@ function x_test_set_intersect() {
 
     # assert
     unittest.Assert.that(result).has_count(1)
+    unittest.Assert.that(result).does_not_contain('a')
     unittest.Assert.that(result).contains('c')
 }
 

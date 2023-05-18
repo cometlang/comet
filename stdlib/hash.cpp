@@ -14,6 +14,7 @@ extern "C" {
 
 #define TABLE_MAX_LOAD 0.75
 
+static VALUE hash_class;
 static VALUE hash_iterator_class;
 
 typedef struct hash_entry
@@ -117,6 +118,11 @@ void hash_destructor(void *data)
 {
     HashTable *table = (HashTable *)data;
     FREE_ARRAY(HashEntry, table->entries, table->capacity + 1);
+}
+
+VALUE hash_create(VM *vm)
+{
+    return OBJ_VAL(newInstance(vm, AS_CLASS(hash_class)));
 }
 
 static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key)
@@ -349,18 +355,18 @@ VALUE hash_obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
 
 void init_hash(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, &hash_mark_contents, "Iterable", CLS_HASH, sizeof(HashTable), false);
-    defineNativeMethod(vm, klass, &hash_add, "add", 2, false);
-    defineNativeMethod(vm, klass, &hash_remove, "remove", 1, false);
-    defineNativeMethod(vm, klass, &hash_iterable_contains_q, "contains?", 1, false);
-    defineNativeMethod(vm, klass, &hash_iterable_empty_q, "empty?", 0, false);
-    defineNativeMethod(vm, klass, &hash_iterable_count, "count", 0, false);
-    defineNativeMethod(vm, klass, &hash_iterable_iterator, "iterator", 0, false);
-    defineNativeMethod(vm, klass, &hash_obj_to_string, "to_string", 0, false);
-    defineNativeMethod(vm, klass, &hash_get, "get", 2, false);
-    defineNativeMethod(vm, klass, &hash_has_key_q, "has_key?", 1, false);
-    defineNativeOperator(vm, klass, &hash_find, 1, OPERATOR_INDEX);
-    defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
+    hash_class = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, &hash_mark_contents, "Iterable", CLS_HASH, sizeof(HashTable), false);
+    defineNativeMethod(vm, hash_class, &hash_add, "add", 2, false);
+    defineNativeMethod(vm, hash_class, &hash_remove, "remove", 1, false);
+    defineNativeMethod(vm, hash_class, &hash_iterable_contains_q, "contains?", 1, false);
+    defineNativeMethod(vm, hash_class, &hash_iterable_empty_q, "empty?", 0, false);
+    defineNativeMethod(vm, hash_class, &hash_iterable_count, "count", 0, false);
+    defineNativeMethod(vm, hash_class, &hash_iterable_iterator, "iterator", 0, false);
+    defineNativeMethod(vm, hash_class, &hash_obj_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, hash_class, &hash_get, "get", 2, false);
+    defineNativeMethod(vm, hash_class, &hash_has_key_q, "has_key?", 1, false);
+    defineNativeOperator(vm, hash_class, &hash_find, 1, OPERATOR_INDEX);
+    defineNativeOperator(vm, hash_class, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 
     hash_iterator_class = defineNativeClass(
         vm,

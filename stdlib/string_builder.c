@@ -19,15 +19,21 @@ static VALUE string_builder_klass;
 static void string_builder_constructor(void *data)
 {
     StringBuilderData_t *builder = (StringBuilderData_t *)data;
-    builder->codepoints = ALLOCATE(utf8proc_int32_t, BASE_CODEPOINT_ALLOCATION);
-    builder->size = BASE_CODEPOINT_ALLOCATION;
+    builder->codepoints = NULL;
+    builder->size = 0;
     builder->index = 0;
 }
 
 static void string_builder_destructor(void *data)
 {
     StringBuilderData_t *builder = (StringBuilderData_t *)data;
-    FREE_ARRAY(StringBuilderData_t, builder->codepoints, builder->size);
+    if (builder->codepoints != NULL)
+    {
+        FREE_ARRAY(StringBuilderData_t, builder->codepoints, builder->size);
+        builder->codepoints = NULL;
+        builder->size = 0;
+        builder->index = 0;
+    }
 }
 
 void string_builder_add_codepoint(VALUE self, utf8proc_int32_t codepoint)
@@ -35,7 +41,7 @@ void string_builder_add_codepoint(VALUE self, utf8proc_int32_t codepoint)
     StringBuilderData_t *data = GET_NATIVE_INSTANCE_DATA(StringBuilderData_t, self);
     if (data->index == data->size)
     {
-        size_t new_size = data->size + BASE_CODEPOINT_ALLOCATION;
+        size_t new_size = data->size + (BASE_CODEPOINT_ALLOCATION * sizeof(utf8proc_int32_t));
         data->codepoints = GROW_ARRAY(data->codepoints, utf8proc_int32_t, data->size, new_size);
         data->size = new_size;
     }
@@ -77,7 +83,10 @@ VALUE string_builder_append(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *ar
 VALUE string_builder_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     StringBuilderData_t *data = GET_NATIVE_INSTANCE_DATA(StringBuilderData_t, self);
-    data->index--;
+    if (data->index > 0)
+    {
+        data->index--;
+    }
     return NIL_VAL;
 }
 

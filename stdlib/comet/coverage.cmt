@@ -1,6 +1,6 @@
-import './json' as json
+import 'json' as json
 
-var output_filename = '.coverage'
+var output_filename = '.coverage.json'
 
 function generate() {
     if (File.exists?(output_filename)) {

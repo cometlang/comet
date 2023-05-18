@@ -1,4 +1,4 @@
-import './coverage' as coverage
+import 'coverage' as coverage
 
 class Assert {
     init(value) {

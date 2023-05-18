@@ -142,8 +142,10 @@ function _output_hash(hash) {
         var out_string = _get_string_for_obj(obj)
         result.append(String.format('"{0}": {1}, ', key, out_string))
     }
-    result.pop()
-    result.pop()
+    if (!hash.empty?()) {
+        result.pop()
+        result.pop()
+    }
     result.append('}')
     return result.to_string()
 }
@@ -155,8 +157,10 @@ function _output_list(list) {
         result.append(_get_string_for_obj(item))
         result.append(', ')
     }
-    result.pop()
-    result.pop()
+    if (!hash.empty?()) {
+        result.pop()
+        result.pop()
+    }
     result.append(']')
     return result.to_string()
 }

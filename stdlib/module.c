@@ -145,10 +145,48 @@ VALUE module_index(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-VALUE module_get_execution_counts(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static void addExecutionCountsForFunction(VM UNUSED(*vm), VALUE UNUSED(hash), ObjFunction UNUSED(*function))
+{
+
+}
+
+VALUE module_get_execution_counts(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, self);
-    return copyString(vm, data->filename, strlen(data->filename));
+    VALUE result = hash_create(vm);
+    push(vm, result);
+    VALUE fields_list = list_create(vm);
+    push(vm, fields_list);
+    tableGetValues(&data->obj.fields, vm, fields_list);
+    VALUE fields_iter = list_iterable_iterator(vm, fields_list, 0, NULL);
+    push(vm, fields_iter);
+    VALUE has_next = list_iterator_has_next_p(vm, fields_iter, 0, NULL);
+    while (has_next == TRUE_VAL)
+    {
+        VALUE val = list_iterator_get_next(vm, fields_iter, 0, NULL);
+        if (IS_BOUND_METHOD(val))
+        {
+            addExecutionCountsForFunction(vm, result, AS_BOUND_METHOD(val)->method->function);
+        }
+        else if (IS_FUNCTION(val))
+        {
+            addExecutionCountsForFunction(vm, result, AS_FUNCTION(val));
+        }
+        else if (IS_CLOSURE(val))
+        {
+            addExecutionCountsForFunction(vm, result, AS_CLOSURE(val)->function);
+        }
+        else if (IS_CLASS(val))
+        {
+            // methods
+            // static methods
+        }
+        has_next = list_iterator_has_next_p(vm, fields_iter, 0, NULL);
+    }
+    addExecutionCountsForFunction(vm, result, data->main);
+    pop(vm); // fields_iter
+    pop(vm); // fields_list
+    return pop(vm); // result
 }
 
 void init_module(VM *vm)

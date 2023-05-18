@@ -145,6 +145,12 @@ VALUE module_index(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
+VALUE module_get_execution_counts(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, self);
+    return copyString(vm, data->filename, strlen(data->filename));
+}
+
 void init_module(VM *vm)
 {
     klass = defineNativeClass(
@@ -160,6 +166,7 @@ void init_module(VM *vm)
     defineNativeMethod(vm, klass, &module_functions, "functions", 0, false);
     defineNativeMethod(vm, klass, &module_fields, "fields", 0, false);
     defineNativeMethod(vm, klass, &module_filename_field, "filename", 0, false);
+    defineNativeMethod(vm, klass, &module_get_execution_counts, "get_execution_counts", 0, false);
 
     defineNativeOperator(vm, klass, &module_index, 1, OPERATOR_INDEX);
 }

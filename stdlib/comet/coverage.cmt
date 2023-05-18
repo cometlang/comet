@@ -1,0 +1,17 @@
+import './json' as json
+
+var output_filename = '.coverage'
+
+function generate() {
+    if (File.exists?(output_filename)) {
+        File.delete(output_filename)
+    }
+
+    var output = {}
+    var modules = get_imported_modules()
+    foreach (var module in modules) {
+        output[module.filename()] = module.get_execution_counts()
+    }
+
+    json.to_json_file(output, output_filename)
+}

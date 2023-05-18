@@ -1,0 +1,25 @@
+import 'json' as json
+import 'unittest' as unittest
+
+var test_hash = {
+    'string': 'this is a string',
+    'date': DateTime(2023, 5, 18, 19, 55, 36),
+    'number': 12345,
+}
+
+var test_string = '{"string": "this is a string", "date": "2023-05-18T19:55:36.000+00:00", "number": 12345}'
+
+function x_test_to_json_string() {
+    var str = json.to_json_string(test_hash)
+
+    unittest.Assert.that(str).is_equal_to(test_string)
+}
+
+function x_test_parse_from_string() {
+    var obj = json.parse_from_string(test_string)
+
+    foreach (var key in test_hash) {
+        unittest.Assert.that(obj.has_key?(key)).is_true()
+        unittest.Assert.that(obj[key]).is_equal_to(test_hash[key])
+    }
+}

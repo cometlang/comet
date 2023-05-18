@@ -361,6 +361,19 @@ void init_hash(VM *vm)
     defineNativeMethod(vm, klass, &hash_has_key_q, "has_key?", 1, false);
     defineNativeOperator(vm, klass, &hash_find, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, klass, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
+
+    hash_iterator_class = defineNativeClass(
+        vm,
+        "HashIterator",
+        &hash_iterator_constructor,
+        NULL,
+        NULL,
+        "Iterator",
+        CLS_ITERATOR,
+        sizeof(HashIterator),
+        true);
+    defineNativeMethod(vm, hash_iterator_class, &hash_iterator_has_next_p, "has_next?", 0, false);
+    defineNativeMethod(vm, hash_iterator_class, &hash_iterator_get_next, "get_next", 0, false);
 }
 
 #ifdef __cplusplus

@@ -27,6 +27,7 @@ Value tableFindString(Table *table, const char *chars, uint32_t hash);
 void tableRemoveWhite(Table *table);
 void markTable(Table *table);
 void tableGetKeys(Table *table, VM *vm, VALUE list);
+void tableGetValues(Table *table, VM* vm, Value list);
 void tablePrintKeys(Table *table);
 
 #endif

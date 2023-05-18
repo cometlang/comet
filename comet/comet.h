@@ -50,6 +50,7 @@ extern "C" {
     const char* module_filename(VALUE module);
     void module_set_main(VALUE module, ObjFunction* function);
     ObjFunction* module_get_main(VALUE module);
+    VALUE module_functions(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
     VALUE duration_create(VM *vm, int64_t count);
 #ifdef __cplusplus

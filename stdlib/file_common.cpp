@@ -32,6 +32,7 @@ void init_file(VM* vm)
     defineNativeMethod(vm, klass, &file_static_open, "open", 2, true);
     defineNativeMethod(vm, klass, &file_close, "close", 0, false);
     defineNativeMethod(vm, klass, &file_write, "write", 1, false);
+    defineNativeMethod(vm, klass, &file_write_line, "write_line", 1, false);
     defineNativeMethod(vm, klass, &file_read, "read", 0, false);
     defineNativeMethod(vm, klass, &file_sync, "sync", 0, false);
     defineNativeMethod(vm, klass, &file_flush, "flush", 0, false);

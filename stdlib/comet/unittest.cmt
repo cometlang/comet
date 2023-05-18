@@ -1,3 +1,5 @@
+import './coverage' as coverage
+
 class Assert {
     init(value) {
         self.value = value
@@ -12,6 +14,8 @@ class Assert {
     }
 
     is_equal_to(expected, message=nil) {
+        if (message.nil?())
+            message = String.format('expected {0} to equal {1}', self.value, expected)
         assert(self.value == expected, message)
     }
 
@@ -20,6 +24,8 @@ class Assert {
     }
 
     is_true(message=nil) {
+        if (message.nil?())
+            message = String.format('expected {0} to be nil', self.value)
         assert(self.value, message)
     }
 
@@ -104,7 +110,13 @@ if (__MAIN__ == __FILE__) {
     var tests = {}
     var total = 0
     var passed = 0
-    foreach (var to_import in ARGV) {
+    var args = ARGV
+    var generate_coverage = false
+    if (ARGV[0] == '--coverage') {
+        args = ARGV.slice(1)
+        generate_coverage = true
+    }
+    foreach (var to_import in args) {
         import to_import as imported
         foreach (var func in imported.functions()) {
             if (func.starts_with?('test_')) {
@@ -125,6 +137,9 @@ if (__MAIN__ == __FILE__) {
         }
     }
     print(String.format('{0}/{1} tests passed', passed, total))
+    if (generate_coverage) {
+        coverage.generate()
+    }
     if (passed != total) {
         exit(128)
     }

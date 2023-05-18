@@ -74,6 +74,13 @@ VALUE string_builder_append(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *ar
     return NIL_VAL;
 }
 
+VALUE string_builder_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    StringBuilderData_t *data = GET_NATIVE_INSTANCE_DATA(StringBuilderData_t, self);
+    data->index--;
+    return NIL_VAL;
+}
+
 VALUE create_string_builder(VM *vm)
 {
     VALUE builder = OBJ_VAL(newInstance(vm, AS_CLASS(string_builder_klass)));
@@ -97,6 +104,7 @@ void init_string_builder(VM *vm)
         true);
     defineNativeMethod(vm, string_builder_klass, &string_builder_to_string, "to_string", 0, false);
     defineNativeMethod(vm, string_builder_klass, &string_builder_append, "append", 1, false);
+    defineNativeMethod(vm, string_builder_klass, &string_builder_pop, "pop", 0, false);
     
     defineNativeOperator(vm, string_builder_klass, &string_builder_append, 1, OPERATOR_PLUS);
 }

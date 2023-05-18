@@ -8,7 +8,6 @@
 #include "cometlib.h"
 #include "compiler.h"
 #include "import.h"
-#include "comet_private.h"
 
 #define stringify(s) #s
 #define stringify_value(s) stringify(s)
@@ -58,7 +57,7 @@ static void defineMain(Value main)
     popMany(&virtualMachine, 2);
 }
 
-static void runFile(const char *path, bool outputCoverageReport)
+static void runFile(const char *path)
 {
     Value to_import = copyString(&virtualMachine, path, strlen(path));
     push(&virtualMachine, to_import);
@@ -68,7 +67,6 @@ static void runFile(const char *path, bool outputCoverageReport)
 
     InterpretResult result = interpret(&virtualMachine, main);
 
-    if (result == INTERPRET_OK && outputCoverageReport) outputCoverage(&virtualMachine);
     if (result == INTERPRET_COMPILE_ERROR) exit(65);
     if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
@@ -90,7 +88,6 @@ void initArgv(VM *vm, int argc, const char **argv)
 
 int main(int argc, const char **argv)
 {
-    bool outputCoverageReport = false;
     if (argc >= 2)
     {
         for (int i = 1; i < argc; i++)
@@ -99,10 +96,6 @@ int main(int argc, const char **argv)
             {
                 printf("comet programming language, %s\n", stringify_value(VERSION_STRING));
                 return 0;
-            }
-            else if (strncmp(argv[i], "--coverage", 10) == 0) {
-                outputCoverageReport = true;
-                startingArg++;
             }
         }
     }
@@ -116,7 +109,7 @@ int main(int argc, const char **argv)
     }
     else if (argc >= 2)
     {
-        runFile(argv[startingArg-1], outputCoverageReport);
+        runFile(argv[startingArg-1]);
     }
     else
     {

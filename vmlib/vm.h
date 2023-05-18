@@ -48,6 +48,7 @@ typedef enum {
     STRING_TO_STRING,
     STRING_LAMBDA,
     STRING_EMPTY_Q,
+    STRING_NUMBER,
     NUM_COMMON_STRINGS,
 } COMMON_STRINGS;
 
@@ -63,6 +64,7 @@ Value findInternedString(const char *chars, uint32_t hash);
 bool internString(Value string);
 void addModule(Value module, Value filename);
 bool findModule(Value filename,  Value *module);
+void getAllModules(VM *vm, Value list);
 void markGlobals(void);
 void removeWhiteStrings(void);
 

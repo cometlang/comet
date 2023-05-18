@@ -163,6 +163,14 @@ VALUE call_func(VM *vm, int arg_count, VALUE *args)
     return pop(vm);
 }
 
+VALUE get_imported_modules(VM *vm, int arg_count, VALUE *args)
+{
+    VALUE list = list_create(vm);
+    push(vm, list);
+    getAllModules(vm, list);
+    return pop(vm);
+}
+
 #if DEBUG_TRACE_EXECUTION
 VALUE fn_print_stack(VM UNUSED(*vm), int UNUSED(arg_count), VALUE UNUSED(*args))
 {
@@ -190,6 +198,7 @@ void init_functions(VM *vm)
     defineNativeFunction(vm, "callable?", &callable_p);
     defineNativeFunction(vm, "sleep", &fn_sleep);
     defineNativeFunction(vm, "exit", &fn_exit);
+    defineNativeFunction(vm, "get_imported_modules", &get_imported_modules);
 #if DEBUG_TRACE_EXECUTION
     defineNativeFunction(vm, "toggle_stack_printing", &fn_print_stack);
 #endif

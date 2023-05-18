@@ -46,6 +46,7 @@ VALUE file_static_copy(VM* vm, VALUE klass, int arg_count, VALUE* arguments);
 
 VALUE file_close(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 VALUE file_write(VM* vm, VALUE self, int arg_count, VALUE* arguments);
+VALUE file_write_line(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments);
 VALUE file_read(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 VALUE file_sync(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 VALUE file_flush(VM* vm, VALUE self, int arg_count, VALUE* arguments);

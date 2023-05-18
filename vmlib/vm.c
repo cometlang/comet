@@ -522,7 +522,7 @@ static bool invoke(VM *vm, Value name, int argCount)
     else if (IS_NUMBER(receiver))
     {
         VALUE numberClass;
-        if (!findGlobal(copyString(vm, "Number", 6), &numberClass))
+        if (!findGlobal(common_strings[STRING_NUMBER], &numberClass))
         {
             runtimeError(vm, "Couldn't find the Number class!");
             return false;

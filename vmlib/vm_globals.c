@@ -84,3 +84,8 @@ bool findModule(Value filename, Value *module)
 {
     return tableGet(&modules, filename, module);
 }
+
+void getAllModules(VM *vm, Value list)
+{
+    tableGetValues(&modules, vm, list);
+}

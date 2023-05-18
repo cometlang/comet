@@ -94,6 +94,19 @@ VALUE file_write(VM* vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
     return create_number(vm, (double)result);
 }
 
+VALUE file_write_line(VM *vm, VALUE self, int arg_count, VALUE *arguments)
+{
+    FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
+    int result = 0;
+    if (arg_count > 0)
+    {
+        const char* buffer = string_get_cstr(arguments[0]);
+        WriteFile(data->fp, buffer, (DWORD)strlen(buffer), &result, NULL);
+    }
+    WriteFile(data->fp, "\n", (DWORD)1, NULL, NULL);
+    return create_number(vm, (double)result + 1);
+}
+
 VALUE file_read(VM* vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));

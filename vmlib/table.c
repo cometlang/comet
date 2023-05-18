@@ -195,6 +195,18 @@ void tableGetKeys(Table *table, VM *vm, VALUE list)
     }
 }
 
+void tableGetValues(Table *table, VM* vm, Value list)
+{
+    for (int i = 0; i <= table->capacity; i++)
+    {
+        Entry *entry = &table->entries[i];
+        if (entry->key != NIL_VAL)
+        {
+            list_add(vm, list, 1, &entry->value);
+        }
+    }
+}
+
 void tablePrintKeys(Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)

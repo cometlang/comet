@@ -169,6 +169,15 @@ static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), 
     return NIL_VAL;
 }
 
+static VALUE datetime_operator_equals(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    DateTimeData *lhs = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
+    DateTimeData *rhs = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(arguments[0]));
+    if (lhs->point == rhs->point)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
+
 void init_datetime(VM *vm)
 {
     datetime_class = defineNativeClass(vm, "DateTime", NULL, NULL, NULL, NULL, CLS_DATETIME, sizeof(DateTimeData), false);
@@ -184,6 +193,7 @@ void init_datetime(VM *vm)
     defineNativeMethod(vm, datetime_class, &datetime_milliseconds, "milliseconds", 0, false);
 
     defineNativeOperator(vm, datetime_class, &datetime_operator_minus, 1, OPERATOR_MINUS);
+    defineNativeOperator(vm, datetime_class, &datetime_operator_equals, 1, OPERATOR_EQUALS);
 }
 
 }

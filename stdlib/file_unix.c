@@ -82,6 +82,17 @@ VALUE file_write(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return create_number(vm, (double)result);
 }
 
+VALUE file_write_line(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
+    int result = 0;
+    if (arg_count > 0) {
+        result = fprintf(data->fp, "%s", string_get_cstr(arguments[0]));
+    }
+    result += fprintf(data->fp, "\n");
+    return create_number(vm, (double)result);
+}
+
 VALUE file_read(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);

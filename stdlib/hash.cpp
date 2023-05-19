@@ -199,7 +199,7 @@ VALUE hash_get(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     if (table->count == 0)
-        return FALSE_VAL;
+        return NIL_VAL;
 
     VALUE key = arguments[0];
     HashEntry *entry = find_entry(vm, table->entries, table->capacity, key);

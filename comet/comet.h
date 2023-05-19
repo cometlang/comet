@@ -38,6 +38,9 @@ extern "C" {
     VALUE list_length(VM* vm, VALUE self, int arg_count, VALUE* arguments);
 
     VALUE hash_create(VM *vm);
+    VALUE hash_add(VM *vm, VALUE self, int arg_count, VALUE *arguments);
+    VALUE hash_has_key_q(VM* vm, VALUE self, int arg_count, VALUE* arguments);
+    VALUE hash_get(VM *vm, VALUE self, int arg_count, VALUE *arguments);
 
     void hash_mark_contents(VALUE self);
     void list_mark_contents(VALUE self);

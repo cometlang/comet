@@ -2,7 +2,11 @@
 #include "comet_stdlib.h"
 #include "list.h"
 
+#include <stdio.h>
+
 static VALUE klass;
+
+static void addExecutionCountsForFunctions(VM *vm, VALUE hash, Table *functions);
 
 typedef struct {
     ObjInstance obj;
@@ -145,9 +149,65 @@ VALUE module_index(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     return NIL_VAL;
 }
 
-static void addExecutionCountsForFunction(VM UNUSED(*vm), VALUE UNUSED(hash), ObjFunction UNUSED(*function))
+static void addExecutionCountsForChunk(VM *vm, VALUE hash, Chunk *chunk)
 {
+    VALUE args[2];
+    for (int i = 0; i < chunk->count; i++)
+    {
+        int line = chunk->lines[i];
+        VALUE line_no = create_number(vm, line);
+        push(vm, line_no);
+        VALUE ex_no = create_number(vm, chunk->execution_counts[i]);
+        push(vm, ex_no);
+        VALUE line_val = hash_get(vm, hash, 1, &line_no);
+        if (line_val == NIL_VAL || chunk->execution_counts[i] > number_get_value(line_val))
+        {
+            args[0] = line_no;
+            args[1] = ex_no;
+            hash_add(vm, hash, 2, args);
+        }
+        pop(vm); // ex_no
+        pop(vm); // line_no
+    }
+}
 
+static void addExecutionCountsForValue(VM *vm, VALUE hash, VALUE val)
+{
+    if (IS_BOUND_METHOD(val))
+    {
+        addExecutionCountsForChunk(vm, hash, &AS_BOUND_METHOD(val)->method->function->chunk);
+    }
+    else if (IS_FUNCTION(val))
+    {
+        addExecutionCountsForChunk(vm, hash, &AS_FUNCTION(val)->chunk);
+    }
+    else if (IS_CLOSURE(val))
+    {
+        addExecutionCountsForChunk(vm, hash, &AS_CLOSURE(val)->function->chunk);
+    }
+    else if (IS_CLASS(val))
+    {
+        addExecutionCountsForFunctions(vm, hash, &AS_CLASS(val)->methods);
+        addExecutionCountsForFunctions(vm, hash, &AS_CLASS(val)->staticMethods);
+    }
+}
+
+static void addExecutionCountsForFunctions(VM *vm, VALUE hash, Table *functions)
+{
+    VALUE functions_list = list_create(vm);
+    push(vm, functions_list);
+    tableGetValues(functions, vm, functions_list);
+    VALUE functions_iter = list_iterable_iterator(vm, functions_list, 0, NULL);
+    push(vm, functions_iter);
+    VALUE has_next = list_iterator_has_next_p(vm, functions_iter, 0, NULL);
+    while (has_next == TRUE_VAL)
+    {
+        VALUE func = list_iterator_get_next(vm, functions_iter, 0, NULL);
+        addExecutionCountsForValue(vm, hash, func);
+        has_next = list_iterator_has_next_p(vm, functions_iter, 0, NULL);
+    }
+    pop(vm); // functions_iter
+    pop(vm); // functions_list
 }
 
 VALUE module_get_execution_counts(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
@@ -164,26 +224,10 @@ VALUE module_get_execution_counts(VM *vm, VALUE self, int UNUSED(arg_count), VAL
     while (has_next == TRUE_VAL)
     {
         VALUE val = list_iterator_get_next(vm, fields_iter, 0, NULL);
-        if (IS_BOUND_METHOD(val))
-        {
-            addExecutionCountsForFunction(vm, result, AS_BOUND_METHOD(val)->method->function);
-        }
-        else if (IS_FUNCTION(val))
-        {
-            addExecutionCountsForFunction(vm, result, AS_FUNCTION(val));
-        }
-        else if (IS_CLOSURE(val))
-        {
-            addExecutionCountsForFunction(vm, result, AS_CLOSURE(val)->function);
-        }
-        else if (IS_CLASS(val))
-        {
-            // methods
-            // static methods
-        }
+        addExecutionCountsForValue(vm, result, val);
         has_next = list_iterator_has_next_p(vm, fields_iter, 0, NULL);
     }
-    addExecutionCountsForFunction(vm, result, data->main);
+    addExecutionCountsForChunk(vm, result, &data->main->chunk);
     pop(vm); // fields_iter
     pop(vm); // fields_list
     return pop(vm); // result

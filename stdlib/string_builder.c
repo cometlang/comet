@@ -77,7 +77,22 @@ VALUE string_builder_append(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *ar
         string_builder_add_codepoint(self, iter->current_codepoint);
     }
     pop(vm);
-    return NIL_VAL;
+    return self;
+}
+
+void string_builder_add_cstr(VM *vm, VALUE self, const char *cstr)
+{
+    int offset = 0;
+    size_t remaining = strlen(cstr);
+    utf8proc_ssize_t bytes_read = 0;
+    utf8proc_uint32_t codepoint = 0;
+    while (bytes_read > 0)
+    {
+        bytes_read = utf8proc_iterate((const utf8proc_uint8_t *)&cstr[offset], remaining, &codepoint);
+        offset += bytes_read;
+        remaining -= bytes_read;
+        string_builder_add_codepoint(self, codepoint);
+    }
 }
 
 VALUE string_builder_pop(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

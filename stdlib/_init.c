@@ -12,6 +12,7 @@ void init_comet(VM* vm)
     common_strings[STRING_LAMBDA] = copyString(vm, "(|lambda|)", 10);
     common_strings[STRING_EMPTY_Q] = copyString(vm, "empty?", 6);
     common_strings[STRING_NUMBER] = copyString(vm, "Number", 6);
+    common_strings[STRING_SCRIPT] = copyString(vm, "<script>", 8);
 }
 
 void init_stdlib(VM *vm)

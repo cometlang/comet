@@ -17,7 +17,7 @@ function _consume (iter, expected) {
 }
 
 function _parse_number (iter) {
-    var num = ''
+    var num = StringBuilder()
     var char = iter.peek_next()
     while (iter.has_next?() && (char.number?() || char == '-')) {
         num += char
@@ -34,19 +34,19 @@ function _parse_number (iter) {
             char = iter.peek_next()
         }   
     }
-    return Number.parse(num)
+    return Number.parse(num.to_string())
 }
 
 function _parse_string (iter) {
     _consume(iter, '"')
-    var result = ''
+    var result = StringBuilder()
     var char = iter.peek_next()
     while (iter.has_next?() && char != '"') {
         result += iter.get_next()
         char = iter.peek_next()
     }
     _consume(iter, '"')
-    return result
+    return result.to_string()
 }
 
 function _parse_array (iter) {

@@ -66,6 +66,18 @@ VALUE hash_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), 
     return result;
 }
 
+VALUE hash_iterator_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    HashIterator *iter = GET_NATIVE_INSTANCE_DATA(HashIterator, self);
+    std::stringstream stream;
+    stream << "[Hash Iterator] Index: " << iter->index
+           << ", values_returned: " << iter->values_returned
+           << ", count: " << iter->table->count
+           << ", capacity: " << iter->table->capacity;
+    std::string result = stream.str();
+    return copyString(vm, result.c_str(), result.length());
+}
+
 VALUE hash_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable* data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
@@ -248,6 +260,12 @@ static void adjust_capacity(VM *vm, HashTable *table, int capacity)
 VALUE hash_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    if (arguments[0] == NIL_VAL)
+    {
+        throw_exception_native(vm, "ArgumentException", "Hash key can't be nil");
+        return NIL_VAL;
+    }
+
     if (table->count + 1 > (table->capacity + 1) * TABLE_MAX_LOAD)
     {
         // Figure out the new table size.
@@ -331,7 +349,7 @@ VALUE hash_obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
     HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     std::stringstream stream;
     stream << "{";
-    size_t count = 0;
+    size_t count = 1;
     for (int32_t i = 0; i <= table->capacity; i++)
     {
         HashEntry *entry = &table->entries[i];
@@ -380,6 +398,7 @@ void init_hash(VM *vm)
         true);
     defineNativeMethod(vm, hash_iterator_class, &hash_iterator_has_next_p, "has_next?", 0, false);
     defineNativeMethod(vm, hash_iterator_class, &hash_iterator_get_next, "get_next", 0, false);
+    defineNativeMethod(vm, hash_iterator_class, &hash_iterator_to_string, "to_string", 0, false);
 }
 
 #ifdef __cplusplus

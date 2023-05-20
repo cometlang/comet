@@ -457,7 +457,7 @@ VALUE string_concatenate(VM *vm, VALUE self, int arg_count, VALUE *arguments)
         strncat(new_string, rhs->chars, rhs->length);
         return takeString(vm, new_string, lhs->length + rhs->length);
     }
-    return NIL_VAL;
+    return self;
 }
 
 VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))

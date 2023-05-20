@@ -194,11 +194,10 @@ VALUE list_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
     VALUE contains = arguments[0];
-    VALUE compare_func = AS_INSTANCE(contains)->klass->operators[OPERATOR_EQUALS];
     for (int i = 0; i < data->count; i++)
     {
-        call_function(vm, contains, compare_func, 1, &data->entries[i].item);
-        if (pop(vm) == TRUE_VAL) {
+        if (compare_objects(vm, contains, data->entries[i].item))
+        {
             return TRUE_VAL;
         }
     }

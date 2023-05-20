@@ -370,6 +370,22 @@ VALUE hash_obj_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
     return copyString(vm, result.c_str(), result.length());
 }
 
+VALUE hash_values(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    HashTable *table = GET_NATIVE_INSTANCE_DATA(HashTable, self);
+    VALUE result = list_create(vm);
+    push(vm, result);
+    for (int32_t i = 0; i <= table->capacity; i++)
+    {
+        HashEntry *entry = &table->entries[i];
+        if (entry->key != NIL_VAL)
+        {
+            list_add(vm, result, 1, &entry->value);
+        }
+    }
+    return pop(vm); // result
+}
+
 void init_hash(VM *vm)
 {
     hash_class = defineNativeClass(vm, "Hash", &hash_constructor, &hash_destructor, &hash_mark_contents, "Iterable", CLS_HASH, sizeof(HashTable), false);
@@ -382,6 +398,7 @@ void init_hash(VM *vm)
     defineNativeMethod(vm, hash_class, &hash_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, hash_class, &hash_get, "get", 2, false);
     defineNativeMethod(vm, hash_class, &hash_has_key_q, "has_key?", 1, false);
+    defineNativeMethod(vm, hash_class, &hash_values, "values", 0, false);
     defineNativeOperator(vm, hash_class, &hash_find, 1, OPERATOR_INDEX);
     defineNativeOperator(vm, hash_class, &hash_add, 2, OPERATOR_INDEX_ASSIGN);
 

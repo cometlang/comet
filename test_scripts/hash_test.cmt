@@ -45,3 +45,18 @@ function test_hash_contains_mixed() {
 
     unittest.Assert.that(some_hash).contains(1234)
 }
+
+function test_hash_values() {
+    var some_hash = {
+        'key': 1234,
+        567: 'other value',
+        true: false,
+    }
+
+    var result = some_hash.values()
+
+    unittest.Assert.that(result).has_count(3)
+    unittest.Assert.that(result).contains(1234)
+    unittest.Assert.that(result).contains('other value')
+    unittest.Assert.that(result).contains(false)
+}

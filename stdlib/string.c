@@ -493,6 +493,10 @@ VALUE string_get_at(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arg
 VALUE string_iterable_contains_q(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+    {
+        return FALSE_VAL;
+    }
     const char *string = strstr(data->chars, string_get_cstr(arguments[0]));
     if (string != NULL)
         return TRUE_VAL;

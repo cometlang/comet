@@ -111,3 +111,9 @@ function test_format_with_unicode() {
     var formatted = String.format('Strīng mit unic{0}de', 'ö')
     unittest.Assert.that(formatted).is_equal_to('Strīng mit unicöde', 'Unicode formatted string did not match')
 }
+
+function test_contains_non_string() {
+    var str = 'This is a string'
+
+    unittest.Assert.that(str).does_not_contain(4)
+}

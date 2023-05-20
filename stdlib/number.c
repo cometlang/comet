@@ -45,6 +45,15 @@ VALUE number_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 VALUE number_operator(VM* vm, VALUE self, VALUE* arguments, OPERATOR op)
 {
     VALUE arg = arguments == NULL ? NIL_VAL : arguments[0];
+    if (!IS_NUMBER(arg))
+    {
+        if (op == OPERATOR_EQUALS)
+            return FALSE_VAL;
+
+        throw_exception_native(vm, "ArgumentException", "argument must be a Number");
+        return NIL_VAL;
+    }
+
     switch (op)
     {
     case OPERATOR_MULTIPLICATION:
@@ -182,6 +191,11 @@ VALUE number_min(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
     return create_number(vm, fmin(lhs, rhs));
 }
 
+VALUE number_compare(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    return number_operator(vm, self, arguments, OPERATOR_EQUALS);
+}
+
 static unsigned int rand_seed;
 VALUE number_random(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
@@ -234,4 +248,6 @@ void complete_number(VM *vm)
     defineNativeMethod(vm, number_class, &number_abs, "absolute_value", 0, false);
     defineNativeMethod(vm, number_class, &number_max, "max", 2, true);
     defineNativeMethod(vm, number_class, &number_min, "min", 2, true);
+
+    defineNativeOperator(vm, number_class, &number_compare, 1, OPERATOR_EQUALS);
 }

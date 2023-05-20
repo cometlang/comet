@@ -8,3 +8,40 @@ function test_static_hash_inititalisation() {
 
     unittest.Assert.that(some_hash['key']).is_equal_to('value')
 }
+
+function test_hash_with_number_keys() {
+    var some_hash = {
+        123: 'value',
+        456: 'other value',
+    }
+
+    unittest.Assert.that(some_hash[123]).is_equal_to('value')
+}
+
+function test_hash_contains_string() {
+    var some_hash = {
+        "key": "value",
+        "other key" : "other value",
+    }
+
+    unittest.Assert.that(some_hash).contains('value')
+}
+
+function test_hash_contains_number() {
+    var some_hash = {
+        "key": 123,
+        "other key" : 456,
+    }
+
+    unittest.Assert.that(some_hash).contains(123)
+}
+
+function test_hash_contains_mixed() {
+    var some_hash = {
+        'key': 1234,
+        567: 'other value',
+        true: DateTime.now(),
+    }
+
+    unittest.Assert.that(some_hash).contains(1234)
+}

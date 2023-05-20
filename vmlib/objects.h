@@ -44,4 +44,6 @@ static inline bool isObjOfStdlibClassType(Value value, ClassType type)
         AS_INSTANCE(value)->klass->classType == type;
 }
 
+bool compare_objects(VM *vm, VALUE lhs, VALUE rhs);
+
 #endif

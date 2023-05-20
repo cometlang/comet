@@ -63,27 +63,6 @@ VALUE set_create(VM *vm)
     return pop(vm);
 }
 
-static bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
-{
-    // try the cheap comparison first (also covers non-instance objects, like types)
-    if (lhs == rhs)
-        return true;
-    if (IS_NUMBER(lhs) && IS_NUMBER(rhs))
-    {
-        return number_get_value(lhs) == number_get_value(rhs);
-    }
-    else if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)) &&
-             (IS_NATIVE_INSTANCE(rhs) || IS_INSTANCE(rhs)))
-    {
-        ObjInstance *obj = AS_INSTANCE(lhs);
-        call_function(vm, lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
-        if (pop(vm) == TRUE_VAL)
-            return true;
-    }
-
-    return false;
-}
-
 static uint32_t getIndex(VM *vm, Value value, int capacity)
 {
     call_function(vm, value, common_strings[STRING_HASH], 0, NULL);

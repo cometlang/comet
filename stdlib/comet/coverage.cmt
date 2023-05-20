@@ -10,7 +10,11 @@ function generate() {
     var output = {}
     var modules = get_imported_modules()
     foreach (var module in modules) {
-        output[module.filename()] = module.get_execution_counts()
+        var counts = module.get_execution_counts()
+        foreach (var func_key in counts) {
+            var func = counts[func_key]
+        }
+        output[module.filename()] = counts
     }
 
     json.to_json_file(output, output_filename)

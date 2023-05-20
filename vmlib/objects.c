@@ -374,3 +374,23 @@ OPERATOR getOperatorFromToken(TokenType_t token)
 
     return OPERATOR_UNKNOWN;
 }
+
+bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
+{
+    // try the cheap comparison first (also covers non-instance objects, like types)
+    if (lhs == rhs)
+        return true;
+    if (IS_NUMBER(lhs) && IS_NUMBER(rhs))
+    {
+        return number_get_value(lhs) == number_get_value(rhs);
+    }
+    else if ((IS_NATIVE_INSTANCE(lhs) || IS_INSTANCE(lhs)))
+    {
+        ObjInstance *obj = AS_INSTANCE(lhs);
+        call_function(vm, lhs, obj->klass->operators[OPERATOR_EQUALS], 1, &rhs);
+        if (pop(vm) == TRUE_VAL)
+            return true;
+    }
+
+    return false;
+}

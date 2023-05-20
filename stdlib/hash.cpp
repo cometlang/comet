@@ -82,14 +82,13 @@ VALUE hash_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE 
 {
     HashTable* data = GET_NATIVE_INSTANCE_DATA(HashTable, self);
     VALUE contains = arguments[0];
-    VALUE compare_func = AS_INSTANCE(contains)->klass->operators[OPERATOR_EQUALS];
-    for (int i = 0; i < data->count; i++)
+    for (int i = 0; i < data->capacity; i++)
     {
         HashEntry entry = data->entries[i];
         if (entry.key == NIL_VAL)
             continue;
-        call_function(vm, contains, compare_func, 1, &data->entries[i].value);
-        if (pop(vm) == TRUE_VAL) {
+        if (compare_objects(vm, contains, data->entries[i].value))
+        {
             return TRUE_VAL;
         }
     }
@@ -162,7 +161,7 @@ static HashEntry *find_entry(VM *vm, HashEntry *entries, int capacity, Value key
                     tombstone = entry;
             }
         }
-        else if (entry->key == key) // Need to use the function for == operator
+        else if (compare_objects(vm, key, entry->key))
         {
             // We found the key.
             return entry;

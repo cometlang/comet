@@ -120,60 +120,110 @@ function parse_from_file(filename) {
     return parse_from_string(sceneContents)
 }
 
-function _get_string_for_obj(obj) {
-    if (obj is Hash) {
-        return _output_hash(obj)
-    } else if (obj is List) {
-        return _output_list(obj)
-    } else if (obj is String || obj is DateTime) {
-        return String.format('"{0}"', obj.to_string())
-    } else if (obj is Number) {
-        return obj.to_string()
-    } else {
-        throw ArgumentException('Unsupported json output type: ' + obj.class_name())
+class JsonFormatter {
+    init(pretty, indent) {
+        self.pretty = pretty
+        self.indent = indent
+        self.current_indent = 0
+    }
+
+    format(obj) {
+        if (obj is Hash) {
+            return self._output_hash(obj)
+        } else {
+            return self._output_list(obj)
+        }
+    }
+
+    _indent(builder) {
+        if (self.pretty) {
+            builder.append('\n')
+            for (var i = 0; i < self.current_indent; i+=1) {
+                builder.append(' ')
+            }
+        }
+    }
+
+    _unindent(builder) {
+        if (self.pretty) {
+            for (var i = 0; i < self.current_indent; i+=1) {
+                builder.pop()
+            }
+            builder.pop() # newline
+        }
+    }
+
+    _increase_indent() {
+        self.current_indent += self.indent
+    }
+
+    _decrease_indent() {
+        self.current_indent -= self.indent
+    }
+
+    _get_string_for_obj(obj) {
+        if (obj is Hash) {
+            return self._output_hash(obj)
+        } else if (obj is List) {
+            return self._output_list(obj)
+        } else if (obj is String || obj is DateTime) {
+            return String.format('"{0}"', obj.to_string())
+        } else if (obj is Number) {
+            return obj.to_string()
+        } else {
+            throw ArgumentException('Unsupported json output type: ' + obj.class_name())
+        }
+    }
+
+    _output_hash(hash) {
+        var result = StringBuilder()
+        result.append('{')
+        self._increase_indent()
+        self._indent(result)
+        foreach (var key in hash) {
+            var obj = hash[key]
+            var out_string = self._get_string_for_obj(obj)
+            result.append(String.format('"{0}": {1},', key, out_string))
+            self._indent(result)
+        }
+        if (!hash.empty?()) {
+            self._unindent(result)
+            # result.pop()
+            result.pop()
+        }
+        self._decrease_indent()
+        self._indent(result)
+        result.append('}')
+        return result.to_string()
+    }
+
+    _output_list(list) {
+        var result = StringBuilder()
+        result.append('[')
+        self._indent(result)
+        self._increase_indent()
+        foreach (var item in list) {
+            result.append(self._get_string_for_obj(item))
+            result.append(',')
+            self._indent(result)
+        }
+        if (!list.empty?()) {
+            self._unindent(result)
+            result.pop()
+        }
+        self._decrease_indent()
+        self._indent(result)
+        result.append(']')
+        return result.to_string()
     }
 }
 
-function _output_hash(hash) {
-    var result = StringBuilder()
-    result.append('{')
-    foreach (var key in hash) {
-        var obj = hash[key]
-        var out_string = _get_string_for_obj(obj)
-        result.append(String.format('"{0}": {1}, ', key, out_string))
-    }
-    if (!hash.empty?()) {
-        result.pop()
-        result.pop()
-    }
-    result.append('}')
-    return result.to_string()
-}
-
-function _output_list(list) {
-    var result = StringBuilder()
-    result.append('[')
-    foreach (var item in list) {
-        result.append(_get_string_for_obj(item))
-        result.append(', ')
-    }
-    if (!hash.empty?()) {
-        result.pop()
-        result.pop()
-    }
-    result.append(']')
-    return result.to_string()
-}
-
-function to_json_string(obj) {
+function to_json_string(obj, pretty_print=true, indent=4) {
     if (!obj is Hash && !obj is List) {
         throw ArgumentException("json can only be output from a hash or a list")
     }
-    if (obj is Hash) {
-        return _output_hash(obj)
-    } else {
-        return _output_list(obj)
-    }
+    var formatter = JsonFormatter(pretty_print, indent)
+    return formatter.format(obj)
 }
 
 function to_json_file(obj, filename) {

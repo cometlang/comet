@@ -740,6 +740,26 @@ VALUE string_whitespace_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSE
     return TRUE_VAL;
 }
 
+VALUE string_multiply(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    if (!IS_NUMBER(arguments[0]))
+    {
+        throw_exception_native(vm, "ArgumentException", "String multiply argument must be a Number");
+        return NIL_VAL;
+    }
+    VALUE builder = create_string_builder(vm);
+    push(vm, builder);
+    StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
+    int num = number_get_value(arguments[0]);
+    for (int i = 0; i < num; i++)
+    {
+        string_builder_add_cstr(vm, builder, data->chars);
+    }
+    VALUE result = string_builder_to_string(vm, builder, 0, NULL);
+    pop(vm); // builder
+    return result;
+}
+
 void init_string(VM *vm, VALUE obj_klass)
 {
     string_class = bootstrapNativeClass(
@@ -773,6 +793,7 @@ void init_string(VM *vm, VALUE obj_klass)
     defineNativeOperator(vm, string_class, &string_concatenate, 1, OPERATOR_PLUS);
     defineNativeOperator(vm, string_class, &string_equals, 1, OPERATOR_EQUALS);
     defineNativeOperator(vm, string_class, &string_get_at, 1, OPERATOR_INDEX);
+    defineNativeOperator(vm, string_class, &string_multiply, 1, OPERATOR_MULTIPLICATION);
 
     defineNativeOperator(vm, string_class, &string_greater_than, 1, OPERATOR_GREATER_THAN);
     defineNativeOperator(vm, string_class, &string_greater_equal, 1, OPERATOR_GREATER_EQUAL);

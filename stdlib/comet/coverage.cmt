@@ -11,8 +11,31 @@ function generate() {
     var modules = get_imported_modules()
     foreach (var module in modules) {
         var counts = module.get_execution_counts()
+        var module_lines_total = 0
+        var module_lines_hit = 0
+        var module_coverage = {
+            'functions': {}
+        }
         foreach (var func_key in counts) {
             var func = counts[func_key]
+            var func_lines = func.values()
+            var lines_hit = func_lines.filter((|x|) {
+                return x != 0
+            }).count()
+            var func_lines_total = func_lines.count()
+            var func_coverage = (lines_hit / func_lines_total) * 100
+            module_lines_total += func_lines_total
+            module_lines_hit += lines_hit
+            func['coverage'] = {
+                'total': func_lines_total,
+                'hit': lines_hit,
+                'percentage': func_coverage,
+            }
+        }
+        counts['coverage'] = {
+            'total': module_lines_total,
+            'hit': module_lines_hit,
+            'percentage': (module_lines_hit / module_lines_total) * 100,
         }
         output[module.filename()] = counts
     }

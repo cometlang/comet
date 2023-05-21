@@ -1,7 +1,7 @@
 function _skip_whitespace (iter) {
     while (iter.has_next?()) {
         var char = iter.peek_next()
-        if (char == ' ' || char == '\n' || char == '\r') {
+        if (char.whitespace?()) {
             iter.get_next()
         } else {
             return

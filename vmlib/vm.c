@@ -64,6 +64,15 @@ static void resetStack(VM *vm)
     vm->stackTop = vm->stack;
     vm->frameCount = 0;
     vm->openUpvalues = NULL;
+    for (int i = 0; i < FRAMES_MAX; i++)
+    {
+        CallFrame *frame = &vm->frames[i];
+        frame->bonusSplatArgCount = 0;
+        frame->closure = NULL;
+        frame->handlerCount = 0;
+        frame->ip = NULL;
+        frame->slots = NULL;
+    }
 }
 
 static CallFrame *currentFrame(VM *vm)

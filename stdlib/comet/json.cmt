@@ -188,7 +188,6 @@ class JsonFormatter {
         }
         if (!hash.empty?()) {
             self._unindent(result)
-            # result.pop()
             result.pop()
         }
         self._decrease_indent()

@@ -85,7 +85,7 @@ void string_builder_add_cstr(VM *vm, VALUE self, const char *cstr)
     int offset = 0;
     size_t remaining = strlen(cstr);
     utf8proc_ssize_t bytes_read = 0;
-    utf8proc_uint32_t codepoint = 0;
+    utf8proc_int32_t codepoint = 0;
     while (bytes_read > 0)
     {
         bytes_read = utf8proc_iterate((const utf8proc_uint8_t *)&cstr[offset], remaining, &codepoint);

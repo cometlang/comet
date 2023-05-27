@@ -847,8 +847,14 @@ static InterpretResult run(VM *vm)
             break;
         }
         case OP_EQUAL:
-            BINARY_OP(OPERATOR_EQUALS);
+        {
+            if (compare_objects(vm, peek(vm, 1), peek(vm, 0)))
+                push_to(vm, TRUE_VAL, 2);
+            else
+                push_to(vm, FALSE_VAL, 2);
+            pop(vm);
             break;
+        }
         case OP_GREATER:
             BINARY_OP(OPERATOR_GREATER_THAN);
             break;

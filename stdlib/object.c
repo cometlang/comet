@@ -128,6 +128,7 @@ void init_object(VM *vm, VALUE klass)
     defineNativeMethod(vm, klass, &obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &obj_to_string, "class_name", 0, false);
     defineNativeMethod(vm, klass, &cls_to_string, "to_string", 0, true);
+    defineNativeMethod(vm, klass, &obj_hash, "hash", 0, true);
     defineNativeMethod(vm, klass, &obj_nil_q, "nil?", 0, false);
     defineNativeMethod(vm, klass, &obj_compare_to, "compare_to", 1, false);
     defineNativeMethod(vm, klass, &obj_methods, "methods", 0, false);

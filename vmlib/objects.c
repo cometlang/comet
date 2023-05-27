@@ -392,5 +392,5 @@ bool compare_objects(VM *vm, VALUE lhs, VALUE rhs)
             return true;
     }
 
-    return false;
+    return lhs == rhs;
 }

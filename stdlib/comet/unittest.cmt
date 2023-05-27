@@ -101,6 +101,10 @@ class Assert {
         assert(self.value.empty?(), message)
     }
 
+    is_not_empty(message=nil) {
+        assert(!self.value.empty?(), message)
+    }
+
     static that(value) {
         return Assert(value)
     }

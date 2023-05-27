@@ -1,0 +1,35 @@
+import 'unittest' as unittest
+
+function test_nil?() {
+    var obj = Object()
+
+    unittest.Assert.that(obj).is_not_nil()
+}
+
+function test_type_equals() {
+    unittest.Assert.that(Object).is_equal_to(Object)
+}
+
+function test_class_name() {
+    var obj = Object()
+
+    unittest.Assert.that(obj.class_name()).is_equal_to('Object instance')
+}
+
+function test_methods() {
+    var obj = Object()
+
+    var result = obj.methods()
+
+    unittest.Assert.that(result).is_of_type(List)
+    unittest.Assert.that(result).is_not_empty()
+}
+
+function test_fields() {
+    var obj = Object()
+
+    var result = obj.fields()
+
+    unittest.Assert.that(result).is_of_type(List)
+    unittest.Assert.that(result).is_empty()
+}

@@ -60,3 +60,12 @@ function test_hash_values() {
     unittest.Assert.that(result).contains('other value')
     unittest.Assert.that(result).contains(false)
 }
+
+function test_hash_key_with_nonobject() {
+    var obj = Object()
+    var some_hash = {
+        Object: obj,
+    }
+
+    unittest.Assert.that(some_hash[Object]).is_equal_to(obj)
+}

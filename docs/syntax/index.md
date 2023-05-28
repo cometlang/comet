@@ -290,6 +290,9 @@ var my_lambda = (|arg1, arg2[, ...]|) {
 my_lambda('this is ', 'a string')
 ```
 
+Note that slightly strange opening and closing for a lambda argument list are `(|` and `|)` respectively.
+
+
 ## Optional arguments
 Every function-like procedure (functions, lambdas, methods, etc) can have default arguments declared by adding an equals sign (`=`) and a constant value as the default.  The only possible default values to an optional argument are as follows:
 `true, false, nil, literal number, literal string, [], {}`  

@@ -6,9 +6,10 @@
 - [ArgumentException](argument_exception.md)
 - [Boolean](boolean.md)
 - [Datetime](datetime.md)
-- [Duration](duration.md)
 - [Directory](directory.md)
+- [Duration](duration.md)
 - [Enum](enum.md)
+- [ENV](env.md)
 - [Exception](exception.md)
 - [File](file.md)
 - [Hash](hash.md)
@@ -24,6 +25,7 @@
 - [StringBuilder](string_builder.md)
 - [Thread](thread.md)
 - [Thread Synchronisation Primitives](thread_synchronisation.md)
+- [UnitTest](unittest.md)
 
 # Modules
 - [csv](csv.md)
@@ -57,3 +59,6 @@
 
 ## exit
 - `exit(exit_status)` simple wrapper for the C function to exit the program with the given return code.  Makes no attempt to clean anything up.
+
+## get_imported_modules
+- `get_imported_modules()` gets all of the [Modules](module.md) currently imported to the interpreter

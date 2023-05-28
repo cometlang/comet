@@ -14,7 +14,7 @@ Exception(message)
 
 ## Known Subclasses
  - `AssertionException`
- - `ArgumentException`
+ - [ArgumentException](argument_exception.md)
  - `IOException`
  - `SocketException`
  - `TimeoutException`

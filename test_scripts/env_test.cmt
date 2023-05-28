@@ -1,0 +1,22 @@
+import 'unittest' as unittest
+
+function test_env_vars() {
+    var value = 'other'
+
+    # set the variable
+    ENV['something'] = value
+
+    # get the variable
+    var result = ENV['something']
+
+    unittest.Assert.that(result).is_equal_to(value)
+    
+    # unset the variable
+    ENV['something'] = nil
+
+    # assert that the environment variable is no longer set
+    unittest.Assert.that((||) {
+        ENV['something']
+    }).throws()
+}
+

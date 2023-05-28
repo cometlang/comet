@@ -11,8 +11,21 @@
 
 extern "C" {
 
-VALUE env_set_value(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
+VALUE env_set_value(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALUE *arguments)
 {
+#ifndef WIN32
+    if (arguments[1] == NIL_VAL)
+    {
+        unsetenv(string_get_cstr(arguments[0]));
+        return NIL_VAL;
+    }
+#endif
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING) ||
+        !isObjOfStdlibClassType(arguments[1], CLS_STRING))
+    {
+        throw_exception_native(vm, "ArgumentException", "Environment variable names and values can only be strings");
+        return NIL_VAL;
+    }
 #ifndef WIN32
     if (setenv(string_get_cstr(arguments[0]), string_get_cstr(arguments[1]), true) != 0)
     {

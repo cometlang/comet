@@ -90,8 +90,6 @@ static VALUE enum_iterator_get_next(VM UNUSED(*vm), VALUE UNUSED(self), int UNUS
     return iter->data->array.values[iter->index++];
 }
 
-
-
 static void enum_constructor(void *instanceData)
 {
     EnumData *data = (EnumData *)instanceData;

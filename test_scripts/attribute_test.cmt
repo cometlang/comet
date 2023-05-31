@@ -1,0 +1,12 @@
+import 'unittest' as unittest
+
+class Attribute {
+    init(str) {
+        self.str = str
+    }
+}
+
+@Attribute('this is an attribute arg')
+function test_attribute() {
+    unittest.Assert.pass()
+}

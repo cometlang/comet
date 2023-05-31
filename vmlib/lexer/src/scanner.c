@@ -395,6 +395,8 @@ Token scanToken(Scanner *scanner)
         return makeToken(scanner, TOKEN_BITWISE_NEGATE);
     case '^':
         return makeToken(scanner, TOKEN_BITWISE_XOR);
+    case '@':
+        return makeToken(scanner, TOKEN_AT_SYMBOL);
     case '-':
         return makeToken(scanner, match(scanner, '=') ? TOKEN_MINUS_EQUAL : TOKEN_MINUS);
     case '+':

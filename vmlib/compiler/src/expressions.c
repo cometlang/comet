@@ -318,6 +318,16 @@ static void unary(Parser *parser, bool UNUSED(canAssign))
     }
 }
 
+static void attribute(Parser *parser, bool canAssign)
+{
+    consume(parser, TOKEN_IDENTIFIER, "Expected an identifier");
+    namedVariable(parser, parser->previous, canAssign);
+    consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after an attribute");
+    call(parser, canAssign);
+    // Figure out how to convey the number of attributes to the function definition
+    emitByte(parser, OP_POP);
+}
+
 static void literal_hash(Parser *parser, bool canAssign)
 {
     namedVariable(parser, syntheticToken("Hash"), canAssign);
@@ -462,6 +472,7 @@ ParseRule rules[NUM_TOKENS] = {
     [TOKEN_VBAR]             = {NULL,         binary,    PREC_BITWISE_OR},
     [TOKEN_PERCENT]          = {NULL,         binary,    PREC_FACTOR},
     [TOKEN_QUESTION_MARK]    = {NULL,         ternary,   PREC_TERNARY},
+    [TOKEN_AT_SYMBOL]        = {attribute,    NULL,      PREC_NONE},
     // One or two character tokens.
     [TOKEN_BANG]             = {unary,        NULL,      PREC_UNARY},
     [TOKEN_BANG_EQUAL]       = {NULL,         binary,    PREC_EQUALITY},

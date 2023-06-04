@@ -69,7 +69,7 @@ static void defaultParameter(Parser *parser)
     defineParameterValue(parser, constantVal);
 }
 
-void method(Parser *parser)
+void method(Parser *parser, uint8_t attributeCount)
 {
     bool isStatic = match(parser, TOKEN_STATIC);
 
@@ -86,7 +86,7 @@ void method(Parser *parser)
         type = TYPE_INITIALIZER;
     }
 
-    function(parser, type);
+    function(parser, type, attributeCount);
 
     if (isStatic)
     {
@@ -115,11 +115,11 @@ void operator_(Parser *parser)
         }
     }
     // For all intents and purposes, this is a method.
-    function(parser, TYPE_METHOD);
+    function(parser, TYPE_METHOD, 0);
     emitBytes(parser, OP_DEFINE_OPERATOR, op);
 }
 
-void classDeclaration(Parser *parser)
+void classDeclaration(Parser *parser, uint8_t attributeCount)
 {
     bool isFinal = match(parser, TOKEN_FINAL);
 
@@ -129,7 +129,7 @@ void classDeclaration(Parser *parser)
     declareVariable(parser);
 
     emitBytes(parser, OP_CLASS, nameConstant);
-    emitByte(parser, isFinal);
+    emitBytes(parser, isFinal, attributeCount);
     defineVariable(parser, nameConstant);
 
     ClassCompiler classCompiler;
@@ -179,9 +179,13 @@ void classDeclaration(Parser *parser)
         {
             operator_(parser);
         }
+        else if (check(parser, TOKEN_AT_SYMBOL))
+        {
+            expression(parser);
+        }
         else
         {
-            method(parser);
+            method(parser, 0);
         }
     }
 
@@ -192,7 +196,7 @@ void classDeclaration(Parser *parser)
     parser->currentClass = parser->currentClass->enclosing;
 }
 
-void function(Parser *parser, FunctionType type)
+void function(Parser *parser, FunctionType type, uint8_t attributeCount)
 {
     Compiler compiler;
     initCompiler(&compiler, type, parser);
@@ -234,6 +238,7 @@ void function(Parser *parser, FunctionType type)
     // Create the function object.
     ObjFunction *function = endCompiler(parser);
     emitBytes(parser, OP_CLOSURE, makeConstant(parser, OBJ_VAL(function)));
+    emitByte(parser, attributeCount);
 
     for (int i = 0; i < function->upvalueCount; i++)
     {
@@ -242,11 +247,11 @@ void function(Parser *parser, FunctionType type)
     }
 }
 
-void functionDeclaration(Parser *parser)
+void functionDeclaration(Parser *parser, uint8_t attributeCount)
 {
     uint8_t global = parseVariable(parser, "Expected a function name");
     markInitialized(parser);
-    function(parser, TYPE_FUNCTION);
+    function(parser, TYPE_FUNCTION, attributeCount);
     defineVariable(parser, global);
 }
 
@@ -318,11 +323,11 @@ void declaration(Parser *parser)
 {
     if (match(parser, TOKEN_CLASS))
     {
-        classDeclaration(parser);
+        classDeclaration(parser, 0);
     }
     else if (match(parser, TOKEN_FUN))
     {
-        functionDeclaration(parser);
+        functionDeclaration(parser, 0);
     }
     else if (match(parser, TOKEN_ENUM))
     {

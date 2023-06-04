@@ -966,6 +966,11 @@ static InterpretResult run(VM *vm)
         case OP_CLOSURE:
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
+            uint8_t attributeCount = READ_BYTE();
+            for (int i = 0; i < attributeCount; i++)
+            {
+                pop(vm);
+            }
             ObjClosure *closure = newClosure(vm, function);
             for (int i = 0; i < closure->upvalueCount; i++)
             {
@@ -1008,10 +1013,16 @@ static InterpretResult run(VM *vm)
         {
             push(vm, READ_CONSTANT());
             bool final = READ_BYTE();
+            uint8_t attributeCount = READ_BYTE();
             const char *name = string_get_cstr(peek(vm, 0));
             newClass(vm, name, CLS_USER_DEF, final);
             swapTop(vm);
             pop(vm);
+            for (int i = 0; i < attributeCount; i++)
+            {
+                // swapTop(vm);
+                // pop(vm);
+            }
             break;
         }
         case OP_INHERIT:

@@ -6,7 +6,22 @@ class Attribute {
     }
 }
 
-@Attribute('this is an attribute arg')
+@Attribute('This is a function attribute')
 function test_attribute() {
     unittest.Assert.pass()
+}
+
+@Attribute('This is a class attribute')
+class Something {
+
+    @Attribute('this is a method attribute')
+    some_method() {
+
+    }
+
+    @Attribute('this is a static method attribute')
+    static some_static_method() {
+
+    }
+
 }

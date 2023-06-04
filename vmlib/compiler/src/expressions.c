@@ -6,6 +6,7 @@
 #include "expressions.h"
 #include "statements.h"
 #include "variables.h"
+#include "declarations.h"
 
 static uint8_t argumentList(Parser *parser, TokenType_t closingToken)
 {
@@ -320,12 +321,32 @@ static void unary(Parser *parser, bool UNUSED(canAssign))
 
 static void attribute(Parser *parser, bool canAssign)
 {
-    consume(parser, TOKEN_IDENTIFIER, "Expected an identifier");
-    namedVariable(parser, parser->previous, canAssign);
-    consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after an attribute");
-    call(parser, canAssign);
-    // Figure out how to convey the number of attributes to the function definition
-    emitByte(parser, OP_POP);
+    int attributeCount = 0;
+    do {
+        consume(parser, TOKEN_IDENTIFIER, "Expected an identifier");
+        namedVariable(parser, parser->previous, canAssign);
+        consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after an attribute name");
+        call(parser, canAssign);
+        match(parser, TOKEN_EOL);
+        attributeCount++;
+    } while (match(parser, TOKEN_AT_SYMBOL));
+    if (match(parser, TOKEN_FUN))
+    {
+        functionDeclaration(parser, attributeCount);
+    }
+    else if (match(parser, TOKEN_CLASS))
+    {
+        classDeclaration(parser, attributeCount);
+    }
+    else if (parser->currentClass != NULL &&
+        (check(parser, TOKEN_IDENTIFIER) || check(parser, TOKEN_STATIC)))
+    {
+        method(parser, attributeCount);
+    }
+    else
+    {
+        errorAtCurrent(parser, "Epected a function or class after an attribute");
+    }
 }
 
 static void literal_hash(Parser *parser, bool canAssign)
@@ -444,6 +465,7 @@ static void lambda(Parser *parser, bool UNUSED(canAssign))
     // Create the function object.
     ObjFunction *function = endCompiler(parser);
     emitBytes(parser, OP_CLOSURE, makeConstant(parser, OBJ_VAL(function)));
+    emitByte(parser, 0); // 0 attributes on a lambda
 
     for (int i = 0; i < function->upvalueCount; i++)
     {

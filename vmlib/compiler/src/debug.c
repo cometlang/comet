@@ -62,8 +62,11 @@ static int classInstruction(const char *name, Chunk *chunk, int offset)
     uint8_t constant = chunk->code[offset + 1];
     printf("%-16s %4d '", name, constant);
     printObject(chunk->constants.values[constant]);
-    printf("' %s\n", chunk->code[offset + 2] ? "true" : "false");
-    return offset + 3;
+    printf("' final: %s, attribute count: %u\n",
+        chunk->code[offset + 2] ? "true" : "false",
+        chunk->code[offset + 3]);
+
+    return offset + 4;
 }
 
 static int exceptionHandlerInstruction(const char *name, Chunk *chunk, int offset)
@@ -172,7 +175,7 @@ int disassembleInstruction(Chunk *chunk, int offset)
     {
         offset++;
         uint8_t constant = chunk->code[offset++];
-        printf("%-16s %4d ", "OP_CLOSURE", constant);
+        printf("%-16s %4d attribute count: %u ", "OP_CLOSURE", constant, chunk->code[offset++]);
         printObject(chunk->constants.values[constant]);
         printf("\n");
 
@@ -198,6 +201,8 @@ int disassembleInstruction(Chunk *chunk, int offset)
         return simpleInstruction("OP_INHERIT", offset);
     case OP_METHOD:
         return constantInstruction("OP_METHOD", chunk, offset);
+    case OP_STATIC_METHOD:
+        return constantInstruction("OP_STATIC_METHOD", chunk, offset);
     case OP_INDEX:
         return byteInstruction("OP_INDEX", chunk, offset);
     case OP_INDEX_ASSIGN:

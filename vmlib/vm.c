@@ -967,9 +967,11 @@ static InterpretResult run(VM *vm)
         {
             ObjFunction *function = AS_FUNCTION(READ_CONSTANT());
             uint8_t attributeCount = READ_BYTE();
+            function->attributes = ALLOCATE(Value, attributeCount);
+            function->attributeCount = attributeCount;
             for (int i = 0; i < attributeCount; i++)
             {
-                pop(vm);
+                function->attributes[i] = pop(vm);
             }
             ObjClosure *closure = newClosure(vm, function);
             for (int i = 0; i < closure->upvalueCount; i++)

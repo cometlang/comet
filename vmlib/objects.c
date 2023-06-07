@@ -84,6 +84,8 @@ ObjFunction *newFunction(VM *vm, const char *filename, VALUE module)
     function->name = NIL_VAL;
     function->optionalArgCount = 0;
     function->module = module;
+    function->attributes = NULL;
+    function->attributeCount = 0;
     initChunk(&function->chunk, filename);
     return function;
 }

@@ -116,6 +116,8 @@ typedef struct
     Value module;
     uint16_t optionalArguments[MAX_ARGS];
     uint8_t optionalArgCount;
+    Value *attributes;
+    int attributeCount;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);

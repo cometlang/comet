@@ -232,6 +232,10 @@ static void blackenObject(Obj *object)
         markValue(function->name);
         markValue(function->module);
         markArray(&function->chunk.constants);
+        for (int i = 0; i < function->attributeCount; i++)
+        {
+            markValue(function->attributes[i]);
+        }
         break;
     }
     case OBJ_INSTANCE:
@@ -344,6 +348,10 @@ static void freeObject(Obj *object)
     {
         ObjFunction *function = (ObjFunction *)object;
         freeChunk(&function->chunk);
+        if (function->attributes != NULL)
+        {
+            FREE_ARRAY(Value, function->attributes, function->attributeCount);
+        }
         FREE(ObjFunction, object);
         break;
     }

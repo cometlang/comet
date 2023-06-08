@@ -214,15 +214,26 @@ static void blackenObject(Obj *object)
         {
             markValue(klass->operators[i]);
         }
+        for (int i = 0; i < klass->attributeCount; i++)
+        {
+            markValue(klass->attributes[i]);
+        }
         break;
     }
     case OBJ_CLOSURE:
     {
         ObjClosure *closure = (ObjClosure *)object;
         markObject((Obj *)closure->function);
+        markValue(closure->function->name);
+        markValue(closure->function->module);
+        markArray(&closure->function->chunk.constants);
         for (int i = 0; i < closure->upvalueCount; i++)
         {
             markObject((Obj *)closure->upvalues[i]);
+        }
+        for (int i = 0; i < closure->function->attributeCount; i++)
+        {
+            markValue(closure->function->attributes[i]);
         }
         break;
     }
@@ -320,6 +331,7 @@ static void freeObject(Obj *object)
         FREE_ARRAY(char, klass->name, strlen(klass->name));
         freeTable(&klass->methods);
         freeTable(&klass->staticMethods);
+        FREE_ARRAY(Value, klass->attributes, klass->attributeCount);
         FREE(ObjClass, object);
         break;
     }
@@ -329,6 +341,7 @@ static void freeObject(Obj *object)
         FREE_ARRAY(char, klass->klass.name, strlen(klass->klass.name));
         freeTable(&klass->klass.methods);
         freeTable(&klass->klass.staticMethods);
+        FREE_ARRAY(Value, klass->klass.attributes, klass->klass.attributeCount);
         FREE(ObjNativeClass, object);
         break;
     }

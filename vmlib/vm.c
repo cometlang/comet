@@ -1017,11 +1017,14 @@ static InterpretResult run(VM *vm)
             bool final = READ_BYTE();
             uint8_t attributeCount = READ_BYTE();
             const char *name = string_get_cstr(peek(vm, 0));
-            newClass(vm, name, CLS_USER_DEF, final);
+            ObjClass *klass = newClass(vm, name, CLS_USER_DEF, final);
             swapTop(vm);
-            pop(vm);
+            pop(vm); // class name
+            klass->attributes = ALLOCATE(Value, attributeCount);
+            klass->attributeCount = attributeCount;
             for (int i = 0; i < attributeCount; i++)
             {
+                klass->attributes[i] = peek(vm, i + 1);
                 // swapTop(vm);
                 // pop(vm);
             }

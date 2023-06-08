@@ -154,6 +154,8 @@ typedef struct sObjClass
     struct sObjClass *super_;
     ClassType classType;
     bool final;
+    Value *attributes;
+    int attributeCount;
 } ObjClass;
 
 typedef void (*NativeConstructor)(void *data);

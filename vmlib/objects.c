@@ -26,6 +26,8 @@ static void init_class(ObjClass *klass, const char *name, ClassType classType, b
     klass->super_ = NULL;
     klass->classType = classType;
     klass->final = final;
+    klass->attributeCount = 0;
+    klass->attributes = NULL;
     strncpy(klass->name, name, length);
     initTable(&klass->methods);
     initTable(&klass->staticMethods);

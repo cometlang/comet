@@ -26,6 +26,17 @@ VALUE file_static_dirname(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VA
     return directory_create(vm, std::filesystem::path(path).parent_path());
 }
 
+VALUE file_static_join_path(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
+{
+    auto path = std::filesystem::path(string_get_cstr(arguments[0]));
+    for (int i = 1; i < arg_count; i++)
+    {
+        path = path / std::filesystem::path(string_get_cstr(arguments[i]));
+    }
+    auto path_string = path.string();
+    return copyString(vm, path_string.c_str(), path_string.length());
+}
+
 void init_file(VM* vm)
 {
     VALUE klass = defineNativeClass(vm, "File", &file_constructor, &file_destructor, NULL, "Object", CLS_FILE, sizeof(FileData), true);
@@ -43,6 +54,7 @@ void init_file(VM* vm)
     defineNativeMethod(vm, klass, &file_static_rename, "rename", 2, true);
     defineNativeMethod(vm, klass, &file_static_copy, "copy", 2, true);
     defineNativeMethod(vm, klass, &file_static_dirname, "directory", 1, true);
+    defineNativeMethod(vm, klass, &file_static_join_path, "join_path", 1, true);
 
     fopen_params = enum_create(vm);
     push(vm, fopen_params);

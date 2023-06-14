@@ -14,12 +14,14 @@ class SomeClass
 class final FinalClass : SomeClass
 {
     init(param) {
+        self.made_it_to_super = false
+        self.param_correct = false
         super.init(param)
     }
 }
 
 function test_class_inherits_constructor() {
     var instance = FinalClass("hello")
-    unittest.Assert.that(made_it_to_super)
-    unittest.Assert.that(param_correct)
+    unittest.Assert.that(made_it_to_super).is_true()
+    unittest.Assert.that(param_correct).is_true()
 }

@@ -572,7 +572,7 @@ static bool bindMethod(VM *vm, ObjClass *klass, Value name)
     Value method;
     if (!tableGet(&klass->methods, name, &method))
     {
-        runtimeError(vm, "Undefined method '%s'.", string_get_cstr(name));
+        runtimeError(vm, "Undefined method or field '%s'.", string_get_cstr(name));
         return false;
     }
 
@@ -1025,6 +1025,7 @@ static InterpretResult run(VM *vm)
             for (int i = 0; i < attributeCount; i++)
             {
                 klass->attributes[i] = peek(vm, i + 1);
+                // klass->attributes[i] = peek(vm, 1);
                 // swapTop(vm);
                 // pop(vm);
             }
@@ -1212,7 +1213,6 @@ static InterpretResult run(VM *vm)
     }
 
 #undef BINARY_OP
-#undef READ_STRING
 #undef READ_SHORT
 #undef READ_CONSTANT
 #undef READ_BYTE

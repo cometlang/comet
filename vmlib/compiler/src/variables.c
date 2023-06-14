@@ -74,7 +74,7 @@ static int addUpvalue(Compiler *compiler, Parser *parser, uint8_t index, bool is
 
     if (upvalueCount == MAX_VAR_COUNT)
     {
-        error(parser, "Too many closure variables in function.");
+        error(parser, "Too many closure variables in the function.");
         return 0;
     }
 
@@ -174,7 +174,7 @@ void defineVariable(Parser *parser, uint8_t global)
 
 void namedVariable(Parser *parser, Token name, bool canAssign)
 {
-    uint8_t getOp, setOp;
+    OpCode getOp, setOp;
     int arg = resolveLocal(parser, parser->currentFunction, &name);
     if (arg != UNRESOLVED_VARIABLE_INDEX)
     {

@@ -139,9 +139,7 @@ void classDeclaration(Parser *parser, uint8_t attributeCount)
 
     if (match(parser, TOKEN_COLON))
     {
-        consume(parser, TOKEN_IDENTIFIER, "Expect superclass name.");
-        variable(parser, false);
-
+        consume(parser, TOKEN_IDENTIFIER, "Expected a class name to inherit.");
         if (identifiersEqual(&className, &parser->previous))
         {
             error(parser, "A class cannot inherit from itself.");
@@ -157,14 +155,14 @@ void classDeclaration(Parser *parser, uint8_t attributeCount)
     {
         namedVariable(parser, syntheticToken("Object"), false);
     }
+    namedVariable(parser, className, false);
+    emitByte(parser, OP_INHERIT);
+
     beginScope(parser);
 
     // Store the superclass in a local variable named "super".
     int local = addLocal(parser, syntheticToken("super"));
     defineVariable(parser, local);
-
-    namedVariable(parser, className, false);
-    emitByte(parser, OP_INHERIT);
 
     namedVariable(parser, className, false);
     match(parser, TOKEN_EOL); // optional end of line.

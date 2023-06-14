@@ -247,8 +247,6 @@ static void or_(Parser *parser, bool UNUSED(canAssign))
 
 static void pushSuperclass(Parser *parser)
 {
-    if (parser->currentClass == NULL)
-        return;
     namedVariable(parser, syntheticToken("super"), false);
 }
 

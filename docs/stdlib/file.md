@@ -22,3 +22,4 @@ inherits [Object](object.md)
 - `file?(path)` returns a [Boolean](boolean.md) if the given path is a regular file
 - `read_all_lines(path)` opens the path for reading as text, returning a [List](list.md) of the individual lines, closing the file when finished
 - `delete(path)` deletes the file at the path 
+- `join_path(path, [components]*)` joins the path and the following path components with the OS-dependent path separator and returns a string representation of it

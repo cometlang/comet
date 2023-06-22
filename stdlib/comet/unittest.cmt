@@ -129,9 +129,9 @@ if (__MAIN__ == __FILE__) {
     foreach (var to_import in args) {
         import to_import as imported
         foreach (var func in imported.functions()) {
-            if (func.starts_with?('test_')) {
+            if (func.name().starts_with?('test_')) {
                 total += 1
-                var test_name = String.format('{0}:{1}', imported.filename(), func)
+                var test_name = String.format('{0}:{1}', imported.filename(), func.name())
                 tests[test_name] = true
                 try {
                     call_function(imported, func)

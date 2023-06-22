@@ -12,6 +12,7 @@
 - [ENV](env.md)
 - [Exception](exception.md)
 - [File](file.md)
+- [Function](function.md)
 - [Hash](hash.md)
 - [Image](image.md)
 - [Iterable](iterable.md)
@@ -62,3 +63,6 @@
 
 ## get_imported_modules
 - `get_imported_modules()` gets all of the [Modules](module.md) currently imported to the interpreter
+
+## call_function
+- `call_function(receiver, method, [arguments, ...])` calls the method on the receiver.  If the method is a function object, then the receiver may be `nil`.  If the method is a name of a method (a string), then the receiver must be an instance.

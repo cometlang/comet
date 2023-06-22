@@ -1245,6 +1245,11 @@ void call_function(VM *vm, VALUE receiver, VALUE method, int arg_count, VALUE *a
         {
             push(vm, peek(frame, 0));
         }
+        else
+        {
+            push(vm, NIL_VAL);
+            throw_exception_native(vm, "InvokeException", "Function call failed");
+        }
     }
     else if (IS_NATIVE_METHOD(method))
     {

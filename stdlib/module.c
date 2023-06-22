@@ -85,7 +85,7 @@ VALUE module_functions(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*
         if (IS_BOUND_METHOD(val) || IS_FUNCTION(val) || IS_CLOSURE(val) ||
             IS_NATIVE(val) || IS_NATIVE_METHOD(val))
         {
-            list_add(vm, result, 1, &field);
+            list_add(vm, result, 1, &val);
         }
         pop(vm); // field
         has_next = list_iterator_has_next_p(vm, iter, 0, NULL);

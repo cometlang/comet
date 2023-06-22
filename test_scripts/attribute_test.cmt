@@ -10,7 +10,7 @@ class Attribute {
 function attribute_function() {
 }
 
-# @Attribute('This is a class attribute')
+@Attribute('This is a class attribute')
 class Something {
 
     @Attribute('this is a method attribute')

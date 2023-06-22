@@ -20,12 +20,13 @@ set(SOURCE
   env.cpp
   exception.c
   file_common.cpp
-  functions.c
+  function.c
   hash.cpp
   image.c
   iterable.c
   list.cpp
   module.c
+  native_functions.c
   nil.c
   number.c
   object.c

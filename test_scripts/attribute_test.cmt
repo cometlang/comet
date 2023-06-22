@@ -7,8 +7,7 @@ class Attribute {
 }
 
 @Attribute('This is a function attribute')
-function test_attribute() {
-    unittest.Assert.pass()
+function attribute_function() {
 }
 
 # @Attribute('This is a class attribute')
@@ -28,6 +27,12 @@ class Something {
 
 function x_test_class_attribute() {
     var attributes = Something.attributes()
+    unittest.Assert.that(attributes).has_count(1)
+    unittest.Assert.that(attributes[0]).is_of_type(Attribute)
+}
+
+function test_function_attribute() {
+    var attributes = attribute_function.attributes()
     unittest.Assert.that(attributes).has_count(1)
     unittest.Assert.that(attributes[0]).is_of_type(Attribute)
 }

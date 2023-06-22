@@ -57,6 +57,7 @@ typedef enum
     CLS_ENV,
     CLS_EXCEPTION,
     CLS_FILE,
+    CLS_FUNCTION,
     CLS_ITERABLE,
     CLS_ITERATOR,
     CLS_LIST,

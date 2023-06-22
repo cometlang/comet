@@ -502,7 +502,8 @@ static bool invoke(VM *vm, Value name, int argCount)
           IS_NATIVE_INSTANCE(receiver) ||
           IS_CLASS(receiver) ||
           IS_NATIVE_CLASS(receiver) ||
-          IS_NUMBER(receiver)))
+          IS_NUMBER(receiver) ||
+          IS_CLOSURE(receiver)))
     {
         runtimeError(
             vm,
@@ -538,8 +539,18 @@ static bool invoke(VM *vm, Value name, int argCount)
         }
         klass = AS_CLASS(numberClass);
     }
+    else if (IS_CLOSURE(receiver))
+    {
+        VALUE functionClass;
+        if (!findGlobal(common_strings[STRING_FUNCTION], &functionClass))
+        {
+            runtimeError(vm, "Couldn't find the Function class!");
+            return false;
+        }
+        klass = AS_CLASS(functionClass);
+    }
 
-    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_NUMBER(receiver))
+    if (IS_INSTANCE(receiver) || IS_NATIVE_INSTANCE(receiver) || IS_NUMBER(receiver) || IS_CLOSURE(receiver))
     {
         Value method = findMethod(klass, name);
         if (method == NIL_VAL)

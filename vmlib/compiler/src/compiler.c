@@ -121,7 +121,6 @@ void initCompiler(Compiler *compiler, FunctionType type, Parser *parser)
 {
     newFunction(parser->compilation_thread, parser->filename, parser->currentModule);
     compiler->enclosing = parser->currentFunction;
-    compiler->function = NULL;
     compiler->type = type;
     compiler->localCount = 0;
     compiler->scopeDepth = 0;

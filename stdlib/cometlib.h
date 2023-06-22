@@ -34,6 +34,7 @@ extern "C" {
     void bootstrap_iterable(VM* vm);
     void complete_iterable(VM* vm);
     void init_string_builder(VM *vm);
+    void init_function(VM *vm);
 
     VALUE callable_p(VM* vm, int arg_count, VALUE* args);
 

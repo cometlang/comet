@@ -13,7 +13,16 @@ void initChunk(Chunk *chunk, const char *filename)
     chunk->code = NULL;
     chunk->lines = NULL;
     chunk->execution_counts = NULL;
-    chunk->filename = filename;
+    if (filename == NULL)
+    {
+        chunk->filename = NULL;
+    }
+    else
+    {
+        size_t filenameLen = strlen(filename) + 1;
+        chunk->filename = ALLOCATE(char, filenameLen);
+        strncpy(chunk->filename, filename, filenameLen);
+    }
     initValueArray(&chunk->constants);
 }
 
@@ -44,6 +53,10 @@ void freeChunk(Chunk *chunk)
     FREE_ARRAY(uint8_t, chunk->code, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
     FREE_ARRAY(uint16_t, chunk->execution_counts, chunk->capacity);
+    if (chunk->filename != NULL)
+    {
+        FREE_ARRAY(char, chunk->filename, strlen(chunk->filename) + 1);
+    }
     freeValueArray(&chunk->constants);
     initChunk(chunk, NULL);
 }

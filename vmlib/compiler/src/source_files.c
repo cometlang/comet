@@ -38,7 +38,7 @@ SourceFile *readSourceFile(const char *path)
 
 void freeSourceFile(SourceFile *source)
 {
-    // free(source->path);
+    free(source->path);
     free(source->source);
     free(source);
 }

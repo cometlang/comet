@@ -25,7 +25,7 @@ class Something {
 
 }
 
-function x_test_class_attribute() {
+function test_class_attribute() {
     var attributes = Something.attributes()
     unittest.Assert.that(attributes).has_count(1)
     unittest.Assert.that(attributes[0]).is_of_type(Attribute)

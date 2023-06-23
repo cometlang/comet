@@ -74,7 +74,7 @@ typedef struct
     int *lines;
     uint16_t *execution_counts;
     uint8_t *code;
-    const char *filename;
+    char *filename;
 } Chunk;
 
 void initChunk(Chunk *chunk, const char *filename);

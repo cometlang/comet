@@ -8,7 +8,7 @@ static void addExecutionCountsForFunctions(VM *vm, VALUE hash, Table *functions)
 
 typedef struct {
     ObjInstance obj;
-    const char *filename;
+    char *filename;
     bool initialized;
     ObjFunction *main;
 } module_data_t;
@@ -19,6 +19,16 @@ static void module_constructor(void *instanceData)
     data->filename = NULL;
     data->initialized = false;
     data->main = NULL;
+}
+
+static void module_destructor(void *instanceData)
+{
+    module_data_t *data = (module_data_t *)instanceData;
+    if (data->filename != NULL)
+    {
+        FREE_ARRAY(char, data->filename, strlen(data->filename) + 1);
+    }
+    data->filename = NULL;
 }
 
 bool module_is_initialized(VALUE module)
@@ -55,7 +65,9 @@ VALUE module_create(VM *vm, const char *filename)
 {
     VALUE instance = OBJ_VAL(newInstance(vm, AS_CLASS(klass)));
     module_data_t *data = GET_NATIVE_INSTANCE_DATA(module_data_t, instance);
-    data->filename = filename;
+    size_t filenameLen = strlen(filename) + 1;
+    data->filename = ALLOCATE(char, filenameLen);
+    strncpy(data->filename, filename, filenameLen);
     return instance;
 }
 
@@ -249,7 +261,7 @@ void init_module(VM *vm)
         vm,
         "Module",
         &module_constructor,
-        NULL,
+        &module_destructor,
         &module_mark_contents,
         "Object",
         CLS_MODULE,

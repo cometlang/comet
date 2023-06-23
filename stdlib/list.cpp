@@ -74,6 +74,16 @@ void list_constructor(void *instanceData)
     data->entries = NULL;
 }
 
+void list_destructor(void *instanceData)
+{
+    ListData *data = (ListData *)instanceData;
+    if (data->entries != NULL)
+        FREE_ARRAY(list_node_t, data->entries, data->capacity);
+    data->capacity = 0;
+    data->count = 0;
+    data->entries = NULL;
+}
+
 VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
@@ -510,7 +520,7 @@ VALUE list_create(VM *vm)
 
 void init_list(VM *vm)
 {
-    list_class = defineNativeClass(vm, "List", list_constructor, NULL, list_mark_contents, "Iterable", CLS_LIST, sizeof(ListData), true);
+    list_class = defineNativeClass(vm, "List", list_constructor, list_destructor, list_mark_contents, "Iterable", CLS_LIST, sizeof(ListData), true);
     defineNativeMethod(vm, list_class, &list_init, "init", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "add", 1, false);
     defineNativeMethod(vm, list_class, &list_add, "append", 1, false);

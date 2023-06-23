@@ -35,3 +35,10 @@ SourceFile *readSourceFile(const char *path)
     sourcefile->path[pathLen] = '\0';
     return sourcefile;
 }
+
+void freeSourceFile(SourceFile *source)
+{
+    // free(source->path);
+    free(source->source);
+    free(source);
+}

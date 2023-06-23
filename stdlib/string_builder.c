@@ -65,7 +65,7 @@ VALUE string_builder_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE 
         output_offset += utf8proc_encode_char(data->codepoints[j], (utf8proc_uint8_t *)&output[output_offset]);
     }
     output[output_offset] = 0;
-    return copyString(vm, output, length);
+    return takeString(vm, output, length);
 }
 
 VALUE string_builder_append(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

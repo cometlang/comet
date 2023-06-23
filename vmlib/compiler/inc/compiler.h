@@ -9,5 +9,6 @@
 
 Value compile(const SourceFile* source, VM *thread);
 SourceFile *readSourceFile(const char *path);
+void freeSourceFile(SourceFile *source);
 
 #endif

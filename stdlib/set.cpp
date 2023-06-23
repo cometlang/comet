@@ -45,10 +45,29 @@ void set_constructor(void *instanceData)
 void set_destructor(void *data)
 {
     SetData *set_data = (SetData *)data;
+    for (int i = 0; i < set_data->capacity; i++)
+    {
+        SetEntry *next = NULL;
+        if (set_data->entries[i] != NULL)
+        {
+            next = set_data->entries[i]->next;
+            FREE(SetEntry *, set_data->entries[i]);
+        }
+
+        while (next != NULL)
+        {
+            SetEntry *current = next;
+            next = current->next;
+            FREE(SetEntry *, current);
+        }
+    }
     if (set_data->entries != NULL)
     {
         FREE_ARRAY(SetEntry, set_data->entries, set_data->capacity);
     }
+    set_data->capacity = 0;
+    set_data->count = 0;
+    set_data->entries = NULL;
 }
 
 VALUE set_create(VM *vm)
@@ -130,6 +149,10 @@ VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     {
         data->count++;
         return TRUE_VAL;
+    }
+    else
+    {
+        FREE(SetEntry, new_entry);
     }
     return FALSE_VAL;
 }

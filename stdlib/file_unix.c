@@ -162,6 +162,8 @@ VALUE file_static_read_all_lines(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_cou
     size_t bytesRead = fread(buffer, sizeof(char), fileSize, fp);
     buffer[bytesRead] = '\0';
 
+    fclose(fp);
+
     VALUE result = list_create(vm);
     push(vm, result);
 

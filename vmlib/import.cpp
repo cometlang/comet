@@ -109,6 +109,7 @@ Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import
             addModule(module, full_path_val);
             pop(vm);
         }
+        freeSourceFile(source);
     }
     pop(vm);
 

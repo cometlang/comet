@@ -190,6 +190,12 @@ void classDeclaration(Parser *parser, uint8_t attributeCount)
     consume(parser, TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
     emitByte(parser, OP_POP);
 
+    // Not sure why, but I need attributeCount-1 to pop off the stack
+    for (int i = 1; i < attributeCount; i++)
+    {
+        emitByte(parser, OP_POP);
+    }
+
     endScope(parser);
     parser->currentClass = parser->currentClass->enclosing;
 }

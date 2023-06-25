@@ -1036,9 +1036,6 @@ static InterpretResult run(VM *vm)
             for (int i = 0; i < attributeCount; i++)
             {
                 klass->attributes[i] = peek(vm, i + 1);
-                // klass->attributes[i] = peek(vm, 1);
-                // swapTop(vm);
-                // pop(vm);
             }
             break;
         }

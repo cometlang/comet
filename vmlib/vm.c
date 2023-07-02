@@ -15,6 +15,8 @@
 
 static bool call(VM *vm, ObjClosure *closure, int argCount);
 static InterpretResult run(VM *vm);
+static bool callNativeMethod(VM *vm, Value receiver, ObjNativeMethod *method, int argCount);
+static Value findMethod(ObjClass *klass, Value name);
 
 #if DEBUG_TRACE_EXECUTION
 static CallFrame *updateFrame(VM *vm);
@@ -244,6 +246,8 @@ void push(VM *vm, Value value)
 void push_to(VM *vm, Value value, int distance)
 {
     *(vm->stackTop - distance) = value;
+    if (distance == 0)
+        vm->stackTop++;
 }
 
 Value pop(VM *vm)
@@ -281,7 +285,27 @@ static bool call(VM *vm, ObjClosure *closure, int argCount)
         return false;
     }
 
-    if (argCount < closure->function->arity)
+    if (closure->function->restParam)
+    {
+        int restOfArgs = (argCount - closure->function->arity) + 1;
+        Value *restArgs = vm->stackTop;
+        push(vm, NIL_VAL); // placeholder
+        for (int i = 0; i < restOfArgs; i++)
+        {
+            *(restArgs - i) = *(restArgs - (i + 1));
+        }
+        Value klass;
+        findGlobal(copyString(vm, "List", 4), &klass);
+        push(vm, NIL_VAL); // also a placeholder
+        create_instance(vm, AS_CLASS(klass), 0);
+        push_to(vm, peek(vm, 0), restOfArgs + 2);
+        Value list = pop(vm);
+        Value add_method = findMethod(AS_CLASS(klass), common_strings[STRING_ADD]);
+        callNativeMethod(vm, list, AS_NATIVE_METHOD(add_method), restOfArgs);
+        push_to(vm, list, 1);
+        argCount -= (restOfArgs - 1); // -1 because the list is still an arg
+    }
+    else if (argCount < closure->function->arity)
     {
         int index = argCount -
             (closure->function->arity - closure->function->optionalArgCount);

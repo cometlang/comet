@@ -1,0 +1,17 @@
+import 'unittest' as unittest
+
+function some_function(one, two, many, *lots) {
+    unittest.Assert.that(one).is_equal_to('one')
+    unittest.Assert.that(two).is_equal_to('two')
+    unittest.Assert.that(many).is_equal_to('three')
+    unittest.Assert.that(lots).is_of_type(List)
+    unittest.Assert.that(lots[0]).is_equal_to('four')
+}
+
+function test_rest_params_with_more_than_expected() {
+    some_function('one', 'two', 'three', 'four', 'five')
+}
+
+function test_rest_params_with_exactly_expected_count() {
+    some_function('one', 'two', 'three', 'four')
+}

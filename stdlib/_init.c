@@ -14,6 +14,7 @@ void init_comet(VM* vm)
     common_strings[STRING_NUMBER] = copyString(vm, "Number", 6);
     common_strings[STRING_SCRIPT] = copyString(vm, "<script>", 8);
     common_strings[STRING_FUNCTION] = copyString(vm, "Function", 8);
+    common_strings[STRING_ADD] = copyString(vm, "add", 3);
 }
 
 void init_stdlib(VM *vm)

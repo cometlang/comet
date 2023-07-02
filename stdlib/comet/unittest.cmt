@@ -1,5 +1,11 @@
 import 'coverage' as coverage
 
+class test_case {
+    init(*args) {
+        self.args = args
+    }
+}
+
 class Assert {
     init(value) {
         self.value = value

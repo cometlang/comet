@@ -119,6 +119,7 @@ typedef struct
     uint8_t optionalArgCount;
     Value *attributes;
     int attributeCount;
+    bool restParam;
 } ObjFunction;
 
 typedef Value (*NativeFn)(VM *vm, int argCount, Value *args);

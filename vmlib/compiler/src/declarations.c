@@ -219,6 +219,16 @@ void function(Parser *parser, FunctionType type, uint8_t attributeCount)
                 errorAtCurrent(parser, "Cannot have more than 255 parameters.");
             }
 
+            if (parser->currentFunction->function->restParam)
+            {
+                errorAtCurrent(parser, "Cannot have further parameters after a *paramter declaration.");
+            }
+
+            if (match(parser, TOKEN_STAR))
+            {
+                parser->currentFunction->function->restParam = true;
+            }
+
             uint8_t paramConstant = parseVariable(parser, "Expected a parameter name.");
             defineVariable(parser, paramConstant);
             if (match(parser, TOKEN_EQUAL))

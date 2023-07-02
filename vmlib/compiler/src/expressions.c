@@ -323,7 +323,11 @@ static void attribute(Parser *parser, bool canAssign)
     do {
         consume(parser, TOKEN_IDENTIFIER, "Expected an identifier");
         namedVariable(parser, parser->previous, canAssign);
-        consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after an attribute name");
+        if (match(parser, TOKEN_DOT) && match(parser, TOKEN_IDENTIFIER)) {
+            uint8_t name = identifierConstant(parser, &parser->previous);
+            emitBytes(parser, OP_GET_PROPERTY, name);
+        }
+        consume(parser, TOKEN_LEFT_PAREN, "Expected '(' after an attribute");
         call(parser, canAssign);
         match(parser, TOKEN_EOL);
         attributeCount++;

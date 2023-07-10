@@ -67,8 +67,6 @@ function parse_from_string(str, has_header = false) {
 }
 
 function parse_from_file(filename, has_header = false) {
-    var file = File.open(filename, FOPEN.READ_ONLY)
-    var contents = file.read_all_lines()
-    file.close()
+    var contents = File.read_all_lines(filename)
     return _parse_all_lines(contents, has_header)
 }

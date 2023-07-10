@@ -92,9 +92,11 @@ function test_substring() {
     unittest.Assert.that(sub).is_equal_to('0123456789')
 }
 
-function test_ascii_value() {
-    var val = 'a'.value()
-    unittest.Assert.that(val).is_equal_to(97)
+@unittest.test_case('a', 97)
+@unittest.test_case('A', 65)
+function test_ascii_value(char, value) {
+    var val = char.value()
+    unittest.Assert.that(val).is_equal_to(value)
 }
 
 function test_format() {

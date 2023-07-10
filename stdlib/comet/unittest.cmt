@@ -128,6 +128,24 @@ if (__MAIN__ == __FILE__) {
     var passed = 0
     var args = ARGV
     var generate_coverage = false
+
+    function run_test_case(module, func, args) {
+        var test_name = String.format('{0}:{1}{2}', module.filename(), func.name(), args)
+        try {
+            call_function(module, func, *args)
+            tests[test_name] = true
+            print(String.format('✓ {0} passed', test_name))
+            passed += 1
+            return true
+        } catch (Exception as ex) {
+            tests[test_name] = false
+            print(String.format('⨯ {0} failed', test_name))
+            print_to(STD_STREAM.ERR, ex.class_name(), ':')
+            print_to(STD_STREAM.ERR, ex.stacktrace)
+        }
+        return false
+    }
+
     if (ARGV[0] == '--coverage') {
         args = ARGV.slice(1)
         generate_coverage = true
@@ -136,18 +154,17 @@ if (__MAIN__ == __FILE__) {
         import to_import as imported
         foreach (var func in imported.functions()) {
             if (func.name().starts_with?('test_')) {
-                total += 1
-                var test_name = String.format('{0}:{1}', imported.filename(), func.name())
-                tests[test_name] = true
-                try {
-                    call_function(imported, func)
-                    print(String.format('✓ {0} passed', test_name))
-                    passed += 1
-                } catch (Exception as ex) {
-                    tests[test_name] = false
-                    print(String.format('⨯ {0} failed', test_name))
-                    print_to(STD_STREAM.ERR, ex.class_name(), ':')
-                    print_to(STD_STREAM.ERR, ex.stacktrace)
+                var test_cases = func.attributes().filter((|x|) {
+                    return x is test_case
+                })
+                if (!test_cases.empty?()) {
+                    total += test_cases.length()
+                    foreach (var case in test_cases) {
+                        run_test_case(imported, func, case.args)
+                    }
+                } else {
+                    total += 1
+                    run_test_case(imported, func, [])
                 }
             }
         }

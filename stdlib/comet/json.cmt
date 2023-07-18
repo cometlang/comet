@@ -182,9 +182,11 @@ class JsonFormatter {
         self._indent(result)
         foreach (var key in hash) {
             var obj = hash[key]
-            var out_string = self._get_string_for_obj(obj)
-            result.append(String.format('"{0}": {1},', key, out_string))
-            self._indent(result)
+            if (!obj.nil?()) {
+                var out_string = self._get_string_for_obj(obj)
+                result.append(String.format('"{0}": {1},', key, out_string))
+                self._indent(result)
+            }
         }
         if (!hash.empty?()) {
             self._unindent(result)
@@ -199,12 +201,14 @@ class JsonFormatter {
     _output_list(list) {
         var result = StringBuilder()
         result.append('[')
-        self._indent(result)
         self._increase_indent()
+        self._indent(result)
         foreach (var item in list) {
-            result.append(self._get_string_for_obj(item))
-            result.append(',')
-            self._indent(result)
+            if (!item.nil?()) {
+                result.append(self._get_string_for_obj(item))
+                result.append(',')
+                self._indent(result)
+            }
         }
         if (!list.empty?()) {
             self._unindent(result)

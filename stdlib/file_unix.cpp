@@ -1,6 +1,4 @@
-#include "comet.h"
-#include "comet_stdlib.h"
-#include "file_common.h"
+#include <string>
 
 #include <errno.h>
 #include <stdlib.h>
@@ -9,6 +7,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+extern "C" {
+#include "comet.h"
+#include "comet_stdlib.h"
+#include "file_common.h"
 
 void file_constructor(void *instanceData)
 {
@@ -236,4 +239,19 @@ VALUE file_static_copy(VM* vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE
     FREE_ARRAY(char, buffer, COPY_BUFFER_SIZE);
 #undef COPY_BUFFER_SIZE
     return NIL_VAL;
+}
+
+VALUE file_read_line(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    FileData *data = GET_NATIVE_INSTANCE_DATA(FileData, self);
+    std::string output;
+    int c = fgetc(data->fp);
+    while (c != EOF && c != '\n')
+    {
+        output += c;
+        c = fgetc(data->fp);
+    }
+    return copyString(vm, output.c_str(), output.length());
+}
+
 }

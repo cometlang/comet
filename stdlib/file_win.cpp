@@ -1,3 +1,5 @@
+#include <string>
+
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -5,6 +7,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <strsafe.h>
+
+extern "C" {
 
 #include "comet.h"
 #include "comet_stdlib.h"
@@ -21,8 +25,8 @@ void file_destructor(void* data)
     FileData* file_data = (FileData*)data;
     if (file_data->fp != INVALID_HANDLE_VALUE)
     {
-        fflush(file_data->fp);
-        fclose(file_data->fp);
+        FlushFileBuffers(file_data->fp);
+        CloseHandle(file_data->fp);
     }
 }
 
@@ -88,7 +92,7 @@ VALUE file_close(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED
 VALUE file_write(VM* vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
-    int result = 0;
+    DWORD result = 0;
     const char* buffer = string_get_cstr(arguments[0]);
     WriteFile(data->fp, buffer, (DWORD)strlen(buffer), &result, NULL);
     return create_number(vm, (double)result);
@@ -97,7 +101,7 @@ VALUE file_write(VM* vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
 VALUE file_write_line(VM *vm, VALUE self, int arg_count, VALUE *arguments)
 {
     FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
-    int result = 0;
+    DWORD result = 0;
     if (arg_count > 0)
     {
         const char* buffer = string_get_cstr(arguments[0]);
@@ -251,4 +255,21 @@ VALUE file_static_copy(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argume
         throw_exception_native(vm, "IOException", "Could not copy file %s\n", source_filename);
     }
     return NIL_VAL;
+}
+
+VALUE file_read_line(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*args))
+{
+    std::string output;
+    char c = 0;
+    DWORD bytesRead = 0;
+    FileData* data = GET_NATIVE_INSTANCE_DATA(FileData, OBJ_VAL(self));
+    bool success = ReadFile(data->fp, &c, 1, &bytesRead, NULL);
+    while (success && bytesRead > 0 && c != '\n')
+    {
+        output += c;
+        success = ReadFile(data->fp, &c, 1, &bytesRead, NULL);
+    }
+    return copyString(vm, output.c_str(), output.length());
+}
+
 }

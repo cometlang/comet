@@ -1,8 +1,7 @@
 import 'unittest' as unittest
+var FILE_NAME = 'test.txt'
 
 function test_files() {
-    var FILE_NAME = 'test.txt'
-
     var file = File.open(FILE_NAME, FOPEN.READ_WRITE)
     file.write("This is a test file")
     file.close()
@@ -13,6 +12,23 @@ function test_files() {
     {
         unittest.Assert.that(line).is_equal_to('This is a test file')
     }
+
+    File.delete(FILE_NAME)
+    unittest.Assert.that(File.exists?(FILE_NAME)).is_false()
+}
+
+function test_read_line() {
+    var file = File.open(FILE_NAME, FOPEN.READ_WRITE)
+    file.write("This is a test file\n")
+    file.write("This is a test file")
+    file.close()
+    unittest.Assert.that(File.exists?(FILE_NAME)).is_true()
+
+    file = File.open(FILE_NAME, FOPEN.READ_ONLY)
+    var line = file.read_line()
+    unittest.Assert.that(line).is_equal_to('This is a test file')
+    line = file.read_line()
+    unittest.Assert.that(line).is_equal_to('This is a test file')
 
     File.delete(FILE_NAME)
     unittest.Assert.that(File.exists?(FILE_NAME)).is_false()

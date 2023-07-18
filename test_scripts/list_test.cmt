@@ -83,3 +83,21 @@ function test_sort_strings() {
         unittest.Assert.that(Number.parse(to_sort_str[i])).is_equal_to(i+1)
     }
 }
+
+enum Index {
+    First,
+    Second,
+    Third
+}
+
+function test_using_enum_to_index() {
+    var list = List(Index.count())
+
+    foreach (var i in Index) {
+        list[i] = i.to_string()
+    }
+
+    foreach (var i in Index) {
+        unittest.Assert.that(list[i]).is_equal_to(i.to_string())
+    }
+}

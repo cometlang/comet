@@ -143,7 +143,7 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
     {
         ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
         VALUE arg = arguments[0];
-        int index;
+        int index = 0;
         if (IS_NUMBER(arg))
         {
             index = (int)number_get_value(arg);
@@ -151,6 +151,19 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
         else if (IS_INSTANCE_OF_STDLIB_TYPE(arg, CLS_ENUM_VALUE))
         {
             index = (int)enumvalue_get_value(arg);
+        }
+        else
+        {
+            if (IS_INSTANCE(arg) || IS_NATIVE_INSTANCE(arg))
+            {
+                throw_exception_native(
+                    vm, "ArgumentError", "Can't use a %s as a list index", getClassNameFromInstance(arg));
+            }
+            else
+            {
+                throw_exception_native(vm, "ArgumentError", "Can only use numbers or enums as a list index");
+            }
+            return NIL_VAL;
         }
         if (index >= data->count)
         {
@@ -171,7 +184,28 @@ VALUE list_get_at(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
 VALUE list_assign_at(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     ListData *data = GET_NATIVE_INSTANCE_DATA(ListData, self);
-    int index = (int) number_get_value(arguments[0]);
+    int index = 0;
+    if (IS_NUMBER(arguments[0]))
+    {
+        index = (int)number_get_value(arguments[0]);
+    }
+    else if (IS_INSTANCE_OF_STDLIB_TYPE(arguments[0], CLS_ENUM_VALUE))
+    {
+        index = (int)enumvalue_get_value(arguments[0]);
+    }
+    else
+    {
+        if (IS_INSTANCE(arguments[0]) || IS_NATIVE_INSTANCE(arguments[0]))
+        {
+            throw_exception_native(
+                vm, "ArgumentError", "Can't use a %s as a list index", getClassNameFromInstance(arguments[0]));
+        }
+        else
+        {
+            throw_exception_native(vm, "ArgumentError", "Can only use numbers or enums as a list index");
+        }
+        return NIL_VAL;
+    }
 
     if (index >= data->count) {
         throw_exception_native(

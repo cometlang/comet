@@ -306,6 +306,7 @@ void enumDeclaration(Parser *parser)
             emitByte(parser, 2); // argCount
             emitByte(parser, OP_POP);
 
+            match(parser, TOKEN_EOL); // optional end of line.
             if (!match(parser, TOKEN_COMMA) && !check(parser, TOKEN_RIGHT_BRACE))
             {
                 error(parser, "Expected ',' between enum values");

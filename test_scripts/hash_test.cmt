@@ -69,3 +69,19 @@ function test_hash_key_with_nonobject() {
 
     unittest.Assert.that(some_hash[Object]).is_equal_to(obj)
 }
+
+function test_hash_keys() {
+    var some_hash = {
+        'other_key': 1234,
+        'key': 4321,
+        'my key': 1423,
+    }
+
+    var keys = some_hash.keys()
+    keys.sort()
+
+    unittest.Assert.that(keys).has_count(3)
+    unittest.Assert.that(keys[0]).is_equal_to('key')
+    unittest.Assert.that(keys[1]).is_equal_to('my key')
+    unittest.Assert.that(keys[2]).is_equal_to('other_key')
+}

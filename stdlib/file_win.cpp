@@ -57,6 +57,10 @@ VALUE file_static_open(VM* vm, VALUE klass, int UNUSED(arg_count), VALUE* argume
     const char* path = string_get_cstr(arguments[0]);
     DWORD mode = translate_flags_to_mode(arguments[1]);
     DWORD creationDisposition = OPEN_EXISTING;
+    if (mode & GENERIC_WRITE == GENERIC_WRITE)
+    {
+        creationDisposition = TRUNCATE_EXISTING;
+    }
     DWORD attributes = GetFileAttributesA(string_get_cstr(arguments[0]));
     if (GetFileAttributesA(string_get_cstr(arguments[0])) == INVALID_FILE_ATTRIBUTES && (mode & (GENERIC_READ | GENERIC_WRITE)))
     {

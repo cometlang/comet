@@ -154,6 +154,17 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
     return copyString(vm, date_string.c_str(), date_string.length());
 }
 
+static VALUE datetime_static_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    const char *format = "%Y-%m-%dT%H:%M:%6S";
+    if (arg_count == 2)
+        format = string_get_cstr(arguments[1]);
+    std::stringstream to_parse(string_get_cstr(arguments[0]));
+    std::chrono::time_point<date::local_t, std::chrono::nanoseconds> tp;
+    to_parse >> date::parse(format, tp);
+    return create_datetime(vm, tp, date::current_zone());
+}
+
 static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     DateTimeData *data = GET_NATIVE_INSTANCE_DATA(DateTimeData, OBJ_VAL(self));
@@ -184,6 +195,7 @@ void init_datetime(VM *vm)
     defineNativeMethod(vm, datetime_class, &datetime_static_now, "now", 0, true);
     defineNativeMethod(vm, datetime_class, &datetime_init, "init", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_to_string, "to_string", 0, false);
+    defineNativeMethod(vm, datetime_class, &datetime_static_parse, "parse", 1, true);
     defineNativeMethod(vm, datetime_class, &datetime_year, "year", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_month, "month", 0, false);
     defineNativeMethod(vm, datetime_class, &datetime_day, "day", 0, false);

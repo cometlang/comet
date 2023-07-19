@@ -10,3 +10,16 @@ function test_create_from_integers() {
     unittest.Assert.that(datetime.seconds()).is_equal_to(35)
     unittest.Assert.that(datetime.milliseconds()).is_equal_to(102)
 }
+
+function test_can_parse_from_default_to_string() {
+    var datetime = DateTime.now()
+    var parsed = DateTime.parse(datetime.to_string())
+
+    unittest.Assert.that(datetime.year()).is_equal_to(parsed.year(), "year")
+    unittest.Assert.that(datetime.month()).is_equal_to(parsed.month(), "month")
+    unittest.Assert.that(datetime.day()).is_equal_to(parsed.day(), "day")
+    unittest.Assert.that(datetime.hours()).is_equal_to(parsed.hours(), "hours")
+    unittest.Assert.that(datetime.minutes()).is_equal_to(parsed.minutes(), "minutes")
+    unittest.Assert.that(datetime.seconds()).is_equal_to(parsed.seconds(), "seconds")
+    unittest.Assert.that(datetime.milliseconds()).is_equal_to(parsed.milliseconds(), "milliseconds")
+}

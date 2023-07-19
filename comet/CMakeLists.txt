@@ -32,3 +32,14 @@ ${CMAKE_COMMAND} -E env "COMET_LIB_DIR=${toplevel_source_dir}/stdlib/comet"
 WORKING_DIRECTORY "${toplevel_source_dir}"
 DEPENDS comet
 )
+
+add_custom_target(memtest
+${CMAKE_COMMAND} -E env "COMET_LIB_DIR=${toplevel_source_dir}/stdlib/comet"
+  "valgrind"
+  "$<TARGET_FILE:comet>"
+    "${toplevel_source_dir}/stdlib/comet/unittest.cmt"
+    "--coverage"
+    "${toplevel_source_dir}/test_scripts/*.cmt"
+WORKING_DIRECTORY "${toplevel_source_dir}"
+DEPENDS comet
+)

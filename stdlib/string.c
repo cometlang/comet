@@ -620,6 +620,9 @@ static int compare_to(VALUE self, VALUE other)
 
 VALUE string_greater_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+        return FALSE_VAL;
+
     if (compare_to(self, arguments[0]) > 0)
         return TRUE_VAL;
     return FALSE_VAL;
@@ -627,6 +630,9 @@ VALUE string_greater_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_cou
 
 VALUE string_greater_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+        return FALSE_VAL;
+
     if (compare_to(self, arguments[0]) >= 0)
         return TRUE_VAL;
     return FALSE_VAL;
@@ -634,6 +640,9 @@ VALUE string_greater_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_co
 
 VALUE string_less_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+        return FALSE_VAL;
+
     if (compare_to(self, arguments[0]) < 0)
         return TRUE_VAL;
     return FALSE_VAL;
@@ -641,6 +650,9 @@ VALUE string_less_than(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count)
 
 VALUE string_less_equal(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+        return FALSE_VAL;
+
     if (compare_to(self, arguments[0]) <= 0)
         return TRUE_VAL;
     return FALSE_VAL;

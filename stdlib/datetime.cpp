@@ -154,15 +154,29 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
     return copyString(vm, date_string.c_str(), date_string.length());
 }
 
-static VALUE datetime_static_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), VALUE UNUSED(*arguments))
+static VALUE datetime_static_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
-    const char *format = "%Y-%m-%dT%H:%M:%6S";
+    const char *format = "%Y-%m-%dT%H:%M:%6S%z";
     if (arg_count == 2)
         format = string_get_cstr(arguments[1]);
     std::stringstream to_parse(string_get_cstr(arguments[0]));
     std::chrono::time_point<date::local_t, std::chrono::nanoseconds> tp;
-    to_parse >> date::parse(format, tp);
-    return create_datetime(vm, tp, date::current_zone());
+    std::chrono::minutes offset = std::chrono::minutes::zero();
+    std::string tz;
+    to_parse >> date::parse(format, tp, tz, offset);
+    const date::tzdb& zones = date::get_tzdb();
+    if (tz.empty())
+    {
+        std::chrono::seconds offset_s = duration_cast<std::chrono::seconds>(offset);
+        for (auto& zone : zones.zones) {
+            const auto& info = zone.get_info(tp);
+            if (info.first.offset == offset_s || info.second.offset == offset_s)
+            {
+                tz = zone.name();
+            }
+        }
+    }
+    return create_datetime(vm, tp, date::locate_zone(tz));
 }
 
 static VALUE datetime_operator_minus(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

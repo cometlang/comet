@@ -62,6 +62,14 @@ static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(
     return copyString(vm, temp_string, length);
 }
 
+static VALUE enumvalue_less_equal(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    EnumValueData *lhs = GET_NATIVE_INSTANCE_DATA(EnumValueData, self);
+    EnumValueData *rhs = GET_NATIVE_INSTANCE_DATA(EnumValueData, arguments[0]);
+    if (lhs->num <= rhs->num)
+        return TRUE_VAL;
+    return FALSE_VAL;
+}
 
 static void enum_iterator_constructor(void *instanceData)
 {
@@ -222,6 +230,7 @@ void init_enum(VM *vm)
     enum_value_class = defineNativeClass(vm, "EnumValue", &enumvalue_constructor, NULL, NULL, NULL, CLS_ENUM_VALUE, sizeof(EnumValueData), false);
     defineNativeMethod(vm, enum_value_class, &enumvalue_init, "init", 2, false);
     defineNativeMethod(vm, enum_value_class, &enumvalue_to_string, "to_string", 0, false);
+    defineNativeOperator(vm, enum_value_class, &enumvalue_less_equal, 1, OPERATOR_LESS_EQUAL);
 
     enum_iterator_class = defineNativeClass(
         vm, "EnumIterator", &enum_iterator_constructor, NULL, NULL, "Iterator", CLS_ITERATOR, sizeof(EnumIterator), false);

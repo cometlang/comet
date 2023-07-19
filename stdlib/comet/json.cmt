@@ -180,7 +180,9 @@ class JsonFormatter {
         result.append('{')
         self._increase_indent()
         self._indent(result)
-        foreach (var key in hash) {
+        var keys = hash.keys()
+        keys.sort()
+        foreach (var key in keys) {
             var obj = hash[key]
             if (!obj.nil?()) {
                 var out_string = self._get_string_for_obj(obj)

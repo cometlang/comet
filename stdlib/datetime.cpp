@@ -156,6 +156,12 @@ static VALUE datetime_to_string(VM *vm, VALUE self, int UNUSED(arg_count), VALUE
 
 static VALUE datetime_static_parse(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_STRING))
+    {
+        throw_exception_native(vm, "ArgumentException", "Can only parse strings into a DateTime");
+        return NIL_VAL;
+    }
+
     const char *format = "%Y-%m-%dT%H:%M:%6S%z";
     if (arg_count == 2)
         format = string_get_cstr(arguments[1]);

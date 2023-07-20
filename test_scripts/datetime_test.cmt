@@ -23,3 +23,16 @@ function test_can_parse_from_default_to_string() {
     unittest.Assert.that(datetime.seconds()).is_equal_to(parsed.seconds(), "seconds")
     unittest.Assert.that(datetime.milliseconds()).is_equal_to(parsed.milliseconds(), "milliseconds")
 }
+
+function test_can_parse_non_standard_format_with_format_string() {
+    var to_parse = '2023-07-20 16:36:01.6543'
+
+    var result = DateTime.parse(to_parse, '%Y-%m-%d %H:%M:%6S')
+
+    unittest.Assert.that(result.year()).is_equal_to(2023)
+    unittest.Assert.that(result.month()).is_equal_to(7)
+    unittest.Assert.that(result.day()).is_equal_to(20)
+    unittest.Assert.that(result.hours()).is_equal_to(16)
+    unittest.Assert.that(result.minutes()).is_equal_to(36)
+    unittest.Assert.that(result.seconds()).is_equal_to(1)
+}

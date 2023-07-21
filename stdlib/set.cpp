@@ -85,13 +85,14 @@ VALUE set_create(VM *vm)
 static uint32_t getIndex(VM *vm, Value value, int capacity)
 {
     call_function(vm, value, common_strings[STRING_HASH], 0, NULL);
-    return ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
+    uint32_t result = ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
+    pop(vm);
+    return result;
 }
 
 static bool insert(VM *vm, SetEntry **entries, int capacity, SetEntry *entry)
 {
     uint32_t index = getIndex(vm, entry->key, capacity);
-    pop(vm);
     if (entries[index] == NULL)
     {
         entries[index] = entry;

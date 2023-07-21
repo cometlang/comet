@@ -18,7 +18,29 @@ function test_set_creation_numbers() {
     unittest.Assert.that(set).has_count(1)
 }
 
-function x_test_set_union() {
+function test_set_contains() {
+    var set = Set()
+    set.add('a')
+    set.add('b')
+    set.add('c')
+
+    unittest.Assert.that(set).contains('a')
+}
+
+function test_set_empty_when_empty() {
+    var set = Set()
+
+    unittest.Assert.that(set).is_empty()
+}
+
+function test_set_empty_when_not_empty() {
+    var set = Set()
+    set.add('a')
+
+    unittest.Assert.that(set).is_not_empty()
+}
+
+function test_set_union() {
     var lhs = Set()
     var rhs = Set()
 
@@ -42,7 +64,7 @@ function x_test_set_union() {
     unittest.Assert.that(result).contains('e')
 }
 
-function x_test_set_intersect() {
+function test_set_intersect() {
     var lhs = Set()
     var rhs = Set()
 
@@ -63,7 +85,7 @@ function x_test_set_intersect() {
     unittest.Assert.that(result).contains('c')
 }
 
-function x_test_set_difference() {
+function test_set_difference() {
     var lhs = Set()
     var rhs = Set()
 

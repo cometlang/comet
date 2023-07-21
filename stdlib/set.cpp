@@ -197,8 +197,9 @@ VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *
     SetEntry *current = data->entries[index];
     while (current != NULL)
     {
-        if (compare_objects(vm, current->key, arguments[0]))
+        if (compare_objects(vm, current->key, arguments[0])) {
             return TRUE_VAL;
+        }
         current = current->next;
     }
     return FALSE_VAL;
@@ -206,6 +207,11 @@ VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *
 
 VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_SET))
+    {
+        throw_exception_native(vm, "ArgumentException", "Only another Set may be unioned with a set");
+        return NIL_VAL;
+    }
     VALUE result = set_create(vm);
     push(vm, result);
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
@@ -233,6 +239,11 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
 VALUE set_intersect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_SET))
+    {
+        throw_exception_native(vm, "ArgumentException", "Only another Set may be intersected with a set");
+        return NIL_VAL;
+    }
     VALUE result = set_create(vm);
     push(vm, result);
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, arguments[0]);
@@ -251,6 +262,11 @@ VALUE set_intersect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 
 VALUE set_difference(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
+    if (!isObjOfStdlibClassType(arguments[0], CLS_SET))
+    {
+        throw_exception_native(vm, "ArgumentException", "Only another Set may be differed with a set");
+        return NIL_VAL;
+    }
     VALUE result = set_create(vm);
     push(vm, result);
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
@@ -259,8 +275,9 @@ VALUE set_difference(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments
         SetEntry *entry = data->entries[i];
         while (entry != NULL)
         {
-            if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == FALSE_VAL)
+            if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == FALSE_VAL) {
                 set_add(vm, result, 1, &entry->key);
+            }
             entry = entry->next;
         }
     }
@@ -405,6 +422,7 @@ void init_set(VM *vm)
     defineNativeMethod(vm, set_class, &set_obj_to_string, "to_string", 0, false);
     defineNativeMethod(vm, set_class, &set_iterable_empty_p, "empty?", 0, false);
     defineNativeMethod(vm, set_class, &set_iterable_count, "count", 0, false);
+    defineNativeMethod(vm, set_class, &set_iterable_contains_q, "contains?", 1, false);
 
     defineNativeOperator(vm, set_class, &set_union, 1, OPERATOR_BITWISE_OR);
     defineNativeOperator(vm, set_class, &set_intersect, 1, OPERATOR_BITWISE_AND);

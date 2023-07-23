@@ -169,6 +169,7 @@ extern "C" {
         to_parse >> parse(format, tp, tz, offset);
         if (to_parse.fail())
         {
+            throw_exception_native(vm, "ParseException", "Failed to parse DateTime");
             return NIL_VAL;
         }
         const tzdb& zones = get_tzdb();

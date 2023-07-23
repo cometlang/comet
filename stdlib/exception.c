@@ -124,6 +124,7 @@ void init_exception(VM *vm)
     defineNativeClass(vm, "ThreadException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "FormatException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeClass(vm, "InvokeException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
+    defineNativeClass(vm, "ParseException", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
 
     VALUE ooceKlass = defineNativeClass(vm, "OutOfCheeseError", NULL, NULL, NULL, "Exception", CLS_EXCEPTION, 0, false);
     defineNativeMethod(vm, ooceKlass, &ooce_exception_init, "init", 0, false);

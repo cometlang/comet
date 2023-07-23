@@ -36,3 +36,11 @@ function test_can_parse_non_standard_format_with_format_string() {
     unittest.Assert.that(result.minutes()).is_equal_to(36)
     unittest.Assert.that(result.seconds()).is_equal_to(1)
 }
+
+function test_parse_throws_exception_when_datetime_cannot_be_parsed() {
+    var to_parse = 'this is not a date'
+
+    unittest.Assert.that((||) {
+        var result = DateTime.parse(to_parse)
+    }).throws()
+}

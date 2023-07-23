@@ -170,6 +170,11 @@ static VALUE datetime_static_parse(VM *vm, VALUE UNUSED(klass), int arg_count, V
     std::chrono::minutes offset = std::chrono::minutes::zero();
     std::string tz;
     to_parse >> date::parse(format, tp, tz, offset);
+    if (to_parse.fail())
+    {
+        throw_exception_native(vm, "ParseException", "Failed to parse DateTime");
+        return NIL_VAL;
+    }
     const date::tzdb& zones = date::get_tzdb();
     if (tz.empty())
     {

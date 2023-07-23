@@ -21,6 +21,8 @@ extern "C" {
 #include "common.h"
 #include "compiler.h"
 
+}
+
 using namespace std;
 
 static constexpr string_view file_extension(".cmt");
@@ -78,6 +80,7 @@ static filesystem::path resolve_import_path(const char *relative_to_filename, co
     return filesystem::path();
 }
 
+extern "C" {
 
 Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import)
 {

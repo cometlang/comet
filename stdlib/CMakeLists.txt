@@ -13,7 +13,6 @@ include_directories(
 set(SOURCE 
   _init.c
   boolean.c
-  datetime.cpp
   directory.cpp
   duration.cpp
   enum.c
@@ -41,9 +40,9 @@ set(SOURCE
 
 if (WIN32)
 add_compile_definitions(WIN32=1)
-list(APPEND SOURCE file_win.cpp thread_synchronisation_win.c)
+list(APPEND SOURCE file_win.cpp thread_synchronisation_win.c datetime_win.cpp)
 else()
-list(APPEND SOURCE file_unix.cpp thread_synchronisation_unix.c)
+list(APPEND SOURCE file_unix.cpp thread_synchronisation_unix.c datetime.cpp)
 endif()
 
 add_library(stdlib STATIC "${SOURCE}")

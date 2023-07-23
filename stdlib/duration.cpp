@@ -1,7 +1,6 @@
 #include <chrono>
 #include <iostream>
 #include <sstream>
-#include <date/date.h>
 #include "comet.h"
 #include "cometlib.h"
 #include "comet_stdlib.h"
@@ -41,15 +40,15 @@ static VALUE duration_init(VM UNUSED(*vm), VALUE self, int arg_count, VALUE* arg
 {
     std::chrono::nanoseconds value(0);
     if (arg_count >= 1) {
-        value += date::years((int64_t)number_get_value(arguments[0]));
+        value += std::chrono::years((int64_t)number_get_value(arguments[0]));
     }
 
     if (arg_count >= 2) {
-        value += date::months((int64_t)number_get_value(arguments[1]));
+        value += std::chrono::months((int64_t)number_get_value(arguments[1]));
     }
 
     if (arg_count >= 3) {
-        value += date::days((int64_t)number_get_value(arguments[2]));
+        value += std::chrono::days((int64_t)number_get_value(arguments[2]));
     }
 
     if (arg_count >= 4) {
@@ -75,17 +74,17 @@ static VALUE duration_init(VM UNUSED(*vm), VALUE self, int arg_count, VALUE* arg
 
 static VALUE duration_from_years(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
-    return duration_create(vm, date::years((int64_t)number_get_value(arguments[0])).count());
+    return duration_create(vm, std::chrono::years((int64_t)number_get_value(arguments[0])).count());
 }
 
 static VALUE duration_from_months(VM *vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
-    return duration_create(vm, date::months((int64_t)number_get_value(arguments[0])).count());
+    return duration_create(vm, std::chrono::months((int64_t)number_get_value(arguments[0])).count());
 }
 
 static VALUE duration_from_days(VM *vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)
 {
-    return duration_create(vm, date::days((int64_t)number_get_value(arguments[0])).count());
+    return duration_create(vm, std::chrono::days((int64_t)number_get_value(arguments[0])).count());
 }
 
 static VALUE duration_from_hours(VM* vm, VALUE self, int UNUSED(arg_count), VALUE* arguments)

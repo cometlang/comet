@@ -16,6 +16,8 @@
 #define DEBUG_ASSERT_ENABLED (1)
 #define MAX_ARGS (UINT8_MAX)
 
+#define REF_COUNT_MEM_MANAGEMENT (0)
+
 #ifndef UNUSED
 # if defined(WIN32) || defined(_WIN32)
 #  include <Windows.h>

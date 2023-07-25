@@ -652,6 +652,9 @@ static void closeUpvalues(VM *vm, Value *last)
         ObjUpvalue *upvalue = vm->openUpvalues;
         upvalue->closed = *upvalue->location;
         upvalue->location = &upvalue->closed;
+#if REF_COUNT_MEM_MANAGEMENT
+        upvalue->obj.refCount++;
+#endif
         vm->openUpvalues = upvalue->next;
     }
 }
@@ -692,6 +695,24 @@ static CallFrame *updateFrame(VM *vm)
 {
     return &vm->frames[vm->frameCount - 1];
 }
+
+#if REF_COUNT_MEM_MANAGEMENT
+static inline void incrementRefCount(Value value)
+{
+    if (IS_OBJ(value))
+    {
+        AS_OBJ(value)->refCount++;
+    }
+}
+
+static inline void decrementRefCount(Value value)
+{
+    if (IS_OBJ(value))
+    {
+        AS_OBJ(value)->refCount--;
+    }
+}
+#endif
 
 #if DEBUG_TRACE_EXECUTION
 void print_stack(VM *vm)
@@ -785,6 +806,9 @@ static InterpretResult run(VM *vm)
         {
             Value name = READ_CONSTANT();
             addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             pop(vm);
             break;
         }
@@ -798,12 +822,18 @@ static InterpretResult run(VM *vm)
         {
             uint8_t slot = READ_BYTE();
             frame->slots[slot] = peek(vm, 0);
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             break;
         }
         case OP_SET_GLOBAL:
         {
             Value name = READ_CONSTANT();
             Value value;
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             if (findModuleVariable(frame->closure->function->module, name, &value))
             {
                 addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
@@ -829,6 +859,9 @@ static InterpretResult run(VM *vm)
         {
             uint8_t slot = READ_BYTE();
             *frame->closure->upvalues[slot]->location = peek(vm, 0);
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             break;
         }
         case OP_GET_PROPERTY:
@@ -867,6 +900,9 @@ static InterpretResult run(VM *vm)
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
             tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             swapTop(vm);
             pop(vm);
             break;
@@ -1033,6 +1069,12 @@ static InterpretResult run(VM *vm)
         {
             Value result = peek(vm, 0);
             closeUpvalues(vm, frame->slots);
+#if REF_COUNT_MEM_MANAGEMENT
+            for (Value *local = frame->slots + 1; local < vm->stackTop; local++)
+            {
+                decrementRefCount(*local);
+            }
+#endif
             vm->frameCount--;
             if (vm->frameCount == 0)
             {

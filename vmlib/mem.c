@@ -135,7 +135,11 @@ Obj *allocateObject(VM *vm, size_t size, ObjType type)
     MUTEX_LOCK(gc_lock);
     Obj *object = (Obj *)reallocate(NULL, 0, size);
     object->type = type;
+#if REF_COUNT_MEM_MANAGEMENT
+    object->refCount = 1;
+#else
     object->isMarked = true;
+#endif
 
     object->next = generation_0;
     generation_0 = object;
@@ -153,8 +157,11 @@ void markObject(Obj *object)
 {
     if (object == NULL)
         return;
+
+#if !REF_COUNT_MEM_MANAGEMENT
     if (object->isMarked)
         return;
+#endif
 
 #if DEBUG_LOG_GC
     printf("%p mark ", (void *)object);
@@ -162,7 +169,9 @@ void markObject(Obj *object)
     printf("\n");
 #endif
 
+#if !REF_COUNT_MEM_MANAGEMENT
     object->isMarked = true;
+#endif
 
     if (grey_capacity < grey_count + 1)
     {
@@ -180,6 +189,7 @@ void markValue(Value value)
     markObject(AS_OBJ(value));
 }
 
+#if !REF_COUNT_MEM_MANAGEMENT
 static void markArray(ValueArray *array)
 {
     for (int i = 0; i < array->count; i++)
@@ -281,6 +291,7 @@ static void blackenObject(Obj *object)
         break;
     }
 }
+#endif
 
 static void freeObject(Obj *object)
 {
@@ -396,6 +407,8 @@ static void freeObject(Obj *object)
     }
 }
 
+#if !REF_COUNT_MEM_MANAGEMENT
+
 static void markRoots(VM *vm)
 {
     if (vm == NULL)
@@ -467,6 +480,7 @@ static void sweep()
     sweep_object_list(generation_0, &generation_0);
     gc_count++;
 }
+#endif
 
 static void collectGarbage()
 {
@@ -477,6 +491,18 @@ static void collectGarbage()
 #endif
     collecting_garbage = true;
 
+#if REF_COUNT_MEM_MANAGEMENT
+    Obj *object = generation_0;
+    while (object != NULL)
+    {
+        Obj *next = object->next;
+        if (object->refCount == 0)
+        {
+            freeObject(object);
+        }
+        object = next;
+    }
+#else
     for (int i = 0; i < thread_capacity; i++)
     {
         if (threads[i] != NULL)
@@ -486,6 +512,7 @@ static void collectGarbage()
     traceReferences();
     removeWhiteStrings();
     sweep();
+#endif
 
     _next_GC = _bytes_allocated + MINIMUM_GC_MARK;
     collecting_garbage = false;

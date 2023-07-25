@@ -48,7 +48,9 @@ VALUE boolean_parse(VM UNUSED(*vm), VALUE UNUSED(klass), int UNUSED(arg_count), 
 static void init_instance(VM *vm, BooleanData_t *instance, ObjClass *klass, bool value)
 {
     instance->obj.obj.type = OBJ_NATIVE_INSTANCE;
+#if !REF_COUNT_MEM_MANAGEMENT
     instance->obj.obj.isMarked = false; // doesn't matter, it's static memory anyway
+#endif
     instance->obj.klass = klass;
     instance->value = value;
     initTable(&instance->obj.fields);

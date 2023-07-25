@@ -228,11 +228,13 @@ void tableRemoveWhite(Table *table)
 {
     for (int i = 0; i <= table->capacity; i++)
     {
+#if !REF_COUNT_MEM_MANAGEMENT
         Entry *entry = &table->entries[i];
         if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
         {
             tableDelete(table, entry->key);
         }
+#endif
     }
 }
 

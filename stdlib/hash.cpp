@@ -321,11 +321,13 @@ void table_remove_white(VM *vm, HashTable *table)
 {
     for (int32_t i = 0; i <= table->capacity; i++)
     {
+#if !REF_COUNT_MEM_MANAGEMENT
         HashEntry *entry = &table->entries[i];
         if (entry->key != NIL_VAL && !AS_OBJ(entry->key)->isMarked)
         {
             hash_remove(vm, OBJ_VAL(table), 1, &entry->key);
         }
+#endif
     }
 }
 

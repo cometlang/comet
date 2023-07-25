@@ -103,7 +103,11 @@ typedef enum
 struct sObj
 {
     ObjType type;
+#if REF_COUNT_MEM_MANAGEMENT
+    int8_t refCount;
+#else
     bool isMarked;
+#endif
     struct sObj *next;
 };
 

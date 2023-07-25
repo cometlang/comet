@@ -53,7 +53,9 @@ void init_nil(VM *vm)
     defineNativeMethod(vm, klass, &nil_iterable_iterator, "iterator", 0, false);
     defineNativeMethod(vm, klass, &nil_iterable_count, "count", 0, false);
     nil_instance.obj.type = OBJ_NATIVE_INSTANCE;
+#if !REF_COUNT_MEM_MANAGEMENT
     nil_instance.obj.isMarked = false; // doesn't matter, it's static memory anyway
+#endif
     nil_instance.klass = AS_CLASS(klass);
     initTable(&nil_instance.fields);
     push(vm, copyString(vm, "nil", 3));

@@ -130,7 +130,11 @@ if (__MAIN__ == __FILE__) {
     var generate_coverage = false
 
     function run_test_case(module, func, args) {
-        var test_name = String.format('{0}:{1}{2}', module.filename(), func.name(), args)
+        var test_name
+        if (args.empty?())
+            test_name = String.format('{0}:{1}', module.filename(), func.name())
+        else
+            test_name = String.format('{0}:{1}{2}', module.filename(), func.name(), args)
         try {
             call_function(module, func, *args)
             tests[test_name] = true

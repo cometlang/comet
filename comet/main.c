@@ -102,6 +102,10 @@ int main(int argc, const char **argv)
     init_comet(&virtualMachine);
 
     initArgv(&virtualMachine, argc, argv);
+    const char *version_string = stringify_value(VERSION_STRING);
+    addGlobal(
+        copyString(&virtualMachine, "COMET_VERSION", 13),
+        copyString(&virtualMachine, version_string, strlen(version_string)));
 
     if (argc == 1)
     {

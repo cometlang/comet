@@ -381,7 +381,7 @@ static utf8proc_int32_t to_lower_func(utf8proc_int32_t c, void UNUSED(*data))
 
 VALUE string_to_lower(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    char *dest_string;
+    char *dest_string = NULL;
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     utf8proc_ssize_t new_len = utf8proc_map_custom(
         (const utf8proc_uint8_t *)data->chars,
@@ -400,7 +400,7 @@ static utf8proc_int32_t to_upper_func(utf8proc_int32_t c, void UNUSED(*data))
 
 VALUE string_to_upper(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
-    char *dest_string;
+    char *dest_string = NULL;
     StringData *data = GET_NATIVE_INSTANCE_DATA(StringData, self);
     utf8proc_ssize_t new_len = utf8proc_map_custom(
         (const utf8proc_uint8_t *)data->chars,

@@ -86,7 +86,21 @@ VALUE dir_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argument
 
 VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
-    const char *path = string_get_cstr(arguments[0]);
+    const char *path;
+    if (isObjOfStdlibClassType(arguments[0], CLS_STRING))
+    {
+        path = string_get_cstr(arguments[0]);
+    }
+    else if (isObjOfStdlibClassType(arguments[0], CLS_DIRECTORY))
+    {
+        DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, arguments[0]);
+        path = data->path->c_str();
+    }
+    else
+    {
+        throw_exception_native(vm, "ArgumentException", "Directory.list only accepts a String or a Directory object");
+    }
+
     VALUE result = list_create(vm);
     push(vm, result);
     for (const auto & entry : std::filesystem::directory_iterator(path))

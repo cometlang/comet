@@ -31,9 +31,11 @@ static VM **threads;
 static volatile int num_threads = 0;
 static volatile int thread_capacity = 0;
 
+#if !REF_COUNT_MEM_MANAGEMENT
 static Obj **grey_stack;
 static int grey_capacity = 0;
 static int grey_count = 0;
+#endif
 
 static uint32_t gc_count;
 static Obj *generation_0;
@@ -171,8 +173,6 @@ void markObject(Obj *object)
 
 #if !REF_COUNT_MEM_MANAGEMENT
     object->isMarked = true;
-#endif
-
     if (grey_capacity < grey_count + 1)
     {
         grey_capacity = GROW_CAPACITY(grey_capacity);
@@ -180,6 +180,7 @@ void markObject(Obj *object)
     }
 
     grey_stack[grey_count++] = object;
+#endif
 }
 
 void markValue(Value value)
@@ -558,10 +559,13 @@ void finalizeGarbageCollection(void)
 #if DEBUG_LOG_GC || DEBUG_LOG_GC_MINIMAL
     printf("GC ran %u times, for a total of %lu clocks (%lu)\n", gc_count, total_gc_clocks, CLOCKS_PER_SEC);
 #endif
+
+#if !REF_COUNT_MEM_MANAGEMENT
     FREE_ARRAY(Obj*, grey_stack, grey_capacity);
     grey_stack = NULL;
     grey_count = 0;
     grey_capacity = 0;
+#endif
 
     FREE_ARRAY(VM *, threads, thread_capacity);
     threads = NULL;

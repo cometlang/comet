@@ -100,6 +100,9 @@ class Assert {
     }
 
     is_of_type(type, message=nil) {
+        if (message.nil?()) {
+            message = String.format("Expected type '{0}' but got '{1}'", type, self.value.class_name())
+        }
         assert(self.value is type, message)
     }
 

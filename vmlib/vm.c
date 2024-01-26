@@ -699,7 +699,7 @@ static CallFrame *updateFrame(VM *vm)
 #if REF_COUNT_MEM_MANAGEMENT
 static inline void incrementRefCount(Value value)
 {
-    if (IS_OBJ(value))
+    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
     {
         AS_OBJ(value)->refCount++;
     }
@@ -707,7 +707,7 @@ static inline void incrementRefCount(Value value)
 
 static inline void decrementRefCount(Value value)
 {
-    if (IS_OBJ(value))
+    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
     {
         AS_OBJ(value)->refCount--;
     }
@@ -821,6 +821,9 @@ static InterpretResult run(VM *vm)
         case OP_SET_LOCAL:
         {
             uint8_t slot = READ_BYTE();
+#if REF_COUNT_MEM_MANAGEMENT
+            decrementRefCount(frame->slots[slot]);
+#endif
             frame->slots[slot] = peek(vm, 0);
 #if REF_COUNT_MEM_MANAGEMENT
             incrementRefCount(peek(vm, 0));
@@ -836,6 +839,9 @@ static InterpretResult run(VM *vm)
 #endif
             if (findModuleVariable(frame->closure->function->module, name, &value))
             {
+#if REF_COUNT_MEM_MANAGEMENT
+                decrementRefCount(value);
+#endif
                 addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
             }
             else if (findGlobal(name, &value))
@@ -853,6 +859,9 @@ static InterpretResult run(VM *vm)
         {
             uint8_t slot = READ_BYTE();
             push(vm, *frame->closure->upvalues[slot]->location);
+#if REF_COUNT_MEM_MANAGEMENT
+            incrementRefCount(peek(vm, 0));
+#endif
             break;
         }
         case OP_SET_UPVALUE:
@@ -899,7 +908,15 @@ static InterpretResult run(VM *vm)
                 return INTERPRET_RUNTIME_ERROR;
             }
             ObjInstance *instance = AS_INSTANCE(peek(vm, 1));
-            tableSet(&instance->fields, OBJ_VAL(READ_CONSTANT()), peek(vm, 0));
+            Value propertyName = OBJ_VAL(READ_CONSTANT());
+#if REF_COUNT_MEM_MANAGEMENT
+            Value value;
+            if (tableGet(&instance->fields, propertyName, &value))
+            {
+                decrementRefCount(value);
+            }
+#endif
+            tableSet(&instance->fields, propertyName, peek(vm, 0));
 #if REF_COUNT_MEM_MANAGEMENT
             incrementRefCount(peek(vm, 0));
 #endif

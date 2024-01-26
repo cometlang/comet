@@ -67,17 +67,33 @@ static VALUE dir_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VA
     return copyString(vm, path.c_str(), path.length());
 }
 
-VALUE dir_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
+VALUE dir_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+{
+    DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, self);
+    VALUE result = list_create(vm);
+    push(vm, result);
+    for (const auto & entry : std::filesystem::directory_iterator(data->path->string()))
+    {
+        VALUE dir = directory_create(vm, entry.path());
+        push(vm, dir);
+        list_add(vm, result, 1, &dir);
+        pop(vm);
+    }
+
+    pop(vm);
+    return result;
+}
+
+VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
     const char *path = string_get_cstr(arguments[0]);
     VALUE result = list_create(vm);
     push(vm, result);
     for (const auto & entry : std::filesystem::directory_iterator(path))
     {
-        std::string path_str = entry.path().generic_string();
-        VALUE path_obj = copyString(vm, path_str.c_str(), path_str.length());
-        push(vm, path_obj);
-        list_add(vm, result, 1, &path_obj);
+        VALUE dir = directory_create(vm, entry.path());
+        push(vm, dir);
+        list_add(vm, result, 1, &dir);
         pop(vm);
     }
 
@@ -126,7 +142,8 @@ void init_directory(VM* vm)
     defineNativeMethod(vm, klass, &dir_parent, "parent", 0, false);
     defineNativeMethod(vm, klass, &dir_to_string, "to_string", 0, false);
     defineNativeMethod(vm, klass, &dir_absolute, "absolute", 0, false);
-    defineNativeMethod(vm, klass, &dir_list, "list", 1, true);
+    defineNativeMethod(vm, klass, &dir_list, "list", 0, false);
+    defineNativeMethod(vm, klass, &dir_static_list, "list", 1, true);
     defineNativeMethod(vm, klass, &dir_static_directory_q, "directory?", 1, true);
     defineNativeMethod(vm, klass, &dir_static_remove, "remove", 1, true);
     defineNativeMethod(vm, klass, &dir_static_remove, "delete", 1, true);

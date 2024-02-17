@@ -6,10 +6,11 @@
 #include "comet.h"
 #include "comet_stdlib.h"
 #include "cometlib.h"
+#include "colour.h"
 
 #define IMAGE_TYPE_PNG 0
 #define IMAGE_TYPE_JPEG 1
-#define IMAGE_TYPE_BMP 1
+#define IMAGE_TYPE_BMP 2
 
 #define IMAGE_COLOUR_SPACE_BYTES 3
 #define JPEG_IMAGE_QUALITY 90
@@ -58,14 +59,24 @@ static VALUE image_set_pixel(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), 
     ImageData* data = GET_NATIVE_INSTANCE_DATA(ImageData, self);
     int x = (int)number_get_value(arguments[0]);
     int y = (int)number_get_value(arguments[1]);
-    uint8_t r = (uint8_t)number_get_value(arguments[2]);
-    uint8_t g = (uint8_t)number_get_value(arguments[3]);
-    uint8_t b = (uint8_t)number_get_value(arguments[4]);
+    ColourData_t* colourData = GET_NATIVE_INSTANCE_DATA(ColourData_t, arguments[2]);
     int index = (y * (data->width * data->channels)) + (x * data->channels);
-    data->buffer[index + 0] = r;
-    data->buffer[index + 1] = g;
-    data->buffer[index + 2] = b;
+    data->buffer[index + 0] = colourData->r;
+    data->buffer[index + 1] = colourData->g;
+    data->buffer[index + 2] = colourData->b;
     return NIL_VAL;
+}
+
+static VALUE image_get_pixel(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    ImageData* data = GET_NATIVE_INSTANCE_DATA(ImageData, self);
+    int x = (int)number_get_value(arguments[0]);
+    int y = (int)number_get_value(arguments[1]);
+    int index = (y * (data->width * data->channels)) + (x * data->channels);
+    uint8_t r = data->buffer[index + 0];
+    uint8_t g = data->buffer[index + 1];
+    uint8_t b = data->buffer[index + 2];
+    return colour_create(vm, r, g, b);
 }
 
 static VALUE image_write_to_file(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE* arguments)
@@ -115,11 +126,17 @@ static VALUE image_read(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *argum
     return pop(vm);
 }
 
+static VALUE image_get_pixel_colour_label(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
+{
+    return NIL_VAL;
+}
+
 void init_image(VM* vm)
 {
     VALUE klass = defineNativeClass(vm, "Image", image_constructor, image_destructor, NULL, NULL, CLS_IMAGE, sizeof(ImageData), false);
     defineNativeMethod(vm, klass, &image_init, "init", 2, false);
-    defineNativeMethod(vm, klass, &image_set_pixel, "set_pixel", 5, false);
+    defineNativeMethod(vm, klass, &image_set_pixel, "set_pixel", 3, false);
+    defineNativeMethod(vm, klass, &image_get_pixel, "get_pixel", 2, false);
     defineNativeMethod(vm, klass, &image_write_to_file, "write_to_file", 2, false);
     defineNativeMethod(vm, klass, &image_width, "width", 0, false);
     defineNativeMethod(vm, klass, &image_height, "height", 0, false);

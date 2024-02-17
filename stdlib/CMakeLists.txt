@@ -36,6 +36,7 @@ set(SOURCE
   system.c
   thread.c
   thread_synchronisation_common.c
+  colour.cpp
 )
 
 if (WIN32)

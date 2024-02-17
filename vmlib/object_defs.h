@@ -49,6 +49,7 @@ typedef enum
 {
     CLS_BOOLEAN,
     CLS_COND_VAR,
+    CLS_COLOUR,
     CLS_DATETIME,
     CLS_DIRECTORY,
     CLS_DURATION,

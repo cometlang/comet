@@ -4,12 +4,20 @@ function test_image() {
 	var width = 200
 	var height = 100
 
+	var my_colour = Colour(0, 255, 125)
+
 	var image = Image(width, height)
 	for (var y = 0; y < height; y+=1) {
 		for (var x = 0; x < width; x+=1) {
-			image.set_pixel(x, y, 0, 255, 255)
+			image.set_pixel(x, y, my_colour)
 		}
 	}
+
+	var colour = image.get_pixel(50, 50)
+	unittest.Assert.that(colour).is_of_type(Colour)
+	unittest.Assert.that(colour.red()).is_equal_to(0)
+	unittest.Assert.that(colour.green()).is_equal_to(255)
+	unittest.Assert.that(colour.blue()).is_equal_to(125)
 
 	image.write_to_file("test.png", IMAGE_FORMAT.PNG)
 	image.write_to_file("test.jpg", IMAGE_FORMAT.JPEG)

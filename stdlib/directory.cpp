@@ -94,7 +94,7 @@ VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *argumen
     else if (isObjOfStdlibClassType(arguments[0], CLS_DIRECTORY))
     {
         DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, arguments[0]);
-        path = data->path->c_str();
+        path = data->path->string().c_str();
     }
     else
     {

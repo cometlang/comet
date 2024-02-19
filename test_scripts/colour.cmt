@@ -1,0 +1,15 @@
+import 'unittest' as unittest
+
+@unittest.test_case(Colour(0, 0, 0), COLOUR_CATEGORY.BLACK)
+@unittest.test_case(Colour(255, 255, 255), COLOUR_CATEGORY.WHITE)
+@unittest.test_case(Colour(128, 128, 128), COLOUR_CATEGORY.GREY)
+@unittest.test_case(Colour(255, 0, 0), COLOUR_CATEGORY.RED)
+@unittest.test_case(Colour(255, 128, 0), COLOUR_CATEGORY.ORANGE)
+@unittest.test_case(Colour(255, 255, 0), COLOUR_CATEGORY.YELLOW)
+@unittest.test_case(Colour(0, 255, 0), COLOUR_CATEGORY.GREEN)
+@unittest.test_case(Colour(0, 255, 255), COLOUR_CATEGORY.CYAN)
+@unittest.test_case(Colour(0, 0, 255), COLOUR_CATEGORY.BLUE)
+@unittest.test_case(Colour(255, 0, 255), COLOUR_CATEGORY.MAGENTA)
+function test_colour_categorise(colour, category) {
+    unittest.Assert.that(colour.categorise()).is_equal_to(category)
+}

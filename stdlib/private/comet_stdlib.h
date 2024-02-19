@@ -11,6 +11,7 @@ extern "C" {
 VALUE enum_create(VM *vm);
 void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t value);
 uint64_t enumvalue_get_value(VALUE instance);
+VALUE enum_get_from_value(VALUE enum_instance, uint64_t value);
 
 #ifdef __cplusplus
 }

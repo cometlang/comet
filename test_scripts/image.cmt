@@ -1,33 +1,33 @@
 import 'unittest' as unittest
 
 function test_image() {
-	var width = 200
-	var height = 100
+    var width = 200
+    var height = 100
 
-	var my_colour = Colour(0, 255, 125)
+    var my_colour = Colour(0, 255, 125)
 
-	var image = Image(width, height)
-	for (var y = 0; y < height; y+=1) {
-		for (var x = 0; x < width; x+=1) {
-			image.set_pixel(x, y, my_colour)
-		}
-	}
+    var image = Image(width, height)
+    for (var y = 0; y < height; y+=1) {
+        for (var x = 0; x < width; x+=1) {
+            image.set_pixel(x, y, my_colour)
+        }
+    }
 
-	var colour = image.get_pixel(50, 50)
-	unittest.Assert.that(colour).is_of_type(Colour)
-	unittest.Assert.that(colour.red()).is_equal_to(0)
-	unittest.Assert.that(colour.green()).is_equal_to(255)
-	unittest.Assert.that(colour.blue()).is_equal_to(125)
+    var colour = image.get_pixel(50, 50)
+    unittest.Assert.that(colour).is_of_type(Colour)
+    unittest.Assert.that(colour.red()).is_equal_to(0)
+    unittest.Assert.that(colour.green()).is_equal_to(255)
+    unittest.Assert.that(colour.blue()).is_equal_to(125)
 
-	image.write_to_file("test.png", IMAGE_FORMAT.PNG)
-	image.write_to_file("test.jpg", IMAGE_FORMAT.JPEG)
-	image.write_to_file("test.bmp", IMAGE_FORMAT.BMP)
+    image.write_to_file("test.png", IMAGE_FORMAT.PNG)
+    image.write_to_file("test.jpg", IMAGE_FORMAT.JPEG)
+    image.write_to_file("test.bmp", IMAGE_FORMAT.BMP)
 
-	unittest.Assert.that(File.exists?('test.png')).is_true()
-	unittest.Assert.that(File.exists?('test.jpg')).is_true()
-	unittest.Assert.that(File.exists?('test.bmp')).is_true()
+    unittest.Assert.that(File.exists?('test.png')).is_true()
+    unittest.Assert.that(File.exists?('test.jpg')).is_true()
+    unittest.Assert.that(File.exists?('test.bmp')).is_true()
 
-	File.delete('test.png')
-	File.delete('test.jpg')
-	File.delete('test.bmp')
+    File.delete('test.png')
+    File.delete('test.jpg')
+    File.delete('test.bmp')
 }

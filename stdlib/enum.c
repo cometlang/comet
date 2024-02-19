@@ -216,6 +216,20 @@ void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t valu
     popMany(vm, 2);
 }
 
+VALUE enum_get_from_value(VALUE enum_instance, uint64_t value)
+{
+    EnumData *data = GET_NATIVE_INSTANCE_DATA(EnumData, enum_instance);
+    for (int i = 0; i < data->array.count; i++)
+    {
+        VALUE enumValue = data->array.values[i];
+        EnumValueData *valueData = GET_NATIVE_INSTANCE_DATA(EnumValueData, enumValue);
+        if (valueData->num == value) {
+            return enumValue;
+        }
+    }
+    return NIL_VAL;
+}
+
 void init_enum(VM *vm)
 {
     enum_class = defineNativeClass(vm, "Enum", &enum_constructor, &enum_destructor, &enum_mark_contents, "Iterable", CLS_ENUM, sizeof(EnumData), true);

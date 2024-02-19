@@ -99,6 +99,12 @@ VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *argumen
     else
     {
         throw_exception_native(vm, "ArgumentException", "Directory.list only accepts a String or a Directory object");
+        return NIL_VAL;
+    }
+
+    if (!std::filesystem::exists(path)) {
+        throw_exception_native(vm, "IOException", "Directory '%s' not found", path);
+        return NIL_VAL;
     }
 
     VALUE result = list_create(vm);

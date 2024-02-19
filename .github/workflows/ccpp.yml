@@ -3,58 +3,50 @@ name: C/C++ CI
 on: [push]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    
+  build-linux:
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: build-test
       shell: bash
-      run: cmake -B build -S . -DCMAKE_SYSTEM_VERSION="10.0.20348.0"
-    - run: cmake --build build --target all --target test --target stdlib_test
-      if: ${{ runner.os == 'Linux' }}
-    # - run: cmake --build build --target ALL_BUILD --target RUN_TESTS --target stdlib_test
-    #   if: ${{ runner.os == 'Windows' }}
-    - run: cmake --build build --target ALL_BUILD --target RUN_TESTS
-      if: ${{ runner.os == 'Windows' }}
+      run: |
+        cmake -B build -S .
+        cmake --build build --target all --target test --target stdlib_test
 
-  build-release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+
+  build-windows:
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: build-test 
+        run: |
+          cmake -B build -S . -DCMAKE_SYSTEM_VERSION="10.0.20348.0"
+          cmake --build build --target ALL_BUILD --target RUN_TESTS
+    # - run: cmake --build build --target ALL_BUILD --target RUN_TESTS --target stdlib_test
+
+
+  build-release-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: build
       shell: bash
-      run: cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0" -DVERSION=${{ github.ref_name }}
-    - run: cmake --build release --target all
-      if: ${{ runner.os == 'Linux' }}
-    - run: cmake --build release --target ALL_BUILD --config Release
-      if: ${{ runner.os == 'Windows' }}
+      run: |
+        cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_SYSTEM_VERSION="10.0.20348.0" -DVERSION=${{ github.ref_name }}
+        cmake --build release --target ALL_BUILD --config Release
 
-    - name: Create-Archive-Linux
-      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
-      shell: bash
-      run: zip -j comet_linux_${{ github.ref_name }}.zip release/comet/comet stdlib/comet/*.cmt
-
-    - name: Release-Linux
-      uses: softprops/action-gh-release@v0.1.15
-      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Linux' }}
-      with:
-        files: comet_linux_${{ github.ref_name }}.zip
-
-    - name: Create-Archive-Windows
+    - name: Create-Archive
       shell: powershell
-      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
       run: |
         mkdir output
         cp release\comet\Release\comet.exe output
@@ -63,6 +55,31 @@ jobs:
 
     - name: Release-Windows
       uses: softprops/action-gh-release@v0.1.15
-      if: ${{ startsWith(github.ref, 'refs/tags/') && runner.os == 'Windows' }}
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
       with:
         files: comet_windows_${{ github.ref_name }}.zip
+
+  build-release-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: build
+        shell: bash
+        run: |
+          cmake -B release -S . -DCMAKE_BUILD_TYPE=Release -DVERSION=${{ github.ref_name }}
+          cmake --build release --target all
+
+      - name: Create-Archive
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        shell: bash
+        run: zip -j comet_linux_${{ github.ref_name }}.zip release/comet/comet stdlib/comet/*.cmt
+
+      - name: Release-Linux
+        uses: softprops/action-gh-release@v0.1.15
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        with:
+          files: comet_linux_${{ github.ref_name }}.zip

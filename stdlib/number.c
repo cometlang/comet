@@ -191,6 +191,15 @@ VALUE number_min(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *argu
     return create_number(vm, fmin(lhs, rhs));
 }
 
+VALUE number_clamp(VM *vm, VALUE UNUSED(klass), int UNUSED(arg_count), VALUE *arguments)
+{
+    double value = number_get_value(arguments[0]);
+    double min = number_get_value(arguments[1]);
+    double max = number_get_value(arguments[2]);
+    double result = fmin(fmax(value, min), max);
+    return create_number(vm, result);
+}
+
 VALUE number_compare(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
 {
     return number_operator(vm, self, arguments, OPERATOR_EQUALS);
@@ -248,6 +257,7 @@ void complete_number(VM *vm)
     defineNativeMethod(vm, number_class, &number_abs, "absolute_value", 0, false);
     defineNativeMethod(vm, number_class, &number_max, "max", 2, true);
     defineNativeMethod(vm, number_class, &number_min, "min", 2, true);
+    defineNativeMethod(vm, number_class, &number_clamp, "clamp", 3, true);
 
     defineNativeOperator(vm, number_class, &number_compare, 1, OPERATOR_EQUALS);
 }

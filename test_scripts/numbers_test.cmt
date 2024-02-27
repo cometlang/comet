@@ -60,6 +60,16 @@ function test_max() {
     unittest.Assert.that(Number.max(Number.random(), 1)).is_equal_to(1)
 }
 
+@unittest.test_case(5, 0, 10, 5)
+@unittest.test_case(-5, 0, 10, 0)
+@unittest.test_case(15, 0, 10, 10)
+@unittest.test_case(0, 0, 10, 0)
+@unittest.test_case(10, 0, 10, 10)
+function test_clamp(value, min, max, expected) {
+    var result = Number.clamp(value, min, max)
+    unittest.Assert.that(result).is_equal_to(expected)
+}
+
 function test_absolute_value() {
     unittest.Assert.that((-42).absolute_value()).is_equal_to(42)
 }

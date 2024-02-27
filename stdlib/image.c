@@ -126,11 +126,6 @@ static VALUE image_read(VM *vm, VALUE klass, int UNUSED(arg_count), VALUE *argum
     return pop(vm);
 }
 
-static VALUE image_get_pixel_colour_label(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
-{
-    return NIL_VAL;
-}
-
 void init_image(VM* vm)
 {
     VALUE klass = defineNativeClass(vm, "Image", image_constructor, image_destructor, NULL, NULL, CLS_IMAGE, sizeof(ImageData), false);

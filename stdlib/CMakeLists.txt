@@ -15,7 +15,7 @@ set(SOURCE
   boolean.c
   directory.cpp
   duration.cpp
-  enum.c
+  enum.cpp
   env.cpp
   exception.c
   file_common.cpp

@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include <stdio.h>
 #include <string.h>
 
@@ -51,15 +53,10 @@ uint64_t enumvalue_get_value(VALUE instance)
 static VALUE enumvalue_to_string(VM UNUSED(*vm), VALUE UNUSED(self), int UNUSED(arg_count), VALUE UNUSED(*arguments))
 {
     EnumValueData *data = GET_NATIVE_INSTANCE_DATA(EnumValueData, self);
-    const char *name = string_get_cstr(data->name);
-#if WIN32
-    #define max_len 256
-#else
-    int max_len = 64 + strlen(name);
-#endif
-    char temp_string[max_len];
-    int length = snprintf(temp_string, max_len, "%s:%.17g", name, data->num);
-    return copyString(vm, temp_string, length);
+    std::stringstream stream;
+    stream << string_get_cstr(data->name) << ":" << data->num;
+    std::string result = stream.str();
+    return copyString(vm, result.c_str(), result.length());
 }
 
 static VALUE enumvalue_less_equal(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)

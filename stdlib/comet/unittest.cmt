@@ -6,6 +6,12 @@ class test_case {
     }
 }
 
+class ignore {
+    init(reason=nil) {
+        self.reason = reason
+    }
+}
+
 class Assert {
     init(value) {
         self.value = value
@@ -129,6 +135,7 @@ if (__MAIN__ == __FILE__) {
     var tests = {}
     var total = 0
     var passed = 0
+    var ignored = 0
     var args = ARGV
     var generate_coverage = false
 
@@ -161,22 +168,27 @@ if (__MAIN__ == __FILE__) {
         import to_import as imported
         foreach (var func in imported.functions()) {
             if (func.name().starts_with?('test_')) {
-                var test_cases = func.attributes().filter((|x|) {
-                    return x is test_case
-                })
-                if (!test_cases.empty?()) {
-                    total += test_cases.length()
-                    foreach (var case in test_cases) {
-                        run_test_case(imported, func, case.args)
-                    }
+                var ignoreAttr = func.attributes().filter((|x|) { return x is ignore })
+                var test_cases = func.attributes().filter((|x|) { return x is test_case })
+                if (!ignoreAttr.empty?()) {
+                    ignored += 1
+                    total += test_cases.empty?() ? 1 : test_cases.length()
+                    print(String.format('ignored {0}:{1} ({2})', imported.filename(), func.name(), ignoreAttr[0].reason))
                 } else {
-                    total += 1
-                    run_test_case(imported, func, [])
+                    if (!test_cases.empty?()) {
+                        total += test_cases.length()
+                        foreach (var case in test_cases) {
+                            run_test_case(imported, func, case.args)
+                        }
+                    } else {
+                        total += 1
+                        run_test_case(imported, func, [])
+                    }
                 }
             }
         }
     }
-    print(String.format('{0}/{1} tests passed', passed, total))
+    print(String.format('{0}/{1} tests passed, {2} ignored', passed, total, ignored))
     if (generate_coverage) {
         coverage.generate()
     }

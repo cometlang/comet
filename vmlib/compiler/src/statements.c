@@ -329,6 +329,14 @@ void importStatement(Parser *parser)
     defineVariable(parser, global);
 }
 
+void fromImportStatement(Parser* parser)
+{
+    expression(parser);
+    emitByte(parser, OP_IMPORT);
+    // Imports are a function that return NIL, so ditch the nil from the stack
+    emitByte(parser, OP_POP);
+}
+
 void nextStatement(Parser *parser)
 {
     if (parser->currentLoop == NULL) {
@@ -414,6 +422,10 @@ void statement(Parser *parser)
     else if (match(parser, TOKEN_IMPORT))
     {
         importStatement(parser);
+    }
+    else if (match(parser, TOKEN_FROM))
+    {
+        fromImportStatement(parser);
     }
     else if (match(parser, TOKEN_NEXT))
     {

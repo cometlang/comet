@@ -180,6 +180,10 @@ static TokenType_t identifierType(Scanner *scanner)
                     return checkKeyword(scanner, 2, 5, "reach", TOKEN_FOREACH);
                 return checkKeyword(scanner, 2, 1, "r", TOKEN_FOR);
             }
+            case 'r':
+            {
+                return checkKeyword(scanner, 2, 2, "om", TOKEN_FROM);
+            }
             case 'u':
                 return checkKeyword(scanner, 2, 6, "nction", TOKEN_FUN);
             }

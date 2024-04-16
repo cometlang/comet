@@ -57,6 +57,7 @@ char *token_strings[NUM_TOKENS] =
     [TOKEN_FALSE] = "false",
     [TOKEN_FOR] = "for",
     [TOKEN_FOREACH] = "foreach",
+    [TOKEN_FROM] = "from",
     [TOKEN_FUN] = "function",
     [TOKEN_IF] = "if",
     [TOKEN_IMPORT] = "import",

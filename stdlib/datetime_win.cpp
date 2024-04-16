@@ -106,7 +106,7 @@ extern "C" {
         return OBJ_VAL(instance);
     }
 
-    static VALUE datetime_init(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE UNUSED(*arguments))
+    static VALUE datetime_init(VM *vm, VALUE self, int arg_count, VALUE *arguments)
     {
         int year = 0;
         unsigned int month = 0, day = 0, hours = 0, mins = 0, seconds = 0, millis = 0;

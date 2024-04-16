@@ -839,14 +839,17 @@ static InterpretResult run(VM *vm)
 #endif
             if (findModuleVariable(frame->closure->function->module, name, &value))
             {
+                addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
 #if REF_COUNT_MEM_MANAGEMENT
                 decrementRefCount(value);
 #endif
-                addModuleVariable(frame->closure->function->module, name, peek(vm, 0));
             }
             else if (findGlobal(name, &value))
             {
                 addGlobal(name, peek(vm, 0));
+#if REF_COUNT_MEM_MANAGEMENT
+                decrementRefCount(value);
+#endif
             }
             else
             {
@@ -859,18 +862,15 @@ static InterpretResult run(VM *vm)
         {
             uint8_t slot = READ_BYTE();
             push(vm, *frame->closure->upvalues[slot]->location);
-#if REF_COUNT_MEM_MANAGEMENT
-            incrementRefCount(peek(vm, 0));
-#endif
             break;
         }
         case OP_SET_UPVALUE:
         {
             uint8_t slot = READ_BYTE();
-            *frame->closure->upvalues[slot]->location = peek(vm, 0);
 #if REF_COUNT_MEM_MANAGEMENT
             incrementRefCount(peek(vm, 0));
 #endif
+            *frame->closure->upvalues[slot]->location = peek(vm, 0);
             break;
         }
         case OP_GET_PROPERTY:
@@ -916,10 +916,10 @@ static InterpretResult run(VM *vm)
                 decrementRefCount(value);
             }
 #endif
-            tableSet(&instance->fields, propertyName, peek(vm, 0));
 #if REF_COUNT_MEM_MANAGEMENT
             incrementRefCount(peek(vm, 0));
 #endif
+            tableSet(&instance->fields, propertyName, peek(vm, 0));
             swapTop(vm);
             pop(vm);
             break;

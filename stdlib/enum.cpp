@@ -207,7 +207,7 @@ void enum_add_value(VM *vm, VALUE enum_instance, const char *name, uint64_t valu
     VALUE args[2] = {NIL_VAL};
     args[0] = copyString(vm, name, strlen(name));
     push(vm, args[0]);
-    args[1] = create_number(vm, value);
+    args[1] = create_number(vm, (double)value);
     push(vm, args[1]);
     enum_add(vm, enum_instance, 2, args);
     popMany(vm, 2);

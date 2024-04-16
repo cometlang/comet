@@ -28,7 +28,21 @@ using namespace std;
 static constexpr string_view file_extension(".cmt");
 static const char *COMET_LIB_ENV_VARNAME = "COMET_LIB_DIR";
 
-static filesystem::path resolve_import_path(const char *relative_to_filename, const char *to_import)
+static filesystem::path resolve_exact_module(VM *vm, filesystem::path input)
+{
+    if (filesystem::is_directory(input))
+    {
+        filesystem::path candidate = input / "_init.cmt";
+        if (filesystem::exists(candidate))
+            return candidate;
+
+        throw_exception_native(vm, "ImportException", "Cannot import a directory that is not a module");
+        return filesystem::path();
+    }
+    return input;
+}
+
+static filesystem::path resolve_import_path(VM *vm, const char *relative_to_filename, const char *to_import)
 {
     std::string to_import_filename = string(to_import);
     if (!to_import_filename.ends_with(file_extension))
@@ -48,7 +62,7 @@ static filesystem::path resolve_import_path(const char *relative_to_filename, co
     filesystem::path candidate = current_dir / import_path;
     if (filesystem::exists(candidate))
     {
-        return candidate;
+        return resolve_exact_module(vm, candidate);
     }
 
     char *dir = std::getenv(COMET_LIB_ENV_VARNAME);
@@ -68,13 +82,13 @@ static filesystem::path resolve_import_path(const char *relative_to_filename, co
 
     if (filesystem::exists(candidate))
     {
-        return candidate;
+        return resolve_exact_module(vm, candidate);
     }
 
     candidate = filesystem::current_path() / import_path;
     if (filesystem::exists(candidate))
     {
-        return candidate;
+        return resolve_exact_module(vm, candidate);
     }
 
     return filesystem::path();
@@ -85,7 +99,7 @@ extern "C" {
 Value import_from_file(VM *vm, const char *relative_to_filename, Value to_import)
 {
     const char *to_import_path = string_get_cstr(to_import);
-    filesystem::path candidate = resolve_import_path(relative_to_filename, to_import_path);
+    filesystem::path candidate = resolve_import_path(vm, relative_to_filename, to_import_path);
     if (!filesystem::exists(candidate))
     {
         throw_exception_native(vm, "ImportException", "Could not import '%s'", to_import_path);

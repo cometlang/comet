@@ -320,21 +320,56 @@ void rethrowStatement(Parser *parser)
 
 void importStatement(Parser *parser)
 {
-    expression(parser);
-    emitByte(parser, OP_IMPORT);
-    // Imports are a function that return NIL, so ditch the nil from the stack
-    emitByte(parser, OP_POP);
-    consume(parser, TOKEN_AS, "Expected 'as' after the module to import");
-    uint8_t global = parseVariable(parser, "Expected a variable name for the imported module.");
-    defineVariable(parser, global);
-}
+    uint8_t importParamCount = 0;
+    if (match(parser, TOKEN_LEFT_BRACE))
+    {
+        uint8_t moduleIdentifierConstants[254];
+        if (match(parser, TOKEN_STAR))
+        {
+            importParamCount = 0xff;
+        }
+        else
+        {
+            do
+            {
+                if (importParamCount == 254)
+                {
+                    errorAtCurrent(parser, "Cannot have more than 254 import parameters.");
+                }
 
-void fromImportStatement(Parser* parser)
-{
-    expression(parser);
-    emitByte(parser, OP_IMPORT);
-    // Imports are a function that return NIL, so ditch the nil from the stack
-    emitByte(parser, OP_POP);
+                match(parser, TOKEN_EOL);
+                consume(parser, TOKEN_IDENTIFIER, "Expected a module import identifier.");
+                uint8_t paramConstant = identifierConstant(parser, &parser->previous);
+                moduleIdentifierConstants[importParamCount] = paramConstant;
+                importParamCount++;
+            } while (match(parser, TOKEN_COMMA));
+        }
+        consume(parser, TOKEN_RIGHT_BRACE, "Expect '}' after import parameters.");
+        match(parser, TOKEN_EOL);
+        consume(parser, TOKEN_FROM, "Expect 'from' after import parameters.");
+        expression(parser);
+        emitByte(parser, OP_IMPORT);
+        // Imports are a function that return NIL, so ditch the nil from the stack
+        emitByte(parser, OP_POP);
+        emitBytes(parser, OP_IMPORT_PARAMS, importParamCount);
+        if (importParamCount != 0xff)
+        {
+            for (uint8_t i = 0; i < importParamCount; i++)
+            {
+                emitByte(parser, moduleIdentifierConstants[i]);
+            }
+        }
+    }
+    else
+    {
+        expression(parser);
+        emitByte(parser, OP_IMPORT);
+        // Imports are a function that return NIL, so ditch the nil from the stack
+        emitByte(parser, OP_POP);
+        consume(parser, TOKEN_AS, "Expected 'as' after the module to import");
+        uint8_t global = parseVariable(parser, "Expected a variable name for the imported module.");
+        defineVariable(parser, global);
+    }
 }
 
 void nextStatement(Parser *parser)
@@ -422,10 +457,6 @@ void statement(Parser *parser)
     else if (match(parser, TOKEN_IMPORT))
     {
         importStatement(parser);
-    }
-    else if (match(parser, TOKEN_FROM))
-    {
-        fromImportStatement(parser);
     }
     else if (match(parser, TOKEN_NEXT))
     {

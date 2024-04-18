@@ -237,6 +237,24 @@ void freeVM(VM *vm)
     deregister_thread(vm);
 }
 
+#if REF_COUNT_MEM_MANAGEMENT
+static inline void incrementRefCount(Value value)
+{
+    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
+    {
+        AS_OBJ(value)->refCount++;
+    }
+}
+
+static inline void decrementRefCount(Value value)
+{
+    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
+    {
+        AS_OBJ(value)->refCount--;
+    }
+}
+#endif
+
 void push(VM *vm, Value value)
 {
     *vm->stackTop = value;
@@ -695,24 +713,6 @@ static CallFrame *updateFrame(VM *vm)
 {
     return &vm->frames[vm->frameCount - 1];
 }
-
-#if REF_COUNT_MEM_MANAGEMENT
-static inline void incrementRefCount(Value value)
-{
-    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
-    {
-        AS_OBJ(value)->refCount++;
-    }
-}
-
-static inline void decrementRefCount(Value value)
-{
-    if (IS_INSTANCE(value) || IS_NATIVE_INSTANCE(value))
-    {
-        AS_OBJ(value)->refCount--;
-    }
-}
-#endif
 
 #if DEBUG_TRACE_EXECUTION
 void print_stack(VM *vm)
@@ -1277,6 +1277,38 @@ static InterpretResult run(VM *vm)
                 }
                 pop(vm);
             }
+            break;
+        }
+        case OP_IMPORT_PARAMS:
+        {
+            uint8_t moduleParamCount = READ_BYTE();
+            if (moduleParamCount == 0xff)
+            {
+                ObjInstance *current = AS_INSTANCE(frame->closure->function->module);
+                ObjInstance *imported = AS_INSTANCE(peek(vm, 0));
+                tableAddAll(&imported->fields, &current->fields);
+            }
+            else
+            {
+                Value imported = peek(vm, 0);
+                for (uint8_t i = 0; i < moduleParamCount; i++)
+                {
+                    Value moduleParam = READ_CONSTANT();
+                    Value current = frame->closure->function->module;
+                    Value toImport;
+                    if (findModuleVariable(imported, moduleParam, &toImport))
+                    {
+                        addModuleVariable(current, moduleParam, toImport);
+                    }
+                    else
+                    {
+                        // If this is to be catchable, we need the instruction pointer to be set to the next "real" instruction
+                        runtimeError(vm, "Can't import field '%s' from module '%s'", string_get_cstr(moduleParam), module_filename(imported));
+                        return INTERPRET_RUNTIME_ERROR;
+                    }
+                }
+            }
+            pop(vm); // pop the imported module off the stack
             break;
         }
         case OP_SPLAT:

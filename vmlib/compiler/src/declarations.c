@@ -221,7 +221,7 @@ void function(Parser *parser, FunctionType type, uint8_t attributeCount)
 
             if (parser->currentFunction->function->restParam)
             {
-                errorAtCurrent(parser, "Cannot have further parameters after a *paramter declaration.");
+                errorAtCurrent(parser, "Cannot have further parameters after a *parameter declaration.");
             }
 
             if (match(parser, TOKEN_STAR))

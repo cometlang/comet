@@ -45,4 +45,5 @@ void init_stdlib(VM *vm)
     init_directory(vm);
     init_string_builder(vm);
     init_function(vm);
+    init_process(vm);
 }

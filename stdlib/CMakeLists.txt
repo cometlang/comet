@@ -29,6 +29,7 @@ set(SOURCE
   nil.c
   number.c
   object.c
+  process.cpp
   set.cpp
   socket.c
   string.c

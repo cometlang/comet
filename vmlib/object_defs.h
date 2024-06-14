@@ -69,6 +69,8 @@ typedef enum
     CLS_NIL,
     CLS_NUMBER,
     CLS_OBJECT,
+    CLS_PROCESS,
+    CLS_PROCESS_RUN_RESULT,
     CLS_SET,
     CLS_SOCKET,
     CLS_STRING,

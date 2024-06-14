@@ -36,6 +36,7 @@ extern "C" {
     void complete_iterable(VM* vm);
     void init_string_builder(VM *vm);
     void init_function(VM *vm);
+    void init_process(VM *vm);
 
     VALUE callable_p(VM* vm, int arg_count, VALUE* args);
 

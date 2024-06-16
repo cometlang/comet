@@ -3,6 +3,11 @@
 #include <cerrno>
 #include <sstream>
 
+#ifdef WIN32
+#define popen _popen
+#define pclose _pclose
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

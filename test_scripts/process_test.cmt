@@ -1,0 +1,29 @@
+import { test, Assert } from 'unittest'
+
+# @test()
+function test_process_can_run_returning_status_code() {
+    var result = Process.run('ls')
+
+    Assert.that(result.status_code).is_equal_to(0)
+}
+
+# @test()
+function test_process_output_is_a_string() {
+    var result = Process.run('ls')
+
+    Assert.that(result.output).is_of_type(String)
+}
+
+# @test()
+function test_process_sets_the_command_used() {
+    var result = Process.run('ls')
+
+    Assert.that(result.command).is_equal_to('ls')
+}
+
+# @test()
+function test_process_shows_failure_in_status_code() {
+    var result = Process.run('unknown')
+
+    Assert.that(result.status_code).is_not_equal_to(0)
+}

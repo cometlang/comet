@@ -16,12 +16,12 @@ extern "C" {
 #include "cometlib.h"
 
 typedef struct {
-    Obj obj;
+    ObjInstance obj;
 } process_data_t;
 
 typedef struct {
-    Obj obj;
-} proces_run_result_t;
+    ObjInstance obj;
+} process_run_result_t;
 
 static VALUE result_klass;
 
@@ -30,7 +30,7 @@ VALUE process_static_run(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALU
 {
     const char *cmd = string_get_cstr(arguments[0]);
     FILE *cmd_file = popen(cmd, "r");
-    if (cmd_file == NULL)
+    if (cmd_file == nullptr)
     {
         throw_exception_native(vm, "Exception", "Could not run a process: %s", strerror(errno));
     }
@@ -53,10 +53,10 @@ VALUE process_static_run(VM *vm, VALUE UNUSED(self), int UNUSED(arg_count), VALU
 
 void init_process(VM *vm)
 {
-    VALUE klass = defineNativeClass(vm, "Process", NULL, NULL, NULL, NULL, CLS_PROCESS, sizeof(process_data_t), true);
+    VALUE klass = defineNativeClass(vm, "Process", nullptr, nullptr, nullptr, nullptr, CLS_PROCESS, sizeof(process_data_t), true);
     defineNativeMethod(vm, klass, &process_static_run, "run", 1, true);
 
-    result_klass = defineNativeClass(vm, "ProcessRunResult", NULL, NULL, NULL, NULL, CLS_PROCESS_RUN_RESULT, sizeof(proces_run_result_t), true);
+    result_klass = defineNativeClass(vm, "ProcessRunResult", nullptr, nullptr, nullptr, nullptr, CLS_PROCESS_RUN_RESULT, sizeof(process_run_result_t), true);
 }
 
 #ifdef __cplusplus

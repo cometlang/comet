@@ -4,8 +4,13 @@
 #include "objects.h"
 #include "vm.h"
 
+#ifdef __cplusplus
+#define ALLOCATE(type, count) \
+    (type *)reallocate(nullptr, 0, sizeof(type) * (count))
+#else
 #define ALLOCATE(type, count) \
     (type *)reallocate(NULL, 0, sizeof(type) * (count))
+#endif
 
 #define FREE(type, pointer) \
     reallocate(pointer, sizeof(type), 0)

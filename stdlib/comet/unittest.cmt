@@ -1,5 +1,7 @@
 import 'coverage' as coverage
 
+class test {}
+
 class test_case {
     init(*args) {
         self.args = args
@@ -37,6 +39,12 @@ class Assert {
         if (message.nil?())
             message = String.format('expected {0} to not equal {1}', self.value, expected)
         assert(self.value != expected, message)
+    }
+
+    is_less_than(expected, message=nil) {
+        if (message.nil?())
+            message = String.format('expected {0} to be less than {1}', self.value, expected)
+        assert(self.value < expected, message)
     }
 
     is_true(message=nil) {
@@ -167,9 +175,11 @@ if (__MAIN__ == __FILE__) {
     foreach (var to_import in args) {
         import to_import as imported
         foreach (var func in imported.functions()) {
-            if (func.name().starts_with?('test_')) {
-                var ignoreAttr = func.attributes().filter((|x|) { return x is ignore })
-                var test_cases = func.attributes().filter((|x|) { return x is test_case })
+            var attrs = func.attributes()
+            var is_test = attrs.find((|x|) { return x is test })
+            if (func.name().starts_with?('test_') || !is_test.nil?()) {
+                var ignoreAttr = attrs.filter((|x|) { return x is ignore })
+                var test_cases = attrs.filter((|x|) { return x is test_case })
                 if (!ignoreAttr.empty?()) {
                     ignored += 1
                     total += test_cases.empty?() ? 1 : test_cases.length()

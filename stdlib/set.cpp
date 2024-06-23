@@ -39,7 +39,7 @@ void set_constructor(void *instanceData)
     SetData *data = (SetData *)instanceData;
     data->capacity = 0;
     data->count = 0;
-    data->entries = NULL;
+    data->entries = nullptr;
 }
 
 void set_destructor(void *data)
@@ -47,27 +47,27 @@ void set_destructor(void *data)
     SetData *set_data = (SetData *)data;
     for (int i = 0; i < set_data->capacity; i++)
     {
-        SetEntry *next = NULL;
-        if (set_data->entries[i] != NULL)
+        SetEntry *next = nullptr;
+        if (set_data->entries[i] != nullptr)
         {
             next = set_data->entries[i]->next;
             FREE(SetEntry *, set_data->entries[i]);
         }
 
-        while (next != NULL)
+        while (next != nullptr)
         {
             SetEntry *current = next;
             next = current->next;
             FREE(SetEntry *, current);
         }
     }
-    if (set_data->entries != NULL)
+    if (set_data->entries != nullptr)
     {
         FREE_ARRAY(SetEntry, set_data->entries, set_data->capacity);
     }
     set_data->capacity = 0;
     set_data->count = 0;
-    set_data->entries = NULL;
+    set_data->entries = nullptr;
 }
 
 VALUE set_create(VM *vm)
@@ -77,14 +77,14 @@ VALUE set_create(VM *vm)
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, set);
     data->capacity = 0;
     data->count = 0;
-    data->entries = NULL;
+    data->entries = nullptr;
 
     return pop(vm);
 }
 
 static uint32_t getIndex(VM *vm, Value value, int capacity)
 {
-    call_function(vm, value, common_strings[STRING_HASH], 0, NULL);
+    call_function(vm, value, common_strings[STRING_HASH], 0, nullptr);
     uint32_t result = ((uint32_t) number_get_value(peek(vm, 0))) % capacity;
     pop(vm);
     return result;
@@ -93,7 +93,7 @@ static uint32_t getIndex(VM *vm, Value value, int capacity)
 static bool insert(VM *vm, SetEntry **entries, int capacity, SetEntry *entry)
 {
     uint32_t index = getIndex(vm, entry->key, capacity);
-    if (entries[index] == NULL)
+    if (entries[index] == nullptr)
     {
         entries[index] = entry;
         return true;
@@ -101,8 +101,8 @@ static bool insert(VM *vm, SetEntry **entries, int capacity, SetEntry *entry)
     else
     {
         SetEntry *current = entries[index];
-        SetEntry *previous = NULL;
-        while (current != NULL)
+        SetEntry *previous = nullptr;
+        while (current != nullptr)
         {
             if (compare_objects(vm, current->key, entry->key))
                 return false;
@@ -122,13 +122,13 @@ static void adjust_capacity(VM *vm, SetData *data)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *current = data->entries[i];
-        while (current != NULL)
+        while (current != nullptr)
         {
             insert(vm, new_entries, new_capacity, current);
             current = current->next;
         }
     }
-    if (data->entries != NULL)
+    if (data->entries != nullptr)
     {
         FREE_ARRAY(SetEntry *, data->entries, data->capacity);
     }
@@ -144,7 +144,7 @@ VALUE set_add(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
         adjust_capacity(vm, data);
     }
     SetEntry *new_entry = ALLOCATE(SetEntry, 1);
-    new_entry->next = NULL;
+    new_entry->next = nullptr;
     new_entry->key = arguments[0];
     if (insert(vm, data->entries, data->capacity, new_entry))
     {
@@ -164,14 +164,14 @@ VALUE set_remove(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *current = data->entries[i];
-        SetEntry *previous = NULL;
-        while (current != NULL)
+        SetEntry *previous = nullptr;
+        while (current != nullptr)
         {
             if (compare_objects(vm, current->key, arguments[0]))
             {
                 VALUE result = current->key;
                 push(vm, result);
-                if (previous == NULL)
+                if (previous == nullptr)
                 {
                     data->entries[i] = current->next;
                 }
@@ -195,7 +195,7 @@ VALUE set_iterable_contains_q(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *
     SetData *data = GET_NATIVE_INSTANCE_DATA(SetData, self);
     uint32_t index = getIndex(vm, arguments[0], data->capacity);
     SetEntry *current = data->entries[index];
-    while (current != NULL)
+    while (current != nullptr)
     {
         if (compare_objects(vm, current->key, arguments[0])) {
             return TRUE_VAL;
@@ -218,7 +218,7 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             set_add(vm, result, 1, &entry->key);
             entry = entry->next;
@@ -228,7 +228,7 @@ VALUE set_union(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < other->capacity; i++)
     {
         SetEntry *entry = other->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             set_add(vm, result, 1, &entry->key);
             entry = entry->next;
@@ -250,7 +250,7 @@ VALUE set_intersect(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             if (set_iterable_contains_q(vm, self, 1, &entry->key) == TRUE_VAL)
                 set_add(vm, result, 1, &entry->key);
@@ -273,7 +273,7 @@ VALUE set_difference(VM *vm, VALUE self, int UNUSED(arg_count), VALUE *arguments
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             if (set_iterable_contains_q(vm, arguments[0], 1, &entry->key) == FALSE_VAL) {
                 set_add(vm, result, 1, &entry->key);
@@ -292,7 +292,7 @@ VALUE set_to_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argum
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             list_add(vm, list, 1, &entry->key);
             entry = entry->next;
@@ -310,9 +310,9 @@ VALUE set_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALUE
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
-            call_function(vm, data->entries[i]->key, common_strings[STRING_TO_STRING], 0, NULL);
+            call_function(vm, data->entries[i]->key, common_strings[STRING_TO_STRING], 0, nullptr);
             stream << string_get_cstr(peek(vm, 0));
             if (found != data->count - 1)
                 stream << ", ";
@@ -348,7 +348,7 @@ void set_mark_contents(VALUE self)
     for (int i = 0; i < data->capacity; i++)
     {
         SetEntry *entry = data->entries[i];
-        while (entry != NULL)
+        while (entry != nullptr)
         {
             markValue(entry->key);
             entry = entry->next;
@@ -365,7 +365,7 @@ VALUE set_iterable_count(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED
 void set_iterator_constructor(void *instanceData)
 {
     SetIterator *iter = (SetIterator *)instanceData;
-    iter->current = NULL;
+    iter->current = nullptr;
     iter->index = -1;
     iter->set = NIL_VAL;
     iter->returned_count = 0;
@@ -375,7 +375,7 @@ VALUE set_iterator_get_next(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), V
 {
     SetIterator *iter = GET_NATIVE_INSTANCE_DATA(SetIterator, self);
     SetData *set_data = GET_NATIVE_INSTANCE_DATA(SetData, iter->set);
-    while (iter->current == NULL)
+    while (iter->current == nullptr)
     {
         iter->index++;
         iter->current = set_data->entries[iter->index];
@@ -432,7 +432,7 @@ void init_set(VM *vm)
         vm,
         "SetIterator",
         &set_iterator_constructor,
-        NULL,
+        nullptr,
         &mark_set_iterator,
         "Iterator",
         CLS_ITERATOR,

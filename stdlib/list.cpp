@@ -71,17 +71,17 @@ void list_constructor(void *instanceData)
     ListData *data = (ListData *)instanceData;
     data->count = 0;
     data->capacity = 0;
-    data->entries = NULL;
+    data->entries = nullptr;
 }
 
 void list_destructor(void *instanceData)
 {
     ListData *data = (ListData *)instanceData;
-    if (data->entries != NULL)
+    if (data->entries != nullptr)
         FREE_ARRAY(list_node_t, data->entries, data->capacity);
     data->capacity = 0;
     data->count = 0;
-    data->entries = NULL;
+    data->entries = nullptr;
 }
 
 VALUE list_add(VM UNUSED(*vm), VALUE self, int arg_count, VALUE *arguments)
@@ -482,7 +482,7 @@ VALUE list_obj_to_string(VM UNUSED(*vm), VALUE self, int UNUSED(arg_count), VALU
     stream << "[";
     for (int i = 0; i < data->count; i++)
     {
-        call_function(vm, data->entries[i].item, common_strings[STRING_TO_STRING], 0, NULL);
+        call_function(vm, data->entries[i].item, common_strings[STRING_TO_STRING], 0, nullptr);
         stream << string_get_cstr(peek(vm, 0));
         if (i != data->count - 1)
             stream << ", ";
@@ -583,7 +583,7 @@ void init_list(VM *vm)
         vm,
         "ListIterator",
         &list_iterator_constructor,
-        NULL,
+        nullptr,
         &mark_list_iterator,
         "Iterator",
         CLS_ITERATOR,

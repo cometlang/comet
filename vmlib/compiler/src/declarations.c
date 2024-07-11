@@ -213,6 +213,7 @@ void function(Parser *parser, FunctionType type, uint8_t attributeCount)
         bool startedOptionals = false;
         do
         {
+            match(parser, TOKEN_EOL);
             parser->currentFunction->function->arity++;
             if (parser->currentFunction->function->arity > MAX_VAR_COUNT)
             {

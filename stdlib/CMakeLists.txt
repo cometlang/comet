@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.5)
+cmake_minimum_required (VERSION 3.10)
 enable_language(C)
 enable_language(CXX)
 project (stdlib)
@@ -10,7 +10,7 @@ include_directories(
   ../eral
   ../stb)
 
-set(SOURCE 
+set(SOURCE
   _init.c
   boolean.c
   directory.cpp

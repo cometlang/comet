@@ -6,7 +6,7 @@ use crate::lexer::TokenType;
 struct Scanner<'a> {
     chars: Peekable<Chars<'a>>,
     current: String,
-    line: u16,
+    line: i32,
 }
 
 impl<'a> Scanner<'a> {
@@ -22,6 +22,15 @@ impl<'a> Scanner<'a> {
         return Token::new(token_type, &self.current, self.line);
     }
 
+    fn advance(&mut self) -> Option<char> {
+        let c = self.chars.next();
+        match c {
+            Some(x) => self.current.push(x),
+            None => (),
+        }
+        return c;
+    }
+
     fn scan_token(&mut self) -> Token {
         self.skip_whitespace();
 
@@ -29,7 +38,12 @@ impl<'a> Scanner<'a> {
             return self.make_token(TokenType::EndOfFile);
         }
 
-        let result = self.make_token(TokenType::Error);
+        let c = self.advance();
+        let result = match c {
+            Some('\n') => self.make_token(TokenType::Eol),
+            _ => self.make_token(TokenType::Error),
+        };
+
         self.current = String::new();
         return result;
     }

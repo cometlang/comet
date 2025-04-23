@@ -34,11 +34,11 @@ pub enum TokenType {
 pub struct Token {
     pub token_type: TokenType,
     pub repr: String,
-    pub line: u16,
+    pub line: i32,
 }
 
 impl Token {
-    pub fn new(token_type: TokenType, repr: &String, line: u16) -> Token {
+    pub fn new(token_type: TokenType, repr: &String, line: i32) -> Token {
         return Token {
             token_type,
             repr: repr.clone(),

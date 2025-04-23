@@ -142,7 +142,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "rusty-comet"
+name = "rusty_comet"
 version = "0.1.0"
 dependencies = [
  "chrono",

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use test_case::test_case;
 use rusty_comet::lexer::{scan,TokenType};
 
 #[test]
@@ -25,21 +25,68 @@ fn comments_are_ignored() {
     assert_eq!(output[0].token_type, TokenType::EndOfFile);
 }
 
-
 #[test]
-fn string_produces_correct_token() {
+fn whitespace_is_ignored() {
     // arrange
-    let token_definitions : HashMap<&str, TokenType> = HashMap::from([
-        ("\n", TokenType::Eol),
-    ]);
+    let input = String::from("       ");
 
-    for def in token_definitions {
-        let input = String::from(def.0);
+    // act
+    let output = scan(&input);
 
-        // act
-        let output = scan(&input);
+    // assert
+    assert_eq!(output[0].token_type, TokenType::EndOfFile);
+}
 
-        // assert
-        assert_eq!(output[0].token_type, def.1);
-    }
+#[test_case("(", TokenType::LeftParen)]
+#[test_case(")", TokenType::RightParen)]
+#[test_case("{", TokenType::LeftBrace)]
+#[test_case("}", TokenType::RightBrace)]
+#[test_case("[", TokenType::LeftSquareBracket)]
+#[test_case("]", TokenType::RightSquareBracket)]
+#[test_case(",", TokenType::Comma)]
+#[test_case(".", TokenType::Dot)]
+#[test_case("-", TokenType::Minus)]
+#[test_case("+", TokenType::Plus)]
+#[test_case(";", TokenType::SemiColon)]
+#[test_case("/", TokenType::Slash)]
+#[test_case("*", TokenType::Star)]
+#[test_case(":", TokenType::Colon)]
+#[test_case("\n", TokenType::Eol)]
+#[test_case("|", TokenType::VBar)]
+#[test_case("%", TokenType::Percent)]
+#[test_case("?", TokenType::QuestionMark)]
+#[test_case("@", TokenType::AtSymbol)]
+#[test_case("!", TokenType::Bang)]
+#[test_case("!=", TokenType::BangEqual)]
+#[test_case("=", TokenType::Equal)]
+#[test_case("==", TokenType::EqualEqual)]
+#[test_case(">", TokenType::Greater)]
+#[test_case(">=", TokenType::GreaterEqual)]
+#[test_case("<", TokenType::Less)]
+#[test_case("<=", TokenType::LessEqual)]
+#[test_case("+=", TokenType::PlusEqual)]
+#[test_case("-=", TokenType::MinusEqual)]
+#[test_case("*=", TokenType::StarEqual)]
+#[test_case("/=", TokenType::SlashEqual)]
+#[test_case("%=", TokenType::PercentEqual)]
+#[test_case("||", TokenType::LogicalOr)]
+#[test_case("&&", TokenType::LogicalAnd)]
+#[test_case("&", TokenType::BitwiseAnd)]
+#[test_case("^", TokenType::BitwiseXor)]
+#[test_case("~", TokenType::BitwiseNegate)]
+#[test_case("<<", TokenType::BitShiftLeft)]
+#[test_case(">>", TokenType::BitShiftRight)]
+#[test_case("(|", TokenType::LambdaArgsOpen)]
+#[test_case("|)", TokenType::LambdaArgsClose)]
+fn string_produces_correct_token(input_str: &str, expected: TokenType) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, expected);
+    assert_eq!(output[0].repr, input_str);
 }

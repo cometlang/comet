@@ -120,5 +120,24 @@ fn spots_unterminated_strings(input_str: &str) {
 
     // assert
     assert_eq!(output.len(), 2);
-    assert_eq!(output[0].token_type, TokenType::Error); // unterminated string
+    assert_eq!(output[0].token_type, TokenType::Error);
+    assert_eq!(output[0].repr, String::from("Unterminated String"));
+}
+
+
+#[test_case("_leading_underscore")]
+#[test_case("_has2numbers2")]
+#[test_case("end_with_bang!")]
+#[test_case("end_with_question?")]
+fn can_scan_identifier(input_str: &str) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, TokenType::Identifier);
+    assert_eq!(output[0].repr, input);
 }

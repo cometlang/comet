@@ -2,10 +2,7 @@ use std::str::Chars;
 use std::iter::Peekable;
 use crate::lexer::Token;
 use crate::lexer::TokenType;
-
-fn check_keyword<'a>(chars: Peekable<Chars<'a>>) -> TokenType {
-    return TokenType::Identifier;
-}
+use crate::lexer::keywords::check_keyword;
 
 struct Scanner<'a> {
     chars: Peekable<Chars<'a>>,
@@ -211,7 +208,6 @@ impl<'a> Scanner<'a> {
         return self.make_token(TokenType::Number);
     }
 
-    // TODO
     fn identifier(&mut self) -> Token {
         self.advance();
         let mut c = self.chars.peek();
@@ -222,6 +218,9 @@ impl<'a> Scanner<'a> {
                 c = self.chars.peek();
             }
             else {
+                if *x == '?' || *x == '!' {
+                    self.advance();
+                }
                 break;
             }
         }

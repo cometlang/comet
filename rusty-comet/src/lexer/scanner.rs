@@ -3,6 +3,10 @@ use std::iter::Peekable;
 use crate::lexer::Token;
 use crate::lexer::TokenType;
 
+fn check_keyword<'a>(chars: Peekable<Chars<'a>>) -> TokenType {
+    return TokenType::Identifier;
+}
+
 struct Scanner<'a> {
     chars: Peekable<Chars<'a>>,
     current: String,
@@ -51,7 +55,7 @@ impl<'a> Scanner<'a> {
             return self.make_token(TokenType::EndOfFile);
         }
 
-        let c = self.advance().expect("We just checked for end of string - scanning must not be complete");
+        let c = self.advance().unwrap();
 
         if c.is_alphabetic() || c == '_' {
             return self.identifier();
@@ -63,7 +67,20 @@ impl<'a> Scanner<'a> {
 
         let result = match c {
             '\n' => self.make_token(TokenType::Eol),
-            '(' => self.make_token(TokenType::LeftParen),
+            '(' => {
+                return match self.chars.peek() {
+                    Some(x) => {
+                        if *x == '|' {
+                            self.advance();
+                            return self.make_token(TokenType::LambdaArgsOpen);
+                        }
+                        else {
+                            return self.make_token(TokenType::LeftParen);
+                        }
+                    },
+                    _ => self.make_token(TokenType::LeftParen),
+                }
+            },
             ')' => self.make_token(TokenType::RightParen),
             '[' => self.make_token(TokenType::LeftSquareBracket),
             ']' => self.make_token(TokenType::RightSquareBracket),
@@ -77,15 +94,79 @@ impl<'a> Scanner<'a> {
             '/' => self.check_equal(TokenType::Slash, TokenType::SlashEqual),
             '*' => self.check_equal(TokenType::Star, TokenType::StarEqual),
             ':' => self.make_token(TokenType::Colon),
-            '|' => self.make_token(TokenType::VBar),
+            '|' => {
+                return match self.chars.peek() {
+                    Some(x) => {
+                        if *x == '|' {
+                            self.advance();
+                            return self.make_token(TokenType::LogicalOr);
+                        }
+                        else if *x == ')' {
+                            self.advance();
+                            return self.make_token(TokenType::LambdaArgsClose);
+                        }
+                        else {
+                            return self.make_token(TokenType::VBar);
+                        }
+                    },
+                    _ => self.make_token(TokenType::VBar),
+                }
+            },
             '%' => self.check_equal(TokenType::Percent, TokenType::PercentEqual),
             '?' => self.make_token(TokenType::QuestionMark),
             '@' => self.make_token(TokenType::AtSymbol),
             '!' => self.check_equal(TokenType::Bang, TokenType::BangEqual),
             '=' => self.check_equal(TokenType::Equal, TokenType::EqualEqual),
-            '>' => self.check_equal(TokenType::Greater, TokenType::GreaterEqual),
-            '<' => self.check_equal(TokenType::Less, TokenType::LessEqual),
-            '&' => self.make_token(TokenType::BitwiseAnd),
+            '>' => {
+                return match self.chars.peek() {
+                    Some(x) => {
+                        if *x == '>' {
+                            self.advance();
+                            return self.make_token(TokenType::BitShiftRight);
+                        }
+                        else if *x == '=' {
+                            self.advance();
+                            return self.make_token(TokenType::GreaterEqual);
+                        }
+                        else {
+                            return self.make_token(TokenType::Greater);
+                        }
+                    },
+                    _ => self.make_token(TokenType::Greater),
+                }
+            },
+            '<' => {
+                return match self.chars.peek() {
+                    Some(x) => {
+                        if *x == '<' {
+                            self.advance();
+                            return self.make_token(TokenType::BitShiftLeft);
+                        }
+                        else if *x == '=' {
+                            self.advance();
+                            return self.make_token(TokenType::LessEqual);
+                        }
+                        else {
+                            return self.make_token(TokenType::Less);
+                        }
+                    },
+                    _ => self.make_token(TokenType::Less),
+                }
+            },
+            '&' => {
+                return match self.chars.peek() {
+                    Some(x) => {
+                        if *x == '&' {
+                            self.advance();
+                            return self.make_token(TokenType::LogicalAnd);
+                        }
+                        else {
+                            return self.make_token(TokenType::BitwiseAnd);
+                        }
+                    },
+                    _ => self.make_token(TokenType::BitwiseAnd),
+                }
+            },
             '^' => self.make_token(TokenType::BitwiseXor),
             '~' => self.make_token(TokenType::BitwiseNegate),
             '"' => self.string('"'),
@@ -132,7 +213,19 @@ impl<'a> Scanner<'a> {
 
     // TODO
     fn identifier(&mut self) -> Token {
-        return self.make_token(TokenType::Identifier);
+        self.advance();
+        let mut c = self.chars.peek();
+        while c.is_some() {
+            let x = c.unwrap();
+            if x.is_alphanumeric() || *x == '_' {
+                self.advance();
+                c = self.chars.peek();
+            }
+            else {
+                break;
+            }
+        }
+        return self.make_token(check_keyword(self.current.chars().peekable()));
     }
 
     fn skip_whitespace(&mut self) {

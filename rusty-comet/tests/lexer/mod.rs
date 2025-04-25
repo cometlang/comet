@@ -90,3 +90,35 @@ fn string_produces_correct_token(input_str: &str, expected: TokenType) {
     assert_eq!(output[0].token_type, expected);
     assert_eq!(output[0].repr, input_str);
 }
+
+
+#[test_case("'this is a string'" ; "single quoted simple")]
+#[test_case("\"this is a string\"" ; "double quoted simple")]
+#[test_case("'this is an \\' escaped string string'" ; "single quoted escaped")]
+#[test_case("\"this is an \\\" escaped string\"" ; "double quoted escaped")]
+#[test_case("'this is a string\ncontaining a newline'" ; "contains newline")]
+fn can_scan_string(input_str: &str) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, TokenType::String);
+}
+
+#[test_case("'this is a string" ; "single quoted simple")]
+#[test_case("\"this is a string" ; "double quoted simple")]
+fn spots_unterminated_strings(input_str: &str) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, TokenType::Error); // unterminated string
+}

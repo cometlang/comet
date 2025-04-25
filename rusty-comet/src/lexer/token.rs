@@ -31,6 +31,7 @@ pub enum TokenType {
     Error, EndOfFile,
 }
 
+#[derive(Debug)]
 pub struct Token {
     pub token_type: TokenType,
     pub repr: String,

@@ -22,6 +22,10 @@ impl<'a> Scanner<'a> {
         return Token::new(token_type, &self.current, self.line);
     }
 
+    fn error_token(&self, message: &str) -> Token {
+        return Token::new(TokenType::Error, &String::from(message), self.line);
+    }
+
     fn advance(&mut self) -> Option<char> {
         let c = self.chars.next();
         match c {
@@ -84,8 +88,8 @@ impl<'a> Scanner<'a> {
             '&' => self.make_token(TokenType::BitwiseAnd),
             '^' => self.make_token(TokenType::BitwiseXor),
             '~' => self.make_token(TokenType::BitwiseNegate),
-            '"' => self.string(),
-            '\'' => self.string(),
+            '"' => self.string('"'),
+            '\'' => self.string('\''),
             _ => self.make_token(TokenType::Error),
         };
 
@@ -93,8 +97,31 @@ impl<'a> Scanner<'a> {
         return result;
     }
 
-    // TODO
-    fn string(&mut self) -> Token {
+    fn string(&mut self, terminator: char) -> Token {
+        self.current.clear(); // drop the opening quote from the repr
+        let mut c = self.chars.peek();
+        while c != None && c != Some(&terminator) {
+            match c {
+                Some(&'\n') => {
+                    self.line += 1;
+                    self.advance();
+                },
+                Some(&'\\') => {
+                    self.advance();
+                    if self.chars.peek() == Some(&terminator) {
+                        self.advance();
+                    }
+                },
+                _ => { self.advance(); },
+            }
+            c = self.chars.peek();
+        }
+
+        if c == None {
+            return self.error_token("Unterminated String");
+        }
+
+        self.chars.next(); // avoid adding the closing quote to the repr
         return self.make_token(TokenType::String);
     }
 

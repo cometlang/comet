@@ -141,3 +141,20 @@ fn can_scan_identifier(input_str: &str) {
     assert_eq!(output[0].token_type, TokenType::Identifier);
     assert_eq!(output[0].repr, input);
 }
+
+#[test_case("1234")]
+#[test_case("1234.4321")]
+#[test_case("0x1234")]
+#[test_case("1_234")]
+fn can_scan_numbers(input_str: &str) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, TokenType::Number);
+    assert_eq!(output[0].repr, input);
+}

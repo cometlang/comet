@@ -59,7 +59,7 @@ impl<'a> Scanner<'a> {
         }
 
         if c.is_ascii_digit() {
-            return self.number();
+            return self.number(c);
         }
 
         let result = match c {
@@ -203,8 +203,25 @@ impl<'a> Scanner<'a> {
         return self.make_token(TokenType::String);
     }
 
-    // TODO
-    fn number(&mut self) -> Token {
+    fn number(&mut self, first_digit: char) -> Token {
+        let mut c = self.advance();
+        if first_digit == '0' && c == Some('x') {
+            c = self.advance();
+            while c.unwrap_or('x').is_ascii_hexdigit() {
+                c = self.advance();
+            }
+        }
+        else {
+            while c.unwrap_or('x').is_ascii_digit() || c == Some('_') {
+                c = self.advance();
+            }
+            if c == Some('.') {
+                c = self.advance();
+                while c.unwrap_or('x').is_ascii_digit() || c == Some('_') {
+                    c = self.advance();
+                }
+            }
+        }
         return self.make_token(TokenType::Number);
     }
 

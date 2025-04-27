@@ -21,7 +21,7 @@ pub enum TokenType {
     Identifier, String, Number, FileName,
 
     // Keywords.
-    As, Break, Class, Else, Enum, False, For, Foreach, From, Fun, If, Import, In,
+    As, Break, Class, Else, Enum, False, For, Foreach, From, Function, If, Import, In,
     Is, Next, Nil, Operator, Rethrow, Return, TokenSelf, Super, True, Var, While,
     Try, Catch, Throw, Final, Finally,
 

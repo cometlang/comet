@@ -158,3 +158,46 @@ fn can_scan_numbers(input_str: &str) {
     assert_eq!(output[0].token_type, TokenType::Number);
     assert_eq!(output[0].repr, input);
 }
+
+#[test_case("as", TokenType::As)]
+#[test_case("break", TokenType::Break)]
+#[test_case("class", TokenType::Class)]
+#[test_case("else", TokenType::Else)]
+#[test_case("enum", TokenType::Enum)]
+#[test_case("false", TokenType::False)]
+#[test_case("for", TokenType::For)]
+#[test_case("foreach", TokenType::Foreach)]
+#[test_case("from", TokenType::From)]
+#[test_case("function", TokenType::Function)]
+#[test_case("if", TokenType::If)]
+#[test_case("import", TokenType::Import)]
+#[test_case("in", TokenType::In)]
+#[test_case("is", TokenType::Is)]
+#[test_case("next", TokenType::Next)]
+#[test_case("nil", TokenType::Nil)]
+#[test_case("operator", TokenType::Operator)]
+#[test_case("rethrow", TokenType::Rethrow)]
+#[test_case("return", TokenType::Return)]
+#[test_case("self", TokenType::TokenSelf)]
+#[test_case("super", TokenType::Super)]
+#[test_case("true", TokenType::True)]
+#[test_case("var", TokenType::Var)]
+#[test_case("while", TokenType::While)]
+#[test_case("try", TokenType::Try)]
+#[test_case("catch", TokenType::Catch)]
+#[test_case("throw", TokenType::Throw)]
+#[test_case("final", TokenType::Final)]
+#[test_case("finally", TokenType::Finally)]
+#[test_case("__FILE__", TokenType::FileName)]
+fn can_scan_keywords(input_str: &str, expected: TokenType) {
+    // arrange
+    let input = String::from(input_str);
+
+    // act
+    let output = scan(&input);
+
+    // assert
+    assert_eq!(output.len(), 2);
+    assert_eq!(output[0].token_type, expected);
+    assert_eq!(output[0].repr, input);
+}

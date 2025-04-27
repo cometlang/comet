@@ -241,7 +241,7 @@ impl<'a> Scanner<'a> {
                 break;
             }
         }
-        return self.make_token(check_keyword(self.current.chars().peekable()));
+        return self.make_token(check_keyword(&self.current));
     }
 
     fn skip_whitespace(&mut self) {

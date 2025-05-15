@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "comet", "comet\comet.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lexer", "lexer\lexer.csproj", "{18D90802-6FDE-4750-BB06-C198B5CBD02F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{8C881903-115C-4194-A575-B533508E035C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lexer.tests", "tests\lexer.tests\lexer.tests.csproj", "{894DAF6C-8910-4063-B02C-C253685AAF5D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +28,12 @@ Global
 		{18D90802-6FDE-4750-BB06-C198B5CBD02F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18D90802-6FDE-4750-BB06-C198B5CBD02F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18D90802-6FDE-4750-BB06-C198B5CBD02F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{894DAF6C-8910-4063-B02C-C253685AAF5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{894DAF6C-8910-4063-B02C-C253685AAF5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{894DAF6C-8910-4063-B02C-C253685AAF5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{894DAF6C-8910-4063-B02C-C253685AAF5D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{894DAF6C-8910-4063-B02C-C253685AAF5D} = {8C881903-115C-4194-A575-B533508E035C}
 	EndGlobalSection
 EndGlobal

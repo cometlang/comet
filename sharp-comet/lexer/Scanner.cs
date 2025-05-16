@@ -100,8 +100,25 @@ public class Scanner
         return MakeToken(TokenType.Number);
     }
 
-    public Token ScanString()
+    public Token ScanString(char terminator)
     {
+        // remove the opening quote
+        _current.Clear();
+        while (_contentIter.Peek() != terminator && _contentIter.HasNext())
+        {
+            if (_contentIter.Peek() == '\n')
+                _line++;
+            if (_contentIter.Peek() == '\\' && _contentIter.PeekNext() == terminator)
+                Advance(); // extra advance
+            Advance();
+        }
+
+        if (!_contentIter.HasNext())
+            return ErrorToken("Unterminated string.");
+
+        // The terminator.
+        _contentIter.Next();
+
         return MakeToken(TokenType.String);
     }
 
@@ -184,8 +201,9 @@ public class Scanner
                 else
                     return MakeToken(TokenType.GreaterThan);
             }
-            case '"': return ScanString();
-            case '\'': return ScanString();
+            case '"':
+            case '\'':
+                return ScanString(c);
         }
 
         return ErrorToken($"Unexpected character: '{c}'");

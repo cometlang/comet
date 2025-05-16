@@ -47,12 +47,7 @@ public class ScannerTests
     [TestCase("(|", TokenType.LambdaArgsOpen)]
     [TestCase("|)", TokenType.LambdaArgsClose)]
 
-    // Literals.
     [TestCase("some_name", TokenType.Identifier)]
-    [TestCase("'this is a string'", TokenType.String)]
-    [TestCase("\"this is a string\"", TokenType.String)]
-    [TestCase(@"'this is a string
-with newlines, etc'", TokenType.String)]
     [TestCase("1234", TokenType.Number)]
     [TestCase("1234.4321", TokenType.Number)]
     [TestCase("0xabcd1234", TokenType.Number)]
@@ -105,5 +100,23 @@ with newlines, etc'", TokenType.String)]
         // assert
         Assert.That(result.TokenType, Is.EqualTo(expected));
         Assert.That(result.Representation, Is.EqualTo(content));
+    }
+
+    [TestCase("'this is a string'", "this is a string", TokenType.String)]
+    [TestCase("\"this is a string\"", "this is a string", TokenType.String)]
+    [TestCase(@"'this is a string
+with newlines, etc'", @"this is a string
+with newlines, etc", TokenType.String)]
+    public void CanScanStrings(string content, string expectedRepresentation, TokenType expected)
+    {
+        // arrange
+        var scanner = new Scanner(content);
+
+        // act
+        var result = scanner.ScanToken();
+
+        // assert
+        Assert.That(result.TokenType, Is.EqualTo(expected));
+        Assert.That(result.Representation, Is.EqualTo(expectedRepresentation));
     }
 }

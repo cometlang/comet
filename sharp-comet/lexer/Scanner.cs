@@ -1,32 +1,30 @@
-﻿ using System;
- using System.Text;
+﻿using lexer;
+using System.Text;
 
 namespace sharpcomet.lexer;
 
 public class Scanner
 {
-    private readonly string _content;
     private CharIterator _contentIter;
     private int _line = 0;
     private StringBuilder _current;
 
     public Scanner(string content)
     {
-        _content = content;
         _contentIter = new CharIterator(content);
         _current = new StringBuilder();
     }
 
     private char Advance()
     {
-        _current.Append(_contentIter.Current);
+        _current.Append(_contentIter.Peek());
         return _contentIter.Next();
     }
 
     private Token MakeToken(TokenType tokenType)
     {
         var result = new Token(tokenType, _current.ToString(), _line);
-        _current = new StringBuilder();
+        _current.Clear();
         return result;
     }
 
@@ -39,12 +37,9 @@ public class Scanner
 
     private void SkipWhitespace()
     {
-        if (!_contentIter.HasNext())
-            return;
-
         while (true)
         {
-            switch (_contentIter.Current)
+            switch (_contentIter.Peek())
             {
             case ' ':
             case '\r':
@@ -71,11 +66,37 @@ public class Scanner
 
     public Token ScanIdentifier()
     {
-        return MakeToken(TokenType.Identifier);
+        while (char.IsLetterOrDigit(_contentIter.Peek()) || _contentIter.Peek() == '_')
+            Advance();
+
+        if (_contentIter.Peek() == '?' || _contentIter.Peek() == '!')
+            Advance();
+
+        return MakeToken(Keywords.CheckKeyword(_current.ToString()));
     }
 
-    public Token ScanNumber()
+    public Token ScanNumber(char previous)
     {
+        if (previous == '0' && (_contentIter.Peek() == 'x' || _contentIter.Peek() == 'X'))
+        {
+            Advance();
+            while (char.IsAsciiHexDigit(_contentIter.Peek()))
+                Advance();
+        }
+        else
+        {
+            while (char.IsDigit(_contentIter.Peek()) || _contentIter.Peek() == '_')
+                Advance();
+
+            if (_contentIter.Peek() == '.' && char.IsDigit(_contentIter.PeekNext()))
+            {
+                Advance();
+
+                while (char.IsDigit(_contentIter.Peek()) || _contentIter.Peek() == '_')
+                    Advance();
+            }
+        }
+
         return MakeToken(TokenType.Number);
     }
 
@@ -86,13 +107,10 @@ public class Scanner
 
     public bool Match(char toMatch)
     {
-        if (_contentIter.HasNext())
+        if (_contentIter.Peek() == toMatch)
         {
-            if (_contentIter.Current == toMatch)
-            {
-                Advance();
-                return true;
-            }
+            Advance();
+            return true;
         }
         return false;
     }
@@ -112,11 +130,11 @@ public class Scanner
             return ScanIdentifier();
 
         if (char.IsDigit(c))
-            return ScanNumber();
+            return ScanNumber(c);
 
         switch (c)
         {
-            case '(':  return MakeToken(TokenType.LeftParen);
+            case '(':  return Match('|') ? MakeToken(TokenType.LambdaArgsOpen) : MakeToken(TokenType.LeftParen);
             case ')':  return MakeToken(TokenType.RightParen);
             case '{':  return MakeToken(TokenType.LeftBrace);
             case '}':  return MakeToken(TokenType.RightBrace);
@@ -130,7 +148,15 @@ public class Scanner
             case '/':  return Match('=') ? MakeToken(TokenType.SlashEqual) : MakeToken(TokenType.Slash);
             case '*':  return Match('=') ? MakeToken(TokenType.StarEqual) : MakeToken(TokenType.Star);
             case ':':  return MakeToken(TokenType.Colon);
-            case '|':  return Match('|') ? MakeToken(TokenType.LogicalOr) : MakeToken(TokenType.VBar);
+            case '|':
+            {
+                if (Match(')'))
+                    return MakeToken(TokenType.LambdaArgsClose);
+                else if (Match('|'))
+                    return MakeToken(TokenType.LogicalOr);
+                else
+                    return MakeToken(TokenType.VBar);
+            }
             case '%':  return Match('=') ? MakeToken(TokenType.PercentEqual) : MakeToken(TokenType.Percent);
             case '?':  return MakeToken(TokenType.QuestionMark);
             case '@':  return MakeToken(TokenType.AtSymbol);
@@ -162,6 +188,6 @@ public class Scanner
             case '\'': return ScanString();
         }
 
-        return ErrorToken($"Unexpected character: '{_contentIter.Current}'");
+        return ErrorToken($"Unexpected character: '{c}'");
     }
 }

@@ -1,3 +1,5 @@
+using System;
+
 public class CharIterator
 {
     private string _str;
@@ -8,9 +10,13 @@ public class CharIterator
         _str = str;
     }
 
-    public char Current => _str[_index];
+    public char Peek()
+    {
+        if (_index < _str.Length)
+            return _str[_index];
 
-    public char Peek() => _str[_index + 1];
+        return '\0';
+    }
 
     public char Next()
     {
@@ -18,4 +24,13 @@ public class CharIterator
     }
 
     public bool HasNext() => _index < _str.Length;
+
+    internal char PeekNext()
+    {
+        if (_index + 1 < _str.Length)
+        {
+            return _str[_index + 1];
+        }
+        return '\0';
+    }
 }

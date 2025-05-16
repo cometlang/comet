@@ -1,5 +1,3 @@
-using System;
-
 public class CharIterator
 {
     private string _str;

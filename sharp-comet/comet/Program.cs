@@ -1,20 +1,21 @@
 ﻿using System;
 using System.IO;
 using sharpcomet.lexer;
+using sharpcomet.compiler;
 
 class Program
 {
     public static void Main(string[] args)
     {
-        Console.WriteLine("Inside Main!");
         foreach (var arg in args)
         {
             var content = File.ReadAllText(arg);
-            var scanner = new Scanner(content);
-            Token token = scanner.ScanToken();
-            while (token.TokenType != TokenType.EndOfFile)
+            var scanner = new Scanner(new Source(arg, content));
+            var parser = new Parser(scanner);
+
+            while (parser.Current?.TokenType != TokenType.EndOfFile)
             {
-                token = scanner.ScanToken();
+                parser.Advance();
             }
         }
     }

@@ -69,6 +69,34 @@ public class Scanner
         }
     }
 
+    public Token ScanIdentifier()
+    {
+        return MakeToken(TokenType.Identifier);
+    }
+
+    public Token ScanNumber()
+    {
+        return MakeToken(TokenType.Number);
+    }
+
+    public Token ScanString()
+    {
+        return MakeToken(TokenType.String);
+    }
+
+    public bool Match(char toMatch)
+    {
+        if (_contentIter.HasNext())
+        {
+            if (_contentIter.Current == toMatch)
+            {
+                Advance();
+                return true;
+            }
+        }
+        return false;
+    }
+
     public Token ScanToken()
     {
         SkipWhitespace();
@@ -79,6 +107,13 @@ public class Scanner
         }
 
         char c = Advance();
+
+        if (char.IsLetter(c) || c == '_')
+            return ScanIdentifier();
+
+        if (char.IsDigit(c))
+            return ScanNumber();
+
         switch (c)
         {
             case '(':  return MakeToken(TokenType.LeftParen);
@@ -89,17 +124,42 @@ public class Scanner
             case ']':  return MakeToken(TokenType.RightSquareBracket);
             case ',':  return MakeToken(TokenType.Comma);
             case '.':  return MakeToken(TokenType.Dot);
-            case '-':  return MakeToken(TokenType.Minus);
-            case '+':  return MakeToken(TokenType.Plus);
+            case '-':  return Match('=') ? MakeToken(TokenType.MinusEqual) : MakeToken(TokenType.Minus);
+            case '+':  return Match('=') ? MakeToken(TokenType.PlusEqual) : MakeToken(TokenType.Plus);
             case ';':  return MakeToken(TokenType.SemiColon);
-            case '/':  return MakeToken(TokenType.Slash);
-            case '*':  return MakeToken(TokenType.Star);
+            case '/':  return Match('=') ? MakeToken(TokenType.SlashEqual) : MakeToken(TokenType.Slash);
+            case '*':  return Match('=') ? MakeToken(TokenType.StarEqual) : MakeToken(TokenType.Star);
             case ':':  return MakeToken(TokenType.Colon);
-            case '|':  return MakeToken(TokenType.VBar);
-            case '%':  return MakeToken(TokenType.Percent);
+            case '|':  return Match('|') ? MakeToken(TokenType.LogicalOr) : MakeToken(TokenType.VBar);
+            case '%':  return Match('=') ? MakeToken(TokenType.PercentEqual) : MakeToken(TokenType.Percent);
             case '?':  return MakeToken(TokenType.QuestionMark);
             case '@':  return MakeToken(TokenType.AtSymbol);
             case '\n': return MakeToken(TokenType.EndOfLine);
+            case '~': return MakeToken(TokenType.BitwiseNegate);
+            case '^': return MakeToken(TokenType.BitwiseXor);
+            case '&': return Match('&') ? MakeToken(TokenType.LogicalAnd) : MakeToken(TokenType.BitwiseAnd);
+            case '!': return Match('=') ? MakeToken(TokenType.BangEqual) : MakeToken(TokenType.Bang);
+            case '=': return Match('=') ? MakeToken(TokenType.EqualEqual) : MakeToken(TokenType.Equal);
+            case '<':
+            {
+                if (Match('<'))
+                    return MakeToken(TokenType.BitShiftLeft);
+                else if (Match('='))
+                    return MakeToken(TokenType.LessEqual);
+                else
+                    return MakeToken(TokenType.LessThan);
+            }
+            case '>':
+            {
+                if (Match('>'))
+                    return MakeToken(TokenType.BitShiftRight);
+                else if (Match('='))
+                    return MakeToken(TokenType.GreaterEqual);
+                else
+                    return MakeToken(TokenType.GreaterThan);
+            }
+            case '"': return ScanString();
+            case '\'': return ScanString();
         }
 
         return ErrorToken($"Unexpected character: '{_contentIter.Current}'");

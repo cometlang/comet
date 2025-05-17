@@ -3,18 +3,18 @@ using sharpcomet.lexer;
 
 namespace sharpcomet.compiler;
 
-public class Parser
+public partial class Parser
 {
     private bool _hadError;
     private bool _panicMode;
     private readonly Scanner _scanner;
+
 
 // typedef struct
 // {
 //     ClassCompiler *currentClass;
 //     LoopCompiler *currentLoop;
 //     VALUE currentModule;
-//     Compiler *currentFunction;
 //     VM *compilation_thread;
 // } Parser;
     public Parser(Scanner scanner)
@@ -22,8 +22,10 @@ public class Parser
         _scanner = scanner;
     }
 
+    private Compiler? CurrentFunction { get; set; }
+
     public Token? Current { get; private set; }
-    public Token? Previous { get; private set; }
+    private Token? Previous { get; set; }
 
     public void Advance()
     {
@@ -35,6 +37,32 @@ public class Parser
                 break;
 
             ErrorAtCurrent(Current.Representation);
+        }
+    }
+
+    private bool Match(TokenType tokenType)
+    {
+        if (!Check(tokenType))
+            return false;
+
+        Advance();
+        return true;
+    }
+
+    private bool Check(TokenType tokenType)
+    {
+        return Current?.TokenType == tokenType;
+    }
+
+    private void Consume(TokenType tokenType, string message)
+    {
+        if (Current?.TokenType == tokenType)
+        {
+            Advance();
+        }
+        else
+        {
+            ErrorAtCurrent(message);
         }
     }
 
@@ -70,6 +98,47 @@ public class Parser
     private void Error(string message)
     {
         ErrorAt(Previous, message);
+    }
+
+    private void Synchronize()
+    {
+        _panicMode = false;
+
+        while (Current?.TokenType != TokenType.EndOfFile)
+        {
+            if (Previous?.TokenType == TokenType.EndOfLine)
+                return;
+
+            switch (Current?.TokenType)
+            {
+                case TokenType.Class:
+                case TokenType.Function:
+                case TokenType.Var:
+                case TokenType.Operator:
+                case TokenType.For:
+                case TokenType.ForEach:
+                case TokenType.If:
+                case TokenType.While:
+                case TokenType.Throw:
+                case TokenType.Return:
+                case TokenType.Static:
+                case TokenType.Try:
+                case TokenType.Import:
+                case TokenType.Enum:
+                    return;
+
+                default:
+                    // Do nothing.
+                    break;
+            }
+
+            Advance();
+        }
+    }
+
+    private void EmitByte(byte output)
+    {
+
     }
 }
 

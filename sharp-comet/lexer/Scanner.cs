@@ -11,6 +11,7 @@ public class Scanner
 
     public Scanner(Source source)
     {
+        _source = source;
         _contentIter = new CharIterator(source.Content);
         _current = new StringBuilder();
         _line = 1;

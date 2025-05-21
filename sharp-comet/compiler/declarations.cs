@@ -10,17 +10,17 @@ public partial class Parser
 
     }
 
-    private ushort IdentifierConstant(Token token)
+    private byte IdentifierConstant(Token token)
     {
         return 0;
     }
 
-    private ushort ParseVariable(string errorMessage)
+    private byte ParseVariable(string errorMessage)
     {
        Consume(TokenType.Identifier, errorMessage);
 
         DeclareVariable();
-        if (CurrentFunction.ScopeDepth > Compiler.GLOBAL_SCOPE)
+        if (CurrentFunction.ScopeDepth > FunctionCompiler.GLOBAL_SCOPE)
             return 0;
 
         return IdentifierConstant(Previous);
@@ -43,7 +43,7 @@ public partial class Parser
 
     private void VarDeclaration()
     {
-        ushort global = ParseVariable("Expected a variable name");
+        byte global = ParseVariable("Expected a variable name");
 
         if (Match(TokenType.Equal))
         {
@@ -51,7 +51,7 @@ public partial class Parser
         }
         else
         {
-            EmitByte((byte)Op.Nil);
+            CurrentFunction.EmitBytes((byte)Op.Nil);
         }
 
         CurrentFunction.DefineVariable(global);

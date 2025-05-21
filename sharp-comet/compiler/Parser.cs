@@ -22,7 +22,7 @@ public partial class Parser
         _scanner = scanner;
     }
 
-    private Compiler? CurrentFunction { get; set; }
+    private FunctionCompiler? CurrentFunction { get; set; }
 
     public Token? Current { get; private set; }
     private Token? Previous { get; set; }
@@ -136,9 +136,5 @@ public partial class Parser
         }
     }
 
-    private void EmitByte(byte output)
-    {
-
-    }
 }
 

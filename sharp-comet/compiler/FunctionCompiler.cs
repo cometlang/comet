@@ -26,7 +26,7 @@ public class FunctionCompiler
 
     public void EmitBytes(params byte[] instructions)
     {
-
+        _chunk.EmitBytes(instructions);
     }
 
     private void MarkInitialized()
@@ -45,7 +45,7 @@ public class FunctionCompiler
         }
         else
         {
-            EmitBytes((byte)Op.DefineGlobal, variable);
+            _chunk.EmitBytes((byte)Op.DefineGlobal, variable);
         }
     }
 

@@ -1,5 +1,5 @@
 namespace sharpcomet.compiler.tests;
-public class Tests
+public class DeclarationsTests
 {
     [SetUp]
     public void Setup()

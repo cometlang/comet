@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\compiler\compiler.csproj" />
     <ProjectReference Include="..\lexer\lexer.csproj" />
+    <ProjectReference Include="..\vm\vm.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

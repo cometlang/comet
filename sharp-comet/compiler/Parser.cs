@@ -23,6 +23,8 @@ public partial class Parser
     }
 
     private FunctionCompiler? CurrentFunction { get; set; }
+    private ClassCompiler? CurrentClass { get; set; }
+    private LoopCompiler? CurrentLoop { get; set; }
 
     public Token? Current { get; private set; }
     private Token? Previous { get; set; }

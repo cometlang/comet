@@ -40,4 +40,9 @@ public class Chunk
     {
         return MakeConstant(Strings.InternString(token.Representation));
     }
+
+    public void EmitBytes(params byte[] bytes)
+    {
+        _code.AddRange(bytes);
+    }
 }

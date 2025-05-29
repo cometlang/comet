@@ -13,6 +13,7 @@ public static class Strings
         {
             return _strings[str];
         }
+        // need to "Allocate" the object, such that we can clean it up
         var result = new CometString(str);
         _strings[str] = result;
         return result;

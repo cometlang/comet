@@ -1,0 +1,29 @@
+name: Sharpcomet CI
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+        working-directory: sharp-comet
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8
+
+
+      - name: build
+        run: |
+          dotnet build -c Release
+
+      - name: test
+        run: dotnet test -c Release --no-build

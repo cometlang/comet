@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using sharpcomet.stdlib;
+using sharpcomet.vmlib;
+
 namespace sharpcomet.vm;
 
 public class Closure : CometObject

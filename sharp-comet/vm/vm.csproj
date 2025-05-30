@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\stdlib\stdlib.csproj" />
+    <ProjectReference Include="..\vmlib\vmlib.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -45,4 +45,9 @@ public class Chunk
     {
         _code.AddRange(bytes);
     }
+
+    public byte[] GetCode()
+    {
+        return _code.ToArray();
+    }
 }

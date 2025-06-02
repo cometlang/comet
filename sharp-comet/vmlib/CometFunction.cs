@@ -11,4 +11,8 @@ public class CometFunction : CometObject
         _chunk = new();
     }
 
+    public byte[] GetCode()
+    {
+        return _chunk.GetCode();
+    }
 }

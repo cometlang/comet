@@ -1,6 +1,6 @@
 ﻿namespace sharpcomet.stdlib;
 
-public class CometString : CometObject
+public sealed class CometString : CometObject
 {
     public string String { get; }
 

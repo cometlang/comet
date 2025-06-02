@@ -14,4 +14,9 @@ public class Closure : CometObject
         _function = function;
         _upValues = new();
     }
+
+    public byte[] GetCode()
+    {
+        return _function.GetCode();
+    }
 }

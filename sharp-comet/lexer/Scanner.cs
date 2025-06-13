@@ -4,20 +4,20 @@ namespace sharpcomet.lexer;
 
 public class Scanner
 {
-    private Source _source;
+    private SourceFile _sourceFile;
     private CharIterator _contentIter;
     private StringBuilder _current;
     private int _line;
 
-    public Scanner(Source source)
+    public Scanner(SourceFile sourceFile)
     {
-        _source = source;
-        _contentIter = new CharIterator(source.Content);
+        _sourceFile = sourceFile;
+        _contentIter = new CharIterator(sourceFile.Content);
         _current = new StringBuilder();
         _line = 1;
     }
 
-    public string Filename => _source.Filename;
+    public string Filename => _sourceFile.Filename;
 
     private char Advance()
     {

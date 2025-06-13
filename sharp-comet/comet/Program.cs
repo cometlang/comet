@@ -9,8 +9,7 @@ class Program
     {
         foreach (var arg in args)
         {
-            var content = File.ReadAllText(arg);
-            var scanner = new Scanner(new Source(arg, content));
+            var scanner = new Scanner(SourceFile.Create(arg));
             var parser = new Parser(scanner);
 
             while (parser.Current?.TokenType != TokenType.EndOfFile)

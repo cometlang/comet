@@ -92,7 +92,7 @@ public class ScannerTests
     public void CanScanTokens(string content, TokenType expected)
     {
         // arrange
-        var scanner = new Scanner(new Source("test", content));
+        var scanner = new Scanner(new SourceFile("test", content));
 
         // act
         var result = scanner.ScanToken();
@@ -110,7 +110,7 @@ with newlines, etc", TokenType.String)]
     public void CanScanStrings(string content, string expectedRepresentation, TokenType expected)
     {
         // arrange
-        var scanner = new Scanner(new Source("test", content));
+        var scanner = new Scanner(new SourceFile("test", content));
 
         // act
         var result = scanner.ScanToken();

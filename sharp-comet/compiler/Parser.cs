@@ -1,5 +1,6 @@
 using System;
 using sharpcomet.lexer;
+using sharpcomet.stdlib;
 
 namespace sharpcomet.compiler;
 
@@ -10,23 +11,24 @@ public partial class Parser
     private readonly Scanner _scanner;
 
 
-// typedef struct
-// {
-//     ClassCompiler *currentClass;
-//     LoopCompiler *currentLoop;
-//     VALUE currentModule;
-//     VM *compilation_thread;
-// } Parser;
+    // typedef struct
+    // {
+    //     ClassCompiler *currentClass;
+    //     LoopCompiler *currentLoop;
+    //     VALUE currentModule;
+    //     VM *compilation_thread;
+    // } Parser;
     public Parser(Scanner scanner)
     {
         _scanner = scanner;
+        InitialiseParseRules();
     }
 
     private FunctionCompiler? CurrentFunction { get; set; }
     private ClassCompiler? CurrentClass { get; set; }
     private LoopCompiler? CurrentLoop { get; set; }
 
-    public Token? Current { get; private set; }
+    private Token? Current { get; set; }
     private Token? Previous { get; set; }
 
     public void Advance()
@@ -136,6 +138,39 @@ public partial class Parser
 
             Advance();
         }
+    }
+
+    public CometObject Parse()
+    {
+        var functionCompiler = new FunctionCompiler(null, FunctionType.Script);
+
+        Advance();
+        while (!Match(TokenType.EndOfFile))
+        {
+            Declaration();
+        }
+
+        if (_hadError)
+        {
+            return Nil.Instance;
+        }
+
+        return null;
+        //     Compiler compiler;
+        //     initCompiler(&compiler, TYPE_SCRIPT, &parser);
+
+        //     // chicken-egg situation.
+        //     advance(&parser);
+        //     while (!match(&parser, TOKEN_EOF))
+        //     {
+        //         declaration(&parser);
+        //     }
+        //     ObjFunction *function = endCompiler(&parser);
+        //     module_set_main(function->module, function);
+        //     pop(thread);
+
+        //     return parser.hadError ? NIL_VAL : function->module;
+
     }
 
 }

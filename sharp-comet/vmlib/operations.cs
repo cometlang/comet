@@ -6,4 +6,7 @@ public enum Op : byte
     True,
     False,
     DefineGlobal,
+    Pop,
+    CloseUpValue,
+    Closure,
 };

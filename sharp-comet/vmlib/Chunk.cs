@@ -25,7 +25,7 @@ public class Chunk
         return _constants.Count - 1;
     }
 
-    private byte MakeConstant(CometObject value)
+    public byte MakeConstant(CometObject value)
     {
         int constant = AddConstant(value);
         if (constant > byte.MaxValue)

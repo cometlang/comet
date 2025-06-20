@@ -4,36 +4,68 @@ using sharpcomet.vmlib;
 
 namespace sharpcomet.compiler;
 
+public enum FunctionType
+{
+    Function,
+    Initializer,
+    Method,
+    Script,
+    Lambda,
+}
+
 public class FunctionCompiler
 {
     public const int GLOBAL_SCOPE = 0;
     public const int UNINITIALIZED_SCOPE = -1;
 
-    private List<LocalVariable> _locals;
-    private Chunk _chunk;
+    private Stack<LocalVariable> _locals;
+    private FunctionType _functionType;
+    public CometFunction Function { get; private set; }
 
     public int ScopeDepth { get; private set; }
-
     public FunctionCompiler? Enclosing { get; }
 
-    public FunctionCompiler(FunctionCompiler? parent)
+    public FunctionCompiler(FunctionCompiler? parent, FunctionType functionType)
     {
         Enclosing = parent;
-        ScopeDepth = UNINITIALIZED_SCOPE;
+        ScopeDepth = parent?.ScopeDepth ?? UNINITIALIZED_SCOPE;
         _locals = new();
-        _chunk = new();
+        Function = new();
+        _functionType = functionType;
     }
 
     public void EmitBytes(params byte[] instructions)
     {
-        _chunk.EmitBytes(instructions);
+        Function.EmitBytes(instructions);
     }
 
-    private void MarkInitialized()
+    public void MarkInitialized()
     {
         if (ScopeDepth > GLOBAL_SCOPE)
         {
             _locals.Last().Depth = ScopeDepth;
+        }
+    }
+
+    public void BeginScope()
+    {
+        ScopeDepth++;
+    }
+
+    public void EndScope()
+    {
+        ScopeDepth--;
+        while (_locals.Any() && _locals.Peek().Depth > ScopeDepth)
+        {
+            if (_locals.Peek().IsCaptured)
+            {
+                EmitBytes((byte)Op.CloseUpValue);
+            }
+            else
+            {
+                EmitBytes((byte)Op.Pop);
+            }
+            _locals.Pop();
         }
     }
 
@@ -45,8 +77,18 @@ public class FunctionCompiler
         }
         else
         {
-            _chunk.EmitBytes((byte)Op.DefineGlobal, variable);
+            EmitBytes((byte)Op.DefineGlobal, variable);
         }
+    }
+
+    public CometFunction EndCompiler(bool emitParams)
+    {
+        if (emitParams)
+        {
+            EmitBytes((byte)Op.Closure, Function.MakeConstant(Function));
+            Function.EmitUpValues();
+        }
+        return Function;
     }
 
 }

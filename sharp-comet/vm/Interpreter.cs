@@ -10,7 +10,7 @@ public class Interpreter
         {
             return InterpretResult.Success;
         }
-        catch (CompilationException ex)
+        catch (CompilationException)
         {
             return InterpretResult.CompilationError;
         }

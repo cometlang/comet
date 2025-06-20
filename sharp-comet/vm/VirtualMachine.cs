@@ -79,5 +79,4 @@ public class VirtualMachine
 
         return InterpretResult.Success;
     }
-
 }

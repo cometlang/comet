@@ -9,13 +9,8 @@ class Program
     {
         foreach (var arg in args)
         {
-            var scanner = new Scanner(SourceFile.Create(arg));
-            var parser = new Parser(scanner);
-
-            while (parser.Current?.TokenType != TokenType.EndOfFile)
-            {
-                parser.Advance();
-            }
+            var sourceFile = SourceFile.Create(arg);
+            Compiler.Compile(sourceFile);
         }
     }
 }

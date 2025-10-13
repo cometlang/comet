@@ -86,6 +86,7 @@ VALUE dir_list(VM *vm, VALUE self, int UNUSED(arg_count), VALUE UNUSED(*argument
 
 VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *arguments)
 {
+    std::string path_string;
     const char *path;
     if (isObjOfStdlibClassType(arguments[0], CLS_STRING))
     {
@@ -94,7 +95,8 @@ VALUE dir_static_list(VM *vm, VALUE UNUSED(klass), int arg_count, VALUE *argumen
     else if (isObjOfStdlibClassType(arguments[0], CLS_DIRECTORY))
     {
         DirectoryData *data = GET_NATIVE_INSTANCE_DATA(DirectoryData, arguments[0]);
-        path = data->path->string().c_str();
+        path_string = data->path->string();
+        path = path_string.c_str();
     }
     else
     {

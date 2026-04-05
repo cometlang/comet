@@ -18,6 +18,11 @@ public class CometFunction : CometObject
         return _chunk.MakeConstant(obj);
     }
 
+    public CometObject GetConstant(byte index)
+    {
+        return _chunk.GetConstant(index);
+    }
+
     public void EmitBytes(params byte[] bytes)
     {
         _chunk.EmitBytes(bytes);

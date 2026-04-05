@@ -9,4 +9,5 @@ public enum Op : byte
     Pop,
     CloseUpValue,
     Closure,
+    Constant,
 };

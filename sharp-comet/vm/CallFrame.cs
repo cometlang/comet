@@ -2,15 +2,16 @@ namespace sharpcomet.vm;
 
 public class CallFrame
 {
-    private Closure _closure;
     private int _instructionPointer = 0;
     private readonly byte[] _code;
 
     public CallFrame(Closure closure)
     {
-        _closure = closure;
-        _code = _closure.GetCode();
+        Closure = closure;
+        _code = Closure.GetCode();
     }
+
+    public Closure Closure { get; private set; }
 
     public byte ReadByte()
     {

@@ -36,6 +36,11 @@ public class Chunk
         return (byte)constant;
     }
 
+    public CometObject GetConstant(byte index)
+    {
+        return _constants[index];
+    }
+
     public byte IdentifierConstant(Token token)
     {
         return MakeConstant(Strings.InternString(token.Representation));

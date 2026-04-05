@@ -70,6 +70,11 @@ public class VirtualMachine
                 {
                     break;
                 }
+            case (byte)Op.Constant:
+                {
+                    _stack.Push(frame.Closure.GetConstant(frame.ReadByte()));
+                    break;
+                }
             default:
                 {
                     RuntimeError($"Unknown Instruction: 0x{Convert.ToHexString([instruction])}");

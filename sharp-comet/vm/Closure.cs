@@ -19,4 +19,9 @@ public class Closure : CometObject
     {
         return _function.GetCode();
     }
+
+    public CometObject GetConstant(byte index)
+    {
+        return _function.GetConstant(index);
+    }
 }

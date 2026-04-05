@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using sharpcomet.lexer;
+using sharpcomet.stdlib;
 
 namespace sharpcomet.compiler;
 
@@ -13,6 +14,11 @@ public partial class Parser
 
     private void ParseString(bool canAssign)
     {
+        CurrentFunction.EmitConstant(new CometString(Current.Representation));
+    }
+
+    private void ParseNumber(bool canAssign)
+    {
 
     }
 
@@ -24,8 +30,8 @@ public partial class Parser
         {
             // Literals
             {TokenType.Identifier, new ParseRule(ParseVariable, null, Precedence.None) },
-        // [TOKEN_STRING]           = {string,       NULL,      PREC_NONE},
-        // [TOKEN_NUMBER]           = {number,       NULL,      PREC_NONE},
+            {TokenType.String,     new ParseRule(ParseString,   null, Precedence.None) },
+            {TokenType.Number,     new ParseRule(ParseNumber,   null, Precedence.None)}
         // [TOKEN_FILE_NAME]        = {replacement,  NULL,      PREC_NONE},
         };
     }

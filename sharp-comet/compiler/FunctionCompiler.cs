@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using sharpcomet.vmlib;
+using sharpcomet.stdlib;
 
 namespace sharpcomet.compiler;
 
@@ -37,6 +39,11 @@ public class FunctionCompiler
     public void EmitBytes(params byte[] instructions)
     {
         Function.EmitBytes(instructions);
+    }
+
+    public void EmitConstant(CometObject constant)
+    {
+        EmitBytes((byte)Op.Constant, Function.MakeConstant(constant));
     }
 
     public void MarkInitialized()

@@ -149,6 +149,7 @@ public partial class Parser
         {
             Declaration();
         }
+        var function = functionCompiler.EndCompiler(false);
 
         if (_hadError)
         {

@@ -88,6 +88,18 @@ public class FunctionCompiler
         }
     }
 
+    public int ResolveLocal(string variableName)
+    {
+        int result = 0;
+        foreach (var local in _locals)
+        {
+            if (local.Name == variableName)
+                return result;
+            result++;
+        }
+        return -1;
+    }
+
     public CometFunction EndCompiler(bool emitParams)
     {
         if (emitParams)

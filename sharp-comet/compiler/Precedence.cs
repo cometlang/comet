@@ -58,4 +58,14 @@ public struct Precedence
         return left._precedenceValue <= right._precedenceValue;
     }
 
+    public static bool operator ==(Precedence left, Precedence right)
+    {
+        return left._precedenceValue == right._precedenceValue;
+    }
+
+    public static bool operator !=(Precedence left, Precedence right)
+    {
+        return !(left == right);
+    }
+
 }

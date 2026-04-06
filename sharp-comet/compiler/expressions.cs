@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using sharpcomet.lexer;
 using sharpcomet.stdlib;
+using sharpcomet.vmlib;
 
 namespace sharpcomet.compiler;
 
@@ -9,12 +10,12 @@ public partial class Parser
 
     private void ParseVariable(bool canAssign)
     {
-
+        int variable = CurrentFunction.ResolveLocal(Current.Representation);
     }
 
     private void ParseString(bool canAssign)
     {
-        CurrentFunction.EmitConstant(new CometString(Current.Representation));
+        CurrentFunction.EmitConstant(Strings.InternString(Current.Representation));
     }
 
     private void ParseNumber(bool canAssign)

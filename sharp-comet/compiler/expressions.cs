@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Transactions;
 using sharpcomet.lexer;
 using sharpcomet.stdlib;
 using sharpcomet.vmlib;
@@ -20,7 +21,14 @@ public partial class Parser
 
     private void ParseNumber(bool canAssign)
     {
-
+        if (!double.TryParse(Current!.Representation, out var value))
+        {
+            ErrorAt(Current, "Unable to parse number value");
+        }
+        else
+        {
+            CurrentFunction.EmitConstant(new CometNumber(value));
+        }
     }
 
     private Dictionary<TokenType, ParseRule> _parseRules;

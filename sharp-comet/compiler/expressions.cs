@@ -16,7 +16,7 @@ public partial class Parser
 
     private void ParseString(bool canAssign)
     {
-        CurrentFunction.EmitConstant(Strings.InternString(Previous.Representation));
+        CurrentFunction.EmitConstant(Globals.InternString(Previous.Representation));
     }
 
     private void ParseNumber(bool canAssign)
@@ -33,7 +33,7 @@ public partial class Parser
 
     private void Replacement(bool canAssign)
     {
-        CurrentFunction.EmitConstant(Strings.InternString(_scanner.Filename));
+        CurrentFunction.EmitConstant(Globals.InternString(_scanner.Filename));
     }
 
     private Dictionary<TokenType, ParseRule> _parseRules;

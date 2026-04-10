@@ -3,9 +3,10 @@ using sharpcomet.stdlib;
 namespace sharpcomet.vmlib;
 
 
-public static class Strings
+public static class Globals
 {
     private static Dictionary<string, CometString> _strings = new();
+    private static Dictionary<string, CometObject> _modules = new();
 
     public static CometString InternString(string str)
     {
@@ -18,4 +19,8 @@ public static class Strings
         _strings[str] = result;
         return result;
     }
+
+    public static CometObject GetModule(string absolutePath) => _modules.GetValueOrDefault(absolutePath);
+
+    public static void AddModule(string absolutePath, CometObject module) => _modules[absolutePath] = module;
 }

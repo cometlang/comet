@@ -40,7 +40,7 @@ public partial class Parser
 
     private byte IdentifierConstant(Token token)
     {
-        return CurrentFunction.MakeConstant(Strings.InternString(token.Representation));
+        return CurrentFunction.MakeConstant(Globals.InternString(token.Representation));
     }
 
     private byte ParseVariable(string errorMessage)

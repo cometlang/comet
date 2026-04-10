@@ -42,7 +42,7 @@ public class Chunk
 
     public byte IdentifierConstant(Token token)
     {
-        return MakeConstant(Strings.InternString(token.Representation));
+        return MakeConstant(Globals.InternString(token.Representation));
     }
 
     public void EmitBytes(params byte[] bytes)

@@ -31,6 +31,11 @@ public partial class Parser
         }
     }
 
+    private void Replacement(bool canAssign)
+    {
+        CurrentFunction.EmitConstant(Strings.InternString(_scanner.Filename));
+    }
+
     private Dictionary<TokenType, ParseRule> _parseRules;
 
     [MemberNotNull(nameof(_parseRules))]
@@ -44,7 +49,7 @@ public partial class Parser
             {TokenType.Number,     new ParseRule(ParseNumber,   null, Precedence.None) },
             {TokenType.EndOfLine,  new ParseRule(null,          null, Precedence.None) },
             {TokenType.EndOfFile,  new ParseRule(null,          null, Precedence.None) },
-        // [TOKEN_FILE_NAME]        = {replacement,  NULL,      PREC_NONE},
+            {TokenType.Filename,   new ParseRule(Replacement,   null, Precedence.None) },
         };
     }
 

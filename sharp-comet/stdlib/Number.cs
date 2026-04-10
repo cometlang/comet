@@ -1,10 +1,10 @@
 namespace sharpcomet.stdlib;
 
-public sealed class CometNumber : CometObject
+public sealed class Number : CometObject
 {
     private double _number;
 
-    public CometNumber(double number)
+    public Number(double number)
     {
         _number = number;
     }

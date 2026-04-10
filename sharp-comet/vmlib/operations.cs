@@ -10,4 +10,6 @@ public enum Op : byte
     CloseUpValue,
     Closure,
     Constant,
+    GetLocal,
+    Return,
 };

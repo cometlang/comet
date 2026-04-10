@@ -27,7 +27,7 @@ public partial class Parser
         }
         else
         {
-            CurrentFunction.EmitConstant(new CometNumber(value));
+            CurrentFunction.EmitConstant(new Number(value));
         }
     }
 

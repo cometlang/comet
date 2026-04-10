@@ -1,3 +1,5 @@
+using sharpcomet.vmlib;
+
 namespace sharpcomet.vm;
 
 public class CallFrame
@@ -16,5 +18,10 @@ public class CallFrame
     public byte ReadByte()
     {
         return _code[_instructionPointer++];
+    }
+
+    public CometFunction GetLocal(byte index)
+    {
+        throw new NotImplementedException();
     }
 }

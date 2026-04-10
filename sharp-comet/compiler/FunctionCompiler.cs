@@ -112,6 +112,15 @@ public class FunctionCompiler
 
     public CometFunction EndCompiler(bool emitParams)
     {
+        if (_functionType == FunctionType.Initializer)
+        {
+            Function.EmitBytes((byte)Op.GetLocal, 0); // implicitly returns "self"
+        }
+        else
+        {
+            Function.EmitBytes((byte)Op.Nil); // Not entirely sure why we need this nil?
+        }
+        Function.EmitBytes((byte)Op.Return);
         if (emitParams)
         {
             EmitBytes((byte)Op.Closure, Function.MakeConstant(Function));

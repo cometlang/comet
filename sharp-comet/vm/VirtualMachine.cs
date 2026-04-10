@@ -38,10 +38,9 @@ public class VirtualMachine
         return true;
     }
 
-    private void PopCallFrame()
-    {
-        _frames.Pop();
-    }
+    private void CloseUpValues()
+    { }
+
 
     public InterpretResult Run()
     {
@@ -49,40 +48,62 @@ public class VirtualMachine
         if (frame == null)
             return InterpretResult.Success; // nothing to do
 
-        var instruction = frame.ReadByte();
-        switch (instruction)
-        {
-            case (byte)Op.Nil:
+        while (true)
+        { 
+            var instruction = frame.ReadByte();
+            switch (instruction)
+            {
+                case (byte)Op.Nil:
                 {
                     _stack.Push(Nil.Instance);
                     break;
                 }
-            case (byte)Op.True:
+                case (byte)Op.True:
                 {
                     _stack.Push(CometBoolean.True);
                     break;
                 }
-            case (byte)Op.False:
+                case (byte)Op.False:
                 {
                     _stack.Push(CometBoolean.False);
                     break;
                 }
-            case (byte)Op.DefineGlobal:
+                case (byte)Op.DefineGlobal:
                 {
+                    var name = frame.Closure.GetConstant(frame.ReadByte());
+                    // AddModuleVariable
+                    _stack.Pop();
                     break;
                 }
-            case (byte)Op.Constant:
+                case (byte)Op.Constant:
                 {
                     _stack.Push(frame.Closure.GetConstant(frame.ReadByte()));
                     break;
                 }
-            default:
+                case (byte)Op.GetLocal:
+                {
+                    _stack.Push(frame.GetLocal(frame.ReadByte()));
+                    break;
+                }
+                case (byte)Op.Return:
+                {
+                    var result = _stack.Peek();
+                    CloseUpValues();
+                    _frames.Pop();
+                    if (_frames.Count == 0)
+                    {
+                        return InterpretResult.Success;
+                    }
+                    // What to do with the return result?
+                    frame = CurrentCallFrame;
+                    break;
+                }
+                default:
                 {
                     RuntimeError($"Unknown Instruction: 0x{Convert.ToHexString([instruction])}");
                     return InterpretResult.RuntimeError;
                 }
+            }
         }
-
-        return InterpretResult.Success;
     }
 }

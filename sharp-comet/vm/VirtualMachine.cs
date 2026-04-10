@@ -12,10 +12,11 @@ public class VirtualMachine
     private Stack<CallFrame> _frames;
     private Stack<CometObject> _stack;
 
-    public VirtualMachine()
+    public VirtualMachine(CometFunction entryPoint)
     {
         _frames = new(FRAMES_MAX);
         _stack = new();
+        _frames.Push(new CallFrame(new Closure(entryPoint)));
     }
 
     private CallFrame? CurrentCallFrame => _frames.LastOrDefault();
@@ -42,7 +43,7 @@ public class VirtualMachine
         _frames.Pop();
     }
 
-    private InterpretResult Run()
+    public InterpretResult Run()
     {
         var frame = CurrentCallFrame;
         if (frame == null)

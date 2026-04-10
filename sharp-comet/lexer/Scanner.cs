@@ -48,8 +48,8 @@ public class Scanner
             case ' ':
             case '\r':
             case '\t':
-                Advance();
-                break;
+                _contentIter.Next();
+                    break;
 
             case '\n':
                 _line++;
@@ -59,8 +59,8 @@ public class Scanner
             case '#':
                 // A comment goes until the end of the line.
                 while (_contentIter.HasNext() && _contentIter.Peek() != '\n')
-                    Advance();
-                break;
+                    _contentIter.Next();
+                    break;
 
             default:
                 return;

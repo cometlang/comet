@@ -1,5 +1,6 @@
 using sharpcomet.lexer;
 using sharpcomet.vmlib;
+using System.Xml.Linq;
 
 namespace sharpcomet.compiler;
 
@@ -7,14 +8,39 @@ public partial class Parser
 {
     private const int MAX_VAR_COUNT = 255;
 
+    //void declareVariable(Parser* parser)
+    //{
+    //    // Global variables are implicitly declared.
+    //    if (parser->currentFunction->scopeDepth == GLOBAL_SCOPE)
+    //        return;
+
+    //    Token* name = &parser->previous;
+    //    for (int i = parser->currentFunction->localCount - 1; i >= 0; i--)
+    //    {
+    //        Local* local = &parser->currentFunction->locals[i];
+    //        if (local->depth != UNINITIALIZED_SCOPE && local->depth < parser->currentFunction->scopeDepth)
+    //        {
+    //            addLocal(parser, *name);
+    //            return;
+    //        }
+
+    //        if (identifiersEqual(name, &local->name))
+    //        {
+    //            error(parser, "Variable with this name already declared in this scope.");
+    //            return;
+    //        }
+    //    }
+    //}
     private void DeclareVariable()
     {
-
+        // Global variables are implicitly declared
+        if (CurrentFunction.ScopeDepth == FunctionCompiler.GLOBAL_SCOPE)
+            return;
     }
 
     private byte IdentifierConstant(Token token)
     {
-        return 0;
+        return CurrentFunction.MakeConstant(Strings.InternString(token.Representation));
     }
 
     private byte ParseVariable(string errorMessage)

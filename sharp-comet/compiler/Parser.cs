@@ -22,14 +22,17 @@ public partial class Parser
     {
         _scanner = scanner;
         InitialiseParseRules();
+        CurrentFunction = new FunctionCompiler(null, FunctionType.Script);
+        Current = new Token(TokenType.EndOfFile, "", 0);
+        Previous = Current;
     }
 
-    private FunctionCompiler? CurrentFunction { get; set; }
+    private FunctionCompiler CurrentFunction { get; set; }
     private ClassCompiler? CurrentClass { get; set; }
     private LoopCompiler? CurrentLoop { get; set; }
 
-    private Token? Current { get; set; }
-    private Token? Previous { get; set; }
+    private Token Current { get; set; }
+    private Token Previous { get; set; }
 
     public void Advance()
     {
@@ -142,21 +145,19 @@ public partial class Parser
 
     public CometObject Parse()
     {
-        var functionCompiler = new FunctionCompiler(null, FunctionType.Script);
-
         Advance();
         while (!Match(TokenType.EndOfFile))
         {
             Declaration();
         }
-        var function = functionCompiler.EndCompiler(false);
+        var function = CurrentFunction.EndCompiler(false);
 
         if (_hadError)
         {
             return Nil.Instance;
         }
 
-        return null;
+        return function;
         //     Compiler compiler;
         //     initCompiler(&compiler, TYPE_SCRIPT, &parser);
 

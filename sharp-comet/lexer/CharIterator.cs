@@ -1,3 +1,5 @@
+namespace sharpcomet.lexer;
+
 public class CharIterator
 {
     private string _str;

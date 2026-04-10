@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using sharpcomet.lexer;
 using sharpcomet.stdlib;
 
@@ -21,7 +20,7 @@ public class Chunk
 
     private int AddConstant(CometObject value)
     {
-        _constants.Append(value);
+        _constants.Add(value);
         return _constants.Count - 1;
     }
 

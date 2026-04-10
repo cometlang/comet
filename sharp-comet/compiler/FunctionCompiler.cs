@@ -19,6 +19,7 @@ public class FunctionCompiler
 {
     public const int GLOBAL_SCOPE = 0;
     public const int UNINITIALIZED_SCOPE = -1;
+    public const int UNRESOLVED_VARIABLE_INDEX = -1;
 
     private Stack<LocalVariable> _locals;
     private FunctionType _functionType;
@@ -34,6 +35,15 @@ public class FunctionCompiler
         _locals = new();
         Function = new();
         _functionType = functionType;
+        if (_functionType == FunctionType.Method || _functionType == FunctionType.Initializer)
+        {
+            _locals.Push(new LocalVariable("self"));
+        }
+    }
+
+    public byte MakeConstant(CometObject value)
+    {
+        return Function.MakeConstant(value);
     }
 
     public void EmitBytes(params byte[] instructions)
@@ -97,7 +107,7 @@ public class FunctionCompiler
                 return result;
             result++;
         }
-        return -1;
+        return UNRESOLVED_VARIABLE_INDEX;
     }
 
     public CometFunction EndCompiler(bool emitParams)

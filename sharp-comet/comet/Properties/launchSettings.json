@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "comet": {
+      "commandName": "Project",
+      "commandLineArgs": "test_scripts\\variables_basic.cmt",
+      "workingDirectory": "C:\\Users\\micha\\Documents\\comet"
+    }
+  }
+}

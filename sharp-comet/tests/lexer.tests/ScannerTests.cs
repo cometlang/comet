@@ -119,4 +119,19 @@ with newlines, etc", TokenType.String)]
         Assert.That(result.TokenType, Is.EqualTo(expected));
         Assert.That(result.Representation, Is.EqualTo(expectedRepresentation));
     }
+
+    [Test]
+    public void ScansIdentifiersCorrectly()
+    {
+        // arrange
+        var scanner = new Scanner(new SourceFile("test", "var ident = 'this is a string'"));
+
+        // act
+        var result = scanner.ScanToken();
+        result = scanner.ScanToken(); // We are interested in the second token for this test.
+
+        // assert
+        Assert.That(result.TokenType, Is.EqualTo(TokenType.Identifier));
+        Assert.That(result.Representation, Is.EqualTo("ident"));
+    }
 }

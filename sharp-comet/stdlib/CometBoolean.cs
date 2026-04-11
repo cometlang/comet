@@ -14,4 +14,9 @@ public sealed class CometBoolean : CometObject
 
     private static CometBoolean _falseInstance = new CometBoolean(false);
     public static CometBoolean False => _falseInstance;
+
+    public override string ToString()
+    {
+        return _value.ToString();
+    }
 }

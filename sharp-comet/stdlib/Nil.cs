@@ -6,4 +6,9 @@ public sealed class Nil : CometObject
     private Nil() { }
 
     public static Nil Instance => _instance;
+
+    public override string ToString()
+    {
+        return "nil";
+    }
 }

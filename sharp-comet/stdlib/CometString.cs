@@ -13,5 +13,4 @@ public sealed class CometString : CometObject
     {
         return String;
     }
-
 }

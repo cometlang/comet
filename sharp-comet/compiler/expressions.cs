@@ -39,6 +39,28 @@ public partial class Parser
         CurrentFunction.EmitConstant(Globals.InternString(_scanner.Filename));
     }
 
+    private void Literal(bool canAssign)
+    {
+        switch (Previous.TokenType)
+        {
+            case TokenType.False:
+            {
+                CurrentFunction.EmitBytes((byte)Op.False);
+                break;
+            }
+            case TokenType.True:
+            {
+                CurrentFunction.EmitBytes((byte)Op.True);
+                break;
+            }
+            case TokenType.Nil:
+            {
+                CurrentFunction.EmitBytes((byte)Op.Nil);
+                break;
+            }
+        }
+    }
+
     private void Grouping(bool canAssign)
     {
         Expression();
@@ -95,6 +117,9 @@ public partial class Parser
             {TokenType.EndOfLine,  new ParseRule(null,          null, Precedence.None) },
             {TokenType.EndOfFile,  new ParseRule(null,          null, Precedence.None) },
             {TokenType.Filename,   new ParseRule(Replacement,   null, Precedence.None) },
+            {TokenType.False,      new ParseRule(Literal,       null, Precedence.None) },
+            {TokenType.True,       new ParseRule(Literal,       null, Precedence.None) },
+            {TokenType.Nil,        new ParseRule(Literal,       null, Precedence.None) },
         };
     }
 

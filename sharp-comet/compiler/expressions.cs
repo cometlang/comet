@@ -99,6 +99,59 @@ public partial class Parser
         CurrentFunction.EmitBytes((byte)Op.Call,  argCount);
     }
 
+    private void PropertyAssignOp(Op opCode, byte name)
+    {
+        CurrentFunction.EmitBytes((byte)Op.DuplicateStackTop, (byte)Op.GetProperty, name);
+        Expression();
+        CurrentFunction.EmitBytes((byte)opCode, (byte)Op.SetProperty, name);
+    }
+
+    private void Dot(bool canAssign)
+    {
+        Consume(TokenType.Identifier, "Expected an identifier after '.'");
+        byte name = IdentifierConstant(Previous);
+
+        if (canAssign)
+        {
+            if (Match(TokenType.Equal))
+            {
+                Expression();
+                CurrentFunction.EmitBytes((byte)Op.SetProperty, name);
+                return;
+            }
+            else if (Match(TokenType.PlusEqual))
+            {
+                PropertyAssignOp(Op.Add, name);
+                return;
+            }
+            else if (Match(TokenType.MinusEqual))
+            {
+                PropertyAssignOp(Op.Subtract, name);
+                return;
+            }
+            else if (Match(TokenType.StarEqual))
+            {
+                PropertyAssignOp(Op.Multiply, name);
+                return;
+            }
+            else if (Match(TokenType.SlashEqual))
+            {
+                PropertyAssignOp(Op.Divide, name);
+                return;
+            }
+        }
+
+        if (Match(TokenType.LeftParen))
+        {
+            byte argCount = ArgumentList(TokenType.RightParen);
+            CurrentFunction.EmitBytes((byte)Op.Invoke, name, argCount);
+        }
+        else
+        {
+            CurrentFunction.EmitBytes((byte)Op.GetProperty, name);
+        }
+    }
+
     private Dictionary<TokenType, ParseRule> _parseRules;
 
     [MemberNotNull(nameof(_parseRules))]
@@ -109,6 +162,7 @@ public partial class Parser
             // Single-character tokens.
             {TokenType.LeftParen,  new ParseRule(Grouping,      Call, Precedence.Call) },
             {TokenType.RightParen, new ParseRule(null,          null, Precedence.None) },
+            {TokenType.Dot,        new ParseRule(null,          Dot,  Precedence.Call) },
             // Literals
             {TokenType.Identifier, new ParseRule(Variable,      null, Precedence.None) },
             {TokenType.Var,        new ParseRule(ParseVariable, null, Precedence.None) },

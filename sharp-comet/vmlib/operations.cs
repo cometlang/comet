@@ -16,4 +16,12 @@ public enum Op : byte
     SetLocal,
     Return,
     Call,
+    GetProperty,
+    SetProperty,
+    Invoke,
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+    DuplicateStackTop,
 };

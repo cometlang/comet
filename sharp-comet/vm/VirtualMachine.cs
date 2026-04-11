@@ -68,30 +68,30 @@ public class VirtualMachine
 
         while (true)
         {
-            var instruction = frame!.ReadByte();
+            Op instruction = (Op) frame!.ReadByte();
             switch (instruction)
             {
-                case (byte)Op.Nil:
+                case Op.Nil:
                 {
                     _stack.Push(Nil.Instance);
                     break;
                 }
-                case (byte)Op.True:
+                case Op.True:
                 {
                     _stack.Push(CometBoolean.True);
                     break;
                 }
-                case (byte)Op.False:
+                case Op.False:
                 {
                     _stack.Push(CometBoolean.False);
                     break;
                 }
-                case (byte)Op.Pop:
+                case Op.Pop:
                 {
                     _stack.Pop();
                     break;
                 }
-                case (byte)Op.Call:
+                case Op.Call:
                 {
                     byte argCount = frame!.ReadByte();
                     if (!CallValue(_stack.Peek(argCount), argCount))
@@ -101,7 +101,7 @@ public class VirtualMachine
                     frame = CurrentCallFrame;
                     break;
                 }
-                case (byte)Op.GetGlobal:
+                case Op.GetGlobal:
                 {
                     CometObject name = frame.ReadConstant();
                     var global = Globals.FindGlobal(name);
@@ -120,7 +120,7 @@ public class VirtualMachine
                     _stack.Push(global);
                     break;
                 }
-                case (byte)Op.DefineGlobal:
+                case Op.DefineGlobal:
                 {
                     var name = frame.ReadConstant();
                     Globals.AddGlobal(name, _stack.Peek());
@@ -128,21 +128,21 @@ public class VirtualMachine
                     _stack.Pop();
                     break;
                 }
-                case (byte)Op.Constant:
+                case Op.Constant:
                 {
                     _stack.Push(frame.ReadConstant());
                     break;
                 }
-                case (byte)Op.GetLocal:
+                case Op.GetLocal:
                 {
                     _stack.Push(frame.GetLocal(frame.ReadByte()));
                     break;
                 }
-                case (byte)Op.SetLocal:
+                case Op.SetLocal:
                 {
                     break;
                 }
-                case (byte)Op.Return:
+                case Op.Return:
                 {
                     var result = _stack.Peek();
                     CloseUpValues();
@@ -155,9 +155,14 @@ public class VirtualMachine
                     frame = CurrentCallFrame;
                     break;
                 }
+                case Op.DuplicateStackTop:
+                {
+                    _stack.Push(_stack.Peek());
+                    break;
+                }
                 default:
                 {
-                    RuntimeError($"Unknown Instruction: 0x{Convert.ToHexString([instruction])}");
+                    RuntimeError($"Unknown Instruction: 0x{Convert.ToHexString([(byte)instruction])}");
                     return InterpretResult.RuntimeError;
                 }
             }

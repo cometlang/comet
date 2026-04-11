@@ -4,33 +4,51 @@ namespace sharpcomet.vmlib;
 
 public class CometFunction : CometObject
 {
-    private Chunk _chunk;
+    private List<CometObject> _constants;
+    private List<int> _lines;
+    private List<ushort> _executionCounts;
+    private List<byte> _code;
 
     public int Arity;
 
     public CometFunction()
     {
-        _chunk = new();
+        _constants = new();
+        _lines = new();
+        _executionCounts = new();
+        _code = new();
+    }
+
+    private int AddConstant(CometObject value)
+    {
+        _constants.Add(value);
+        return _constants.Count - 1;
     }
 
     public byte MakeConstant(CometObject obj)
     {
-        return _chunk.MakeConstant(obj);
+        int constant = AddConstant(obj);
+        if (constant > byte.MaxValue)
+        {
+            throw new CompilationException("Too many constants in one chunk.");
+        }
+
+        return (byte)constant;
     }
 
     public CometObject GetConstant(byte index)
     {
-        return _chunk.GetConstant(index);
+        return _constants[index];
     }
 
     public void EmitBytes(params byte[] bytes)
     {
-        _chunk.EmitBytes(bytes);
+        _code.AddRange(bytes);
     }
 
     public byte[] GetCode()
     {
-        return _chunk.GetCode();
+        return _code.ToArray();
     }
 
     //     for (int i = 0; i < function->upvalueCount; i++)

@@ -10,7 +10,7 @@ public class VirtualMachine
 
 
     private Stack<CallFrame> _frames;
-    private Stack<CometObject> _stack;
+    private VmStack<CometObject> _stack;
 
     public VirtualMachine(CometFunction entryPoint)
     {
@@ -39,13 +39,8 @@ public class VirtualMachine
 
     private bool Call(NativeFunction func, byte argCount)
     {
-        var result = func.Call(_stack.Take(argCount).ToArray());
-        // Consider writing a stack that can PopMany for efficiency
-        for(int i = 0; i < argCount; i++)
-        {
-            _stack.Pop();
-        }
-        _stack.Pop(); // Also pop the function object off
+        var result = func.Call(_stack.GetTop(argCount));
+        _stack.PopMany(argCount + 1); // Also pop the function object off
         _stack.Push(result);
         return true;
     }
@@ -72,7 +67,7 @@ public class VirtualMachine
             return InterpretResult.Success; // nothing to do
 
         while (true)
-        { 
+        {
             var instruction = frame!.ReadByte();
             switch (instruction)
             {
@@ -99,8 +94,7 @@ public class VirtualMachine
                 case (byte)Op.Call:
                 {
                     byte argCount = frame!.ReadByte();
-                    // Consider writing a stack that can .Peek(argCount);
-                    if (!CallValue(_stack.Skip(argCount).First(), argCount))
+                    if (!CallValue(_stack.Peek(argCount), argCount))
                     {
                         return InterpretResult.RuntimeError;
                     }

@@ -40,11 +40,6 @@ public class Chunk
         return _constants[index];
     }
 
-    public byte IdentifierConstant(Token token)
-    {
-        return MakeConstant(Globals.InternString(token.Representation));
-    }
-
     public void EmitBytes(params byte[] bytes)
     {
         _code.AddRange(bytes);

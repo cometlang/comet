@@ -33,6 +33,7 @@ public partial class Parser
             {
                 Expression();
                 CurrentFunction.EmitBytes((byte)setOp, (byte)arg);
+                return;
             }
         }
 

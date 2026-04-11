@@ -6,6 +6,6 @@ public class CometObject
 
     public override string ToString()
     {
-        return "Object";
+        return GetType().Name;
     }
 }

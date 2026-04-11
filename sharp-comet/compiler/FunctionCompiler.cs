@@ -54,6 +54,8 @@ public class FunctionCompiler
 
     public void EmitConstant(CometObject constant)
     {
+        //int index = Function.FindConstant(constant);
+        //if (index == Function.)
         EmitBytes((byte)Op.Constant, Function.MakeConstant(constant));
     }
 

@@ -39,7 +39,7 @@ public class VirtualMachine
 
     private bool Call(NativeFunction func, byte argCount)
     {
-        var result = func.Call(_stack.TakeLast(argCount).ToArray());
+        var result = func.Call(_stack.Take(argCount).ToArray());
         // Consider writing a stack that can PopMany for efficiency
         for(int i = 0; i < argCount; i++)
         {
@@ -91,11 +91,16 @@ public class VirtualMachine
                     _stack.Push(CometBoolean.False);
                     break;
                 }
+                case (byte)Op.Pop:
+                {
+                    _stack.Pop();
+                    break;
+                }
                 case (byte)Op.Call:
                 {
                     byte argCount = frame!.ReadByte();
                     // Consider writing a stack that can .Peek(argCount);
-                    if (!CallValue(_stack.SkipLast(argCount).Last(), argCount))
+                    if (!CallValue(_stack.Skip(argCount).First(), argCount))
                     {
                         return InterpretResult.RuntimeError;
                     }

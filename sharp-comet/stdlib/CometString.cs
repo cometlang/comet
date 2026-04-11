@@ -9,4 +9,9 @@ public sealed class CometString : CometObject
         String = str;
     }
 
+    public override string ToString()
+    {
+        return String;
+    }
+
 }

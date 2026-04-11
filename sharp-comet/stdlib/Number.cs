@@ -8,4 +8,9 @@ public sealed class Number : CometObject
     {
         _number = number;
     }
+
+    public override string ToString()
+    {
+        return _number.ToString();
+    }
 }

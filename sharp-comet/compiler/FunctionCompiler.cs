@@ -3,6 +3,7 @@ using System.Linq;
 using System.Security.Principal;
 using sharpcomet.vmlib;
 using sharpcomet.stdlib;
+using vmlib;
 
 namespace sharpcomet.compiler;
 
@@ -33,7 +34,7 @@ public class FunctionCompiler
         Enclosing = parent;
         ScopeDepth = parent?.ScopeDepth ?? UNINITIALIZED_SCOPE;
         _locals = new();
-        Function = new();
+        Function = Memory.AllocateObject<CometFunction>();
         _functionType = functionType;
         if (_functionType == FunctionType.Method || _functionType == FunctionType.Initializer)
         {

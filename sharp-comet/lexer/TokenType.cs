@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace sharpcomet.lexer;
 
 public enum TokenType
@@ -34,4 +36,23 @@ public enum TokenType
     Private, Protected, Public, Static,
 
     Error, EndOfFile,
+}
+
+
+public static class TokenTypeExtensions
+{
+    private static readonly Dictionary<TokenType, string> _representations = new()
+    {
+        { TokenType.LeftBrace,           "{" },
+        { TokenType.RightBrace,          "}" },
+        { TokenType.LeftParen,           "(" },
+        { TokenType.RightParen,          ")" },
+        { TokenType.LeftSquareBracket,   "[" },
+        { TokenType.RightSquareBracket,  "]" },
+    };
+
+    public static string GetRepresentation(this TokenType type)
+    {
+        return _representations[type];
+    }
 }

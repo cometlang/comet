@@ -1,3 +1,4 @@
+using sharpcomet.stdlib;
 using sharpcomet.vmlib;
 
 namespace sharpcomet.vm;
@@ -18,6 +19,11 @@ public class CallFrame
     public byte ReadByte()
     {
         return _code[_instructionPointer++];
+    }
+
+    public CometObject ReadConstant()
+    {
+        return Closure.GetConstant(ReadByte());
     }
 
     public CometFunction GetLocal(byte index)

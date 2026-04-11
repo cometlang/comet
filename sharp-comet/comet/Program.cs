@@ -4,6 +4,7 @@ using sharpcomet.compiler;
 using sharpcomet.vmlib;
 using sharpcomet.vm;
 using System.Linq;
+using vmlib;
 
 class Program
 {
@@ -18,6 +19,7 @@ class Program
         var compilationResult = Compiler.Compile(sourceFile);
         if (compilationResult is CometFunction function)
         {
+            Initialisation.InitStdLib(); // pretty sure I can get away with doing this after compilation
             var vm = new VirtualMachine(function);
             var result = vm.Run();
             Environment.ExitCode = (int)result;

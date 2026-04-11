@@ -1,2 +1,4 @@
 var str = "this is a string"
 var num = 123.4
+print(str)
+print(num)

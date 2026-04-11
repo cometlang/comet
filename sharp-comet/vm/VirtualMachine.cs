@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using sharpcomet.stdlib;
+﻿using sharpcomet.stdlib;
 using sharpcomet.vmlib;
+using vmlib;
 
 namespace sharpcomet.vm;
 
@@ -26,16 +26,39 @@ public class VirtualMachine
         Console.Error.WriteLine(format, args);
     }
 
-    private bool Call(Closure closure, int argCount)
+    private bool Call(Closure closure, byte argCount)
     {
-        if (_stack.Count == FRAMES_MAX)
+        if (_frames.Count == FRAMES_MAX)
         {
             RuntimeError("Stack overflow");
             return false;
         }
-
-        _stack.Push(closure);
+        _frames.Push(new CallFrame(closure));
         return true;
+    }
+
+    private bool Call(NativeFunction func, byte argCount)
+    {
+        var result = func.Call(_stack.TakeLast(argCount).ToArray());
+        // Consider writing a stack that can PopMany for efficiency
+        for(int i = 0; i < argCount; i++)
+        {
+            _stack.Pop();
+        }
+        _stack.Pop(); // Also pop the function object off
+        _stack.Push(result);
+        return true;
+    }
+
+    private bool CallValue(CometObject callee, byte argCount)
+    {
+        if (callee is NativeFunction func)
+            return Call(func, argCount);
+        else if (callee is Closure closure)
+            return Call(closure, argCount);
+
+        RuntimeError("Call only call functions and classes.");
+        return false;
     }
 
     private void CloseUpValues()
@@ -50,7 +73,7 @@ public class VirtualMachine
 
         while (true)
         { 
-            var instruction = frame.ReadByte();
+            var instruction = frame!.ReadByte();
             switch (instruction)
             {
                 case (byte)Op.Nil:
@@ -68,21 +91,56 @@ public class VirtualMachine
                     _stack.Push(CometBoolean.False);
                     break;
                 }
+                case (byte)Op.Call:
+                {
+                    byte argCount = frame!.ReadByte();
+                    // Consider writing a stack that can .Peek(argCount);
+                    if (!CallValue(_stack.SkipLast(argCount).Last(), argCount))
+                    {
+                        return InterpretResult.RuntimeError;
+                    }
+                    frame = CurrentCallFrame;
+                    break;
+                }
+                case (byte)Op.GetGlobal:
+                {
+                    CometObject name = frame.ReadConstant();
+                    var global = Globals.FindGlobal(name);
+                    if (global == null)
+                    {
+                        if (name is CometString str)
+                        {
+                            RuntimeError("Undefined variable '{0}'.", str.String);
+                        }
+                        else
+                        {
+                            RuntimeError("[Bug]: non-string name object for global. Type is: '{0}'", name.GetType().Name);
+                        }
+                        return InterpretResult.RuntimeError;
+                    }
+                    _stack.Push(global);
+                    break;
+                }
                 case (byte)Op.DefineGlobal:
                 {
-                    var name = frame.Closure.GetConstant(frame.ReadByte());
+                    var name = frame.ReadConstant();
+                    Globals.AddGlobal(name, _stack.Peek());
                     // AddModuleVariable
                     _stack.Pop();
                     break;
                 }
                 case (byte)Op.Constant:
                 {
-                    _stack.Push(frame.Closure.GetConstant(frame.ReadByte()));
+                    _stack.Push(frame.ReadConstant());
                     break;
                 }
                 case (byte)Op.GetLocal:
                 {
                     _stack.Push(frame.GetLocal(frame.ReadByte()));
+                    break;
+                }
+                case (byte)Op.SetLocal:
+                {
                     break;
                 }
                 case (byte)Op.Return:

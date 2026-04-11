@@ -2,10 +2,10 @@
 
 public class CometObject
 {
-    public CometObject? Next { get; set; }
+    // Probably want to override HashCode() & Equals()
 
-    public int Hash()
+    public override string ToString()
     {
-        return 0;
+        return "Object";
     }
 }

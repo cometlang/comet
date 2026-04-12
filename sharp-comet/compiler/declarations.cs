@@ -1,6 +1,5 @@
 using sharpcomet.lexer;
 using sharpcomet.vmlib;
-using System.Xml.Linq;
 
 namespace sharpcomet.compiler;
 
@@ -54,9 +53,107 @@ public partial class Parser
         return IdentifierConstant(Previous);
     }
 
-    private void ClassDeclaration(int attributeCount)
+    private void Operator()
     {
 
+    }
+
+    private void Method(byte attributeCount)
+    {
+        bool isStatic = Match(TokenType.Static);
+        Consume(TokenType.Identifier, "Expected a method name");
+        byte constant = IdentifierConstant(Previous);
+
+        // If the method is named "init", then it's an initializer.
+        FunctionType type = FunctionType.Method;
+        if (Previous.Representation == "init")
+        {
+            if (isStatic)
+            {
+                Error("Initializers can't be declared static");
+            }
+            type = FunctionType.Initializer;
+        }
+
+        FunctionDeclaration(type, attributeCount);
+
+        if (isStatic)
+            CurrentFunction.EmitBytes((byte)Op.StaticMethod, constant);
+        else
+            CurrentFunction.EmitBytes((byte)Op.Method, constant);
+    }
+
+    private void ClassDeclaration(byte attributeCount)
+    {
+        bool isFinal = Match(TokenType.Final);
+
+        Consume(TokenType.Identifier, "Expected a class name.");
+        Token className = Previous;
+        byte nameConstant = IdentifierConstant(Previous);
+        DeclareVariable();
+
+        CurrentFunction.EmitBytes((byte)Op.Class, nameConstant, (byte)(isFinal ? 1 : 0), attributeCount);
+        CurrentClass = new ClassCompiler(Previous, CurrentClass);
+        if (Match(TokenType.Colon))
+        {
+            Consume(TokenType.Identifier, "Expected a class name to inherit.");
+            if (className.Representation == Previous.Representation)
+            {
+                Error("A class cannot inherit from itself.");
+            }
+
+            Variable(false);
+            if (Match(TokenType.Dot) && Match(TokenType.Identifier))
+            {
+                byte name = IdentifierConstant(Previous);
+                CurrentFunction.EmitBytes((byte)Op.GetProperty, name);
+            }
+        }
+        else
+        {
+            NamedVariable(SyntheticToken("Object"), false);
+        }
+        NamedVariable(className, false);
+        CurrentFunction.EmitBytes((byte)Op.Inherit);
+
+        CurrentFunction.BeginScope();
+        byte local = CurrentFunction.AddLocal("super");
+        CurrentFunction.DefineVariable(local);
+
+        NamedVariable(className, false);
+        Match(TokenType.EndOfLine); // optional newline before class body
+        Consume(TokenType.LeftBrace, "Expected a '{' for the class body.");
+        while(!Check(TokenType.RightBrace) && !Check(TokenType.EndOfFile))
+        {
+            if (Match(TokenType.EndOfLine))
+            {
+                // Do Nothing, it's fine to have whitespace inside a class
+            }
+            else if (Match(TokenType.Operator))
+            {
+                Operator();
+            }
+            else if (Match(TokenType.AtSymbol))
+            {
+                Expression();
+            }
+            else
+            {
+                Method(0);
+            }
+        }
+
+        Consume(TokenType.RightBrace, "Expected a '}' after the class body.");
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+
+        // Not sure why, but I need attributeCount-1 to pop off the stack
+        for (int i = 1; i < attributeCount; i++)
+        {
+            CurrentFunction.EmitBytes((byte)Op.Pop);
+        }
+
+        CurrentFunction.EndScope();
+        CurrentClass = CurrentClass.Enclosing;
     }
 
     //     void function(Parser *parser, FunctionType type, uint8_t attributeCount)
@@ -145,7 +242,7 @@ public partial class Parser
     }
 
 
-    private void FunctionDeclaration(int attributeCount)
+    private void FunctionDeclaration(FunctionType type, int attributeCount)
     {
         var global = ParseVariable("Expected a function name");
         CurrentFunction.MarkInitialized();
@@ -182,7 +279,7 @@ public partial class Parser
         }
         else if (Match(TokenType.Function))
         {
-            FunctionDeclaration(0);
+            FunctionDeclaration(FunctionType.Function, 0);
         }
         else if (Match(TokenType.Enum))
         {

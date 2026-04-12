@@ -24,4 +24,8 @@ public enum Op : byte
     Multiply,
     Divide,
     DuplicateStackTop,
+    Class,
+    Inherit,
+    StaticMethod,
+    Method,
 };

@@ -36,6 +36,8 @@ public enum TokenType
     Private, Protected, Public, Static,
 
     Error, EndOfFile,
+
+    Synthetic,
 }
 
 

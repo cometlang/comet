@@ -97,6 +97,11 @@ public partial class Parser
         _hadError = true;
     }
 
+    private Token SyntheticToken(string representation)
+    {
+        return new Token(TokenType.Synthetic, representation, 0);
+    }
+
     private void ErrorAtCurrent(string message)
     {
         ErrorAt(Current, message);

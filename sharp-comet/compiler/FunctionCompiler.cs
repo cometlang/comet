@@ -101,6 +101,12 @@ public class FunctionCompiler
         }
     }
 
+    public byte AddLocal(string variableName)
+    {
+        _locals.Push(new LocalVariable(variableName));
+        return (byte) (_locals.Count - 1);
+    }
+
     public int ResolveLocal(string variableName)
     {
         int result = 0;

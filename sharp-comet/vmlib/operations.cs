@@ -28,4 +28,6 @@ public enum Op : byte
     Inherit,
     StaticMethod,
     Method,
+    Throw,
+    Rethrow,
 };

@@ -135,6 +135,7 @@ public class VirtualMachine
                 }
                 case Op.GetLocal:
                 {
+                    // need to work out slots
                     _stack.Push(frame.GetLocal(frame.ReadByte()));
                     break;
                 }

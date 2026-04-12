@@ -8,7 +8,13 @@ public partial class Parser
 
     private void Block()
     {
-
+        Match(TokenType.EndOfLine);
+        while (!Check(TokenType.RightBrace) && !Check(TokenType.EndOfFile))
+        {
+            Declaration();
+        }
+        Match(TokenType.EndOfLine);
+        Consume(TokenType.RightBrace, "Expected a '}' after a block.");
     }
 
     private void ExpressionStatement()
@@ -23,6 +29,15 @@ public partial class Parser
 
     private void Statement()
     {
-        ExpressionStatement();
+        if (Match(TokenType.LeftBrace))
+        {
+            CurrentFunction.BeginScope();
+            Block();
+            CurrentFunction.EndScope();
+        }
+        else
+        {
+            ExpressionStatement();
+        }
     }
 }

@@ -11,6 +11,33 @@ public partial class Parser
         CurrentFunction.EndScope();
     }
 
+    private void IfStatement()
+    {
+        Consume(TokenType.LeftParen, "Expected '(' after 'if'.");
+        Expression();
+        Consume(TokenType.RightParen, "Expected ')' after condition.");
+
+        int thenJump = CurrentFunction.EmitJump(Op.JumpIfFalse);
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+        Statement();
+
+        int elseJump = CurrentFunction.EmitJump(Op.Jump);
+        if (!CurrentFunction.PatchJump(thenJump))
+        {
+            Error("Too much code to jump over!");
+        }
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+
+        Match(TokenType.EndOfLine);
+        if (Match(TokenType.Else))
+            Statement();
+
+        if (!CurrentFunction.PatchJump(elseJump))
+        {
+            Error("Too much code to jump over!");
+        }
+    }
+
     private void Block()
     {
         Match(TokenType.EndOfLine);
@@ -61,7 +88,7 @@ public partial class Parser
         }
         else if (Match(TokenType.If))
         {
-
+            IfStatement();
         }
         else if (Match(TokenType.Return))
         {

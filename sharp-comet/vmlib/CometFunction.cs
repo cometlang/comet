@@ -51,6 +51,19 @@ public class CometFunction : CometObject
         return _code.ToArray();
     }
 
+    public int GetCurrentOffset()
+    {
+        return _code.Count;
+    }
+
+    public void SetCodeOffset(int offset, params byte[] bytes)
+    {
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            _code[offset] = bytes[i];
+        }
+    }
+
     //     for (int i = 0; i < function->upvalueCount; i++)
     //     {
     //         emitByte(parser, compiler.upvalues[i].isLocal ? 1 : 0);

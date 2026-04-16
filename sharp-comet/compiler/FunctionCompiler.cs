@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Security.Principal;
 using sharpcomet.vmlib;
 using sharpcomet.stdlib;
 using vmlib;
+using System;
 
 namespace sharpcomet.compiler;
 
@@ -138,4 +138,24 @@ public class FunctionCompiler
         return Function;
     }
 
+    public int EmitJump(Op instruction)
+    {
+        EmitBytes((byte)instruction, 0xFF, 0xFF);
+        return Function.GetCurrentOffset() - 2;
+    }
+
+    public bool PatchJump(int offset)
+    {
+        // -2 to adjust for the bytecode for the jump itself
+        int jump = Function.GetCurrentOffset() - offset - 2;
+
+        if (jump > ushort.MaxValue)
+        {
+            return false;
+        }
+
+        Function.SetCodeOffset(offset, (byte)((jump >> 8)), (byte)jump);
+
+        return true;
+    }
 }

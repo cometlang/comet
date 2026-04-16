@@ -30,4 +30,6 @@ public enum Op : byte
     Method,
     Throw,
     Rethrow,
+    JumpIfFalse,
+    Jump,
 };

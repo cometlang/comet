@@ -75,6 +75,49 @@ public partial class Parser
         CurrentFunction.EmitBytes((byte)Op.Rethrow);
     }
 
+    private void ForEachStatement()
+    { }
+
+    private void ReturnStatement()
+    {
+        if (CurrentFunction.IsScript())
+        {
+            Error("Cannot return from top-level code.");
+        }
+        if (Match(TokenType.EndOfLine))
+        {
+            CurrentFunction.EmitReturn();
+        }
+        else
+        {
+            if (CurrentFunction.IsInitializer())
+            {
+                Error("Cannot return from an initializer.");
+            }
+            Expression();
+            if (!Check(TokenType.RightBrace))
+            {
+                Consume(TokenType.EndOfLine, "Only one statement per line allowed.");
+            }
+            CurrentFunction.EmitBytes((byte)Op.Return);
+        }
+    }
+
+    private void WhileStatement()
+    { }
+
+    private void TryStatement()
+    { }
+
+    private void ImportStatement()
+    { }
+
+    private void NextStatement()
+    { }
+
+    private void BreakStatement()
+    { }
+
     private void Statement()
     {
         Match(TokenType.EndOfLine);
@@ -84,7 +127,7 @@ public partial class Parser
         }
         else if (Match(TokenType.ForEach))
         {
-
+            ForEachStatement();
         }
         else if (Match(TokenType.If))
         {
@@ -92,15 +135,15 @@ public partial class Parser
         }
         else if (Match(TokenType.Return))
         {
-
+            ReturnStatement();
         }
         else if (Match(TokenType.While))
         {
-
+            WhileStatement();
         }
         else if (Match(TokenType.Try))
         {
-
+            TryStatement();
         }
         else if (Match(TokenType.Rethrow))
         {
@@ -118,15 +161,15 @@ public partial class Parser
         }
         else if (Match(TokenType.Import))
         {
-
+            ImportStatement();
         }
         else if (Match(TokenType.Next))
         {
-
+            NextStatement();
         }
         else if (Match(TokenType.Break))
         {
-
+            BreakStatement();
         }
         else
         {

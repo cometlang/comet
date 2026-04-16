@@ -158,4 +158,28 @@ public class FunctionCompiler
 
         return true;
     }
+
+    public bool IsScript()
+    {
+        return _functionType == FunctionType.Script;
+    }
+
+    public bool IsInitializer()
+    {
+        return _functionType == FunctionType.Initializer;
+    }
+
+    public void EmitReturn()
+    {
+        // An initializer automatically returns "self".
+        if (_functionType == FunctionType.Initializer)
+        {
+            EmitBytes((byte)Op.GetLocal, 0);
+        }
+        else
+        {
+            EmitBytes((byte)Op.Nil);
+        }
+        EmitBytes((byte)Op.Return);
+    }
 }

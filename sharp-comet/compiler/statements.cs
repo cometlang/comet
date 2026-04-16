@@ -110,7 +110,53 @@ public partial class Parser
     { }
 
     private void ImportStatement()
-    { }
+    {
+        byte? importParamCount = 0;
+        if (Match(TokenType.LeftBrace))
+        {
+            byte[] moduleIdentifierConstants = new byte[255];
+            if (Match(TokenType.Star))
+            {
+                importParamCount = null;
+            }
+            else
+            {
+                do
+                {
+                    if (importParamCount == 255)
+                    {
+                        ErrorAtCurrent("Cannot have more than 255 import parameters.");
+                    }
+                    Match(TokenType.EndOfLine);
+                    Consume(TokenType.Identifier, "Expected a module import identifier.");
+                    byte paramConstant = IdentifierConstant(Previous);
+                    moduleIdentifierConstants[importParamCount.Value] = paramConstant;
+                    importParamCount++;
+
+                } while (Match(TokenType.Comma));
+            }
+            Consume(TokenType.RightBrace, "Expected a '}' after import parameters.");
+            Match(TokenType.EndOfLine);
+            Consume(TokenType.From, "Expected 'from' after import parameters.");
+            Expression();
+            // Imports are a function that returns nil, so pop that off the stack, too
+            CurrentFunction.EmitBytes((byte)Op.Import, (byte)Op.Pop);
+            CurrentFunction.EmitBytes((byte)Op.ImportParams, importParamCount ?? 0);
+            if (importParamCount != null)
+            {
+                CurrentFunction.EmitBytes(moduleIdentifierConstants);
+            }
+        }
+        else
+        {
+            Expression();
+            // Imports are a function that returns nil, so pop that off the stack, too
+            CurrentFunction.EmitBytes((byte)Op.Import, (byte)Op.Pop);
+            Consume(TokenType.As, "Expected 'as' after the module to import.");
+            byte global = ParseVariable("Expected a variable name for the imported module.");
+            CurrentFunction.DefineVariable(global);
+        }
+    }
 
     private void NextStatement()
     { }

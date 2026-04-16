@@ -32,4 +32,6 @@ public enum Op : byte
     Rethrow,
     JumpIfFalse,
     Jump,
+    Import,
+    ImportParams,
 };

@@ -1,4 +1,5 @@
 ﻿using sharpcomet.stdlib;
+using System.Diagnostics.CodeAnalysis;
 
 namespace vmlib
 {
@@ -6,7 +7,9 @@ namespace vmlib
     {
         private static List<CometObject> _objects = new List<CometObject>();
 
-        public static T AllocateObject<T>(params object?[]? parameters) where T : CometObject
+        public static T AllocateObject<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] T>(
+            params object?[]? parameters
+        ) where T : CometObject
         {
             var obj = (T?) Activator.CreateInstance(typeof(T), parameters);
             if (obj == null)

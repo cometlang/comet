@@ -15,9 +15,21 @@ class Program
             Console.Error.WriteLine("No file to interpret");
             Environment.Exit(1);
         }
-        var sourceFile = SourceFile.Create(args.First());
+        var compileOnly = false;
+        if (args.First() == "--compile-only" ||  args.First() == "-c")
+        {
+            compileOnly = true;
+        }
+        var sourceFile = SourceFile.Create(args.Last());
         var compilationResult = Compiler.Compile(sourceFile);
-        if (compilationResult is CometFunction function)
+        if (compileOnly)
+        {
+            if (compilationResult is not CometFunction)
+            {
+                Environment.ExitCode = (int)InterpretResult.CompilationError;
+            }
+        }
+        else if (compilationResult is CometFunction function)
         {
             Initialisation.InitStdLib(); // pretty sure I can get away with doing this after compilation
             var vm = new VirtualMachine(function);

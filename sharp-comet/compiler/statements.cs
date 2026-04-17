@@ -77,9 +77,58 @@ public partial class Parser
         CurrentFunction.EmitBytes((byte)Op.Rethrow);
     }
 
+    private void SyntheticMethodCall(string methodName)
+    {
+        Token methodNameToken = SyntheticToken(methodName);
+        byte constant = IdentifierConstant(methodNameToken);
+        CurrentFunction.EmitBytes((byte)Op.Invoke, constant, 0); // zero arguments
+    }
+
     private void ForEachStatement()
     {
-        throw new NotImplementedException();
+        CurrentFunction.BeginScope();
+        Consume(TokenType.LeftParen, "Expected '(' after 'foreach'.");
+        Consume(TokenType.Var, "Expected 'var' to declare foreach loop variable.");
+        Token loopVarName = Current;
+        byte loopVar = ParseVariable("Expected a variable name in the foreach loop.");
+        CurrentFunction.EmitBytes((byte)Op.Nil);
+        CurrentFunction.DefineVariable(loopVar);
+
+        Consume(TokenType.In, "Expected 'in' keyword in foreach loop.");
+        Expression();
+        SyntheticMethodCall("iterator");
+        Consume(TokenType.RightParen, "Expected ')' after 'foreach' condition.");
+
+        byte iterVar = CurrentFunction.AddLocal(string.Empty);
+        CurrentFunction.EmitBytes((byte)Op.SetLocal, iterVar);
+        CurrentFunction.MarkInitialized();
+
+        CurrentLoop = new LoopCompiler(CurrentFunction.CurrentOffset, CurrentFunction.ScopeDepth, CurrentLoop);
+
+        CurrentFunction.EmitBytes((byte)Op.GetLocal, iterVar);
+        SyntheticMethodCall("has_next?");
+        CurrentLoop.ExitAddress = CurrentFunction.EmitJump(Op.JumpIfFalse);
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+
+        CurrentFunction.EmitBytes((byte)Op.GetLocal, iterVar);
+        SyntheticMethodCall("get_next");
+        int variable = CurrentFunction.ResolveLocal(loopVarName.Representation);
+        CurrentFunction.EmitBytes((byte)Op.SetLocal, (byte)variable, (byte)Op.Pop);
+
+        Statement();
+
+        if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
+        {
+            Error("Loop body too large.");
+        }
+        CurrentFunction.PatchJump(CurrentLoop.ExitAddress);
+        if (CurrentLoop.BreakJump != null)
+        {
+            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+        }
+        CurrentFunction.EndScope();
+        CurrentFunction.EmitBytes((byte)Op.Pop); // This feels weird, like I shouldn't need to do it.
+        CurrentLoop = CurrentLoop.Enclosing;
     }
 
     private void ReturnStatement()

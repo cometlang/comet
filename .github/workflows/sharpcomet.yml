@@ -12,14 +12,13 @@ jobs:
         working-directory: sharp-comet
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: 8
-
+          dotnet-version: 10
 
       - name: build
         run: |

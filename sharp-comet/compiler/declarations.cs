@@ -1,5 +1,6 @@
 using sharpcomet.lexer;
 using sharpcomet.vmlib;
+using System;
 
 namespace sharpcomet.compiler;
 

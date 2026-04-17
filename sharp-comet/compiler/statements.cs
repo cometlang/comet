@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using sharpcomet.lexer;
 using sharpcomet.vmlib;
 
@@ -104,7 +105,29 @@ public partial class Parser
     }
 
     private void WhileStatement()
-    { }
+    {
+        CurrentLoop = new LoopCompiler(CurrentFunction.CurrentOffset, CurrentFunction.ScopeDepth, CurrentLoop);
+        Consume(TokenType.LeftParen, "Expected '(' after 'while'.");
+        Expression();
+        Consume(TokenType.RightParen, "Expected ')' after condition.");
+
+        CurrentLoop.ExitAddress = CurrentFunction.EmitJump(Op.JumpIfFalse);
+
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+        Statement();
+        if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
+        {
+            Error("Loop body too large.");
+        }
+
+        CurrentFunction.PatchJump(CurrentLoop.ExitAddress);
+        if (CurrentLoop.BreakJump.HasValue)
+        {
+            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+        }
+        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentLoop = CurrentLoop.Enclosing;
+    }
 
     private void TryStatement()
     { }

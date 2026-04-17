@@ -34,4 +34,5 @@ public enum Op : byte
     Jump,
     Import,
     ImportParams,
+    Loop,
 };

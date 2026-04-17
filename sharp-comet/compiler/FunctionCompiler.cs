@@ -42,6 +42,8 @@ public class FunctionCompiler
         }
     }
 
+    public int CurrentOffset => Function.GetCurrentOffset();
+
     public byte MakeConstant(CometObject value)
     {
         return Function.MakeConstant(value);
@@ -156,6 +158,17 @@ public class FunctionCompiler
 
         Function.SetCodeOffset(offset, (byte)((jump >> 8)), (byte)jump);
 
+        return true;
+    }
+
+    public bool EmitLoop(int loopStartAddress)
+    {
+        EmitBytes((byte)Op.Loop);
+        int offset = CurrentOffset - loopStartAddress + 2;
+        if (offset > ushort.MaxValue)
+            return false;
+
+        EmitBytes((byte)(offset >> 8), (byte)offset);
         return true;
     }
 

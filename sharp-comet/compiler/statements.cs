@@ -77,7 +77,9 @@ public partial class Parser
     }
 
     private void ForEachStatement()
-    { }
+    {
+        throw new NotImplementedException();
+    }
 
     private void ReturnStatement()
     {
@@ -130,7 +132,9 @@ public partial class Parser
     }
 
     private void TryStatement()
-    { }
+    {
+        throw new NotImplementedException();
+    }
 
     private void ImportStatement()
     {
@@ -182,10 +186,14 @@ public partial class Parser
     }
 
     private void NextStatement()
-    { }
+    {
+        throw new NotImplementedException();
+    }
 
     private void BreakStatement()
-    { }
+    {
+        throw new NotImplementedException();
+    }
 
     private void Statement()
     {

@@ -35,6 +35,8 @@ public partial class Parser
         // Global variables are implicitly declared
         if (CurrentFunction.ScopeDepth == FunctionCompiler.GLOBAL_SCOPE)
             return;
+
+        throw new NotImplementedException();
     }
 
     private byte IdentifierConstant(Token token)
@@ -55,7 +57,7 @@ public partial class Parser
 
     private void Operator()
     {
-
+        throw new NotImplementedException();
     }
 
     private void Method(byte attributeCount)
@@ -252,7 +254,7 @@ public partial class Parser
 
     private void EnumDeclaration()
     {
-
+        throw new NotImplementedException();
     }
 
     private void VarDeclaration()

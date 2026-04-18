@@ -10,7 +10,64 @@ public partial class Parser
     private void ForStatement()
     {
         CurrentFunction.BeginScope();
+        Consume(TokenType.LeftParen, "Expected '(' after 'for'.");
+        if (Check(TokenType.SemiColon))
+        {
+            // No initializer.
+        }
+        else if (Match(TokenType.Var))
+        {
+            VarDeclaration();
+        }
+        else
+        {
+            ExpressionStatement();
+        }
+        Consume(TokenType.SemiColon, "Expected ';' after loop intializer.");
+        CurrentLoop = new LoopCompiler(CurrentFunction.CurrentOffset, CurrentFunction.ScopeDepth, CurrentLoop);
+
+        if (!Match(TokenType.SemiColon))
+        {
+            Expression();
+            Consume(TokenType.SemiColon, "Expected ';' after loop condition.");
+
+            // Jump out of the loop if the condition is false.
+            CurrentLoop.ExitAddress = CurrentFunction.EmitJump(Op.JumpIfFalse);
+            CurrentFunction.EmitBytes(Op.Pop); // Condition.
+        }
+        if (!Match(TokenType.RightParen))
+        {
+            int bodyJump = CurrentFunction.EmitJump(Op.Jump);
+
+            int incrementStart = CurrentFunction.CurrentOffset;
+            Expression();
+            CurrentFunction.EmitBytes(Op.Pop);
+            Consume(TokenType.RightParen, "Expected ')' after for clauses.");
+
+            if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
+            {
+                Error("Loop body too large.");
+            }
+            CurrentLoop.StartAddress = incrementStart;
+            CurrentFunction.PatchJump(bodyJump);
+        }
+
+        Statement();
+
+        CurrentFunction.EmitLoop(CurrentLoop.StartAddress);
+
+        if (CurrentLoop.BreakJump != null)
+        {
+            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+        }
+        if (CurrentLoop.ExitAddress != null)
+        {
+            CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
+            CurrentFunction.EmitBytes(Op.Pop);
+        }
+
         CurrentFunction.EndScope();
+        CurrentLoop = CurrentLoop.Enclosing;
     }
 
     private void IfStatement()
@@ -121,7 +178,7 @@ public partial class Parser
         {
             Error("Loop body too large.");
         }
-        CurrentFunction.PatchJump(CurrentLoop.ExitAddress);
+        CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
         if (CurrentLoop.BreakJump != null)
         {
             CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
@@ -172,7 +229,7 @@ public partial class Parser
             Error("Loop body too large.");
         }
 
-        CurrentFunction.PatchJump(CurrentLoop.ExitAddress);
+        CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
         if (CurrentLoop.BreakJump.HasValue)
         {
             CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);

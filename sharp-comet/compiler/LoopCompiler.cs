@@ -3,7 +3,7 @@ namespace sharpcomet.compiler;
 public class LoopCompiler
 {
     public int StartAddress { get; set; }
-    public int ExitAddress { get; set; }
+    public int? ExitAddress { get; set; }
     private int _loopScopeDepth;
 
     public int? BreakJump { get; set; }

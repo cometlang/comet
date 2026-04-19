@@ -1,6 +1,7 @@
 using sharpcomet.lexer;
 using sharpcomet.stdlib;
 using sharpcomet.vmlib;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using vmlib;
@@ -152,6 +153,56 @@ public partial class Parser
         }
     }
 
+    private void Unary(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Binary(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Ternary(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Attribute_(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Lambda(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Self(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Super(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void LiteralHash(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void LiteralList(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
+    private void Subscript(bool canAssign)
+    {
+        throw new NotImplementedException();
+    }
+
     private Dictionary<TokenType, ParseRule> _parseRules;
 
     [MemberNotNull(nameof(_parseRules))]
@@ -160,20 +211,52 @@ public partial class Parser
         _parseRules = new Dictionary<TokenType, ParseRule>()
         {
             // Single-character tokens.
-            {TokenType.LeftParen,  new ParseRule(Grouping,      Call, Precedence.Call) },
-            {TokenType.RightParen, new ParseRule(null,          null, Precedence.None) },
-            {TokenType.Dot,        new ParseRule(null,          Dot,  Precedence.Call) },
+            {TokenType.LeftParen,          new ParseRule(Grouping,      Call,      Precedence.Call) },
+            {TokenType.RightParen,         new ParseRule(null,          null,      Precedence.None) },
+            {TokenType.LeftBrace,          new ParseRule(LiteralHash,   null,      Precedence.None)},
+            {TokenType.LeftSquareBracket,  new ParseRule(LiteralList,   Subscript, Precedence.Call)},
+            {TokenType.Dot,                new ParseRule(null,          Dot,       Precedence.Call) },
+            // Math operations
+            {TokenType.Minus,              new ParseRule(Unary,         Binary,    Precedence.Term)},
+            {TokenType.Plus,               new ParseRule(null,          Binary,    Precedence.Term)},
+            {TokenType.Slash,              new ParseRule(null,          Binary,    Precedence.Factor)},
+            {TokenType.Star,               new ParseRule(Unary,         Binary,    Precedence.Factor)},
+            {TokenType.Percent,            new ParseRule(null,          Binary,    Precedence.Factor)},
+            //bitwise operations
+            {TokenType.VBar,               new ParseRule(null,          Binary,    Precedence.BitwiseOr)},
+            {TokenType.BitwiseAnd,         new ParseRule(null,          Binary,    Precedence.BitwiseAnd)},
+            {TokenType.BitwiseXor,         new ParseRule(null,          Binary,    Precedence.Xor)},
+            {TokenType.BitwiseNegate,      new ParseRule(Unary,         null,      Precedence.Unary)},
+            {TokenType.BitShiftLeft,       new ParseRule(null,          Binary,    Precedence.BitShift)},
+            {TokenType.BitShiftRight,      new ParseRule(null,          Binary,    Precedence.BitShift)},
+            //
+            {TokenType.QuestionMark,       new ParseRule(null,          Ternary,   Precedence.Ternary)},
+            {TokenType.AtSymbol,           new ParseRule(Attribute_,    null,      Precedence.None)},
+            {TokenType.LambdaArgsOpen,     new ParseRule(Lambda,        null,      Precedence.None)},
+            {TokenType.Is,                 new ParseRule(null,          Binary,    Precedence.Is)},
+            //equality
+            {TokenType.Bang,               new ParseRule(Unary,         null,      Precedence.Unary)},
+            {TokenType.BangEqual,          new ParseRule(null,          Binary,    Precedence.Equality)},
+            {TokenType.Equal,              new ParseRule(null,          null,      Precedence.None)},
+            {TokenType.EqualEqual,         new ParseRule(null,          Binary,    Precedence.Equality)},
+            {TokenType.GreaterThan,        new ParseRule(null,          Binary,    Precedence.Comparison)},
+            {TokenType.GreaterEqual,       new ParseRule(null,          Binary,    Precedence.Comparison)},
+            {TokenType.LessThan,           new ParseRule(null,          Binary,    Precedence.Comparison)},
+            {TokenType.LessEqual,          new ParseRule(null,          Binary,    Precedence.Comparison)},
+            //
+            {TokenType.Self,               new ParseRule(Self,          null,      Precedence.None)},
+            {TokenType.Super,              new ParseRule(Super,         null,      Precedence.None)},
             // Literals
-            {TokenType.Identifier, new ParseRule(Variable,      null, Precedence.None) },
-            {TokenType.Var,        new ParseRule(ParseVariable, null, Precedence.None) },
-            {TokenType.String,     new ParseRule(ParseString,   null, Precedence.None) },
-            {TokenType.Number,     new ParseRule(ParseNumber,   null, Precedence.None) },
-            {TokenType.EndOfLine,  new ParseRule(null,          null, Precedence.None) },
-            {TokenType.EndOfFile,  new ParseRule(null,          null, Precedence.None) },
-            {TokenType.Filename,   new ParseRule(Replacement,   null, Precedence.None) },
-            {TokenType.False,      new ParseRule(Literal,       null, Precedence.None) },
-            {TokenType.True,       new ParseRule(Literal,       null, Precedence.None) },
-            {TokenType.Nil,        new ParseRule(Literal,       null, Precedence.None) },
+            {TokenType.Identifier,         new ParseRule(Variable,      null,      Precedence.None) },
+            {TokenType.Var,                new ParseRule(ParseVariable, null,      Precedence.None) },
+            {TokenType.String,             new ParseRule(ParseString,   null,      Precedence.None) },
+            {TokenType.Number,             new ParseRule(ParseNumber,   null,      Precedence.None) },
+            {TokenType.EndOfLine,          new ParseRule(null,          null,      Precedence.None) },
+            {TokenType.EndOfFile,          new ParseRule(null,          null,      Precedence.None) },
+            {TokenType.Filename,           new ParseRule(Replacement,   null,      Precedence.None) },
+            {TokenType.False,              new ParseRule(Literal,       null,      Precedence.None) },
+            {TokenType.True,               new ParseRule(Literal,       null,      Precedence.None) },
+            {TokenType.Nil,                new ParseRule(Literal,       null,      Precedence.None) },
         };
     }
 

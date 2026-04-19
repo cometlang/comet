@@ -294,7 +294,16 @@ public partial class Parser
 
     private void NextStatement()
     {
-        throw new NotImplementedException();
+        if (CurrentLoop == null) {
+            Error("Can't use 'next' outside of a loop.");
+            return;
+        }
+
+        // Discard any locals created inside the loop.
+        CurrentFunction.DiscardCurrentScope(CurrentLoop.LoopScopeDepth);
+
+        // Jump to top of current innermost loop.
+        CurrentFunction.EmitLoop(CurrentLoop.StartAddress);
     }
 
     private void BreakStatement()

@@ -200,4 +200,19 @@ public class FunctionCompiler
         }
         EmitBytes((byte)Op.Return);
     }
+
+    public void DiscardCurrentScope(int scopeDepthToDiscard)
+    {
+        foreach (var local in _locals)
+        {
+            if (local.Depth > scopeDepthToDiscard)
+            {
+                EmitBytes(Op.Pop);
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
 }

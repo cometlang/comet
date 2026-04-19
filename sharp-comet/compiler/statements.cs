@@ -369,7 +369,22 @@ public partial class Parser
 
     private void BreakStatement()
     {
-        throw new NotImplementedException();
+        if (CurrentLoop == null)
+        {
+            Error("Can't use 'break' outside of a loop.");
+            return;
+        }
+
+        if (CurrentLoop.BreakJump != null)
+        {
+            Error("Only one break statement per loop is supported.");
+            return;
+        }
+
+        // Discard any locals created inside the loop.
+        CurrentFunction.DiscardCurrentScope(CurrentLoop.LoopScopeDepth);
+
+        CurrentLoop.BreakJump = CurrentFunction.EmitJump(Op.Jump);
     }
 
     private void Statement()

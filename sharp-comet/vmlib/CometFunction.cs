@@ -60,7 +60,7 @@ public class CometFunction : CometObject
     {
         for (int i = 0; i < bytes.Length; i++)
         {
-            _code[offset] = bytes[i];
+            _code[offset + i] = bytes[i];
         }
     }
 

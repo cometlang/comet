@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using sharpcomet.lexer;
 using sharpcomet.vmlib;
 using System;
@@ -7,6 +6,22 @@ namespace sharpcomet.compiler;
 
 public partial class Parser
 {
+    private void EmitLoop()
+    {
+        if (!CurrentFunction.EmitLoop(CurrentLoop!.StartAddress))
+        {
+            Error("Loop body too large.");
+        }
+    }
+
+    private void PatchJump(int jump)
+    {
+        if (!CurrentFunction.PatchJump(jump))
+        {
+            Error("Too much code to jump over!");
+        }
+    }
+
     private void ForStatement()
     {
         CurrentFunction.BeginScope();
@@ -44,25 +59,24 @@ public partial class Parser
             CurrentFunction.EmitBytes(Op.Pop);
             Consume(TokenType.RightParen, "Expected ')' after for clauses.");
 
-            if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
-            {
-                Error("Loop body too large.");
-            }
+            EmitLoop();
+
             CurrentLoop.StartAddress = incrementStart;
-            CurrentFunction.PatchJump(bodyJump);
+            PatchJump(bodyJump);
         }
 
         Statement();
 
-        CurrentFunction.EmitLoop(CurrentLoop.StartAddress);
+        EmitLoop();
 
         if (CurrentLoop.BreakJump != null)
         {
-            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+
+            PatchJump(CurrentLoop.BreakJump.Value);
         }
         if (CurrentLoop.ExitAddress != null)
         {
-            CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
+            PatchJump(CurrentLoop.ExitAddress.Value);
             CurrentFunction.EmitBytes(Op.Pop);
         }
 
@@ -81,20 +95,14 @@ public partial class Parser
         Statement();
 
         int elseJump = CurrentFunction.EmitJump(Op.Jump);
-        if (!CurrentFunction.PatchJump(thenJump))
-        {
-            Error("Too much code to jump over!");
-        }
+        PatchJump(thenJump);
         CurrentFunction.EmitBytes((byte)Op.Pop);
 
         Match(TokenType.EndOfLine);
         if (Match(TokenType.Else))
             Statement();
 
-        if (!CurrentFunction.PatchJump(elseJump))
-        {
-            Error("Too much code to jump over!");
-        }
+        PatchJump(elseJump);
     }
 
     private void Block()
@@ -174,14 +182,11 @@ public partial class Parser
 
         Statement();
 
-        if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
-        {
-            Error("Loop body too large.");
-        }
-        CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
+        EmitLoop();
+        PatchJump(CurrentLoop.ExitAddress.Value);
         if (CurrentLoop.BreakJump != null)
         {
-            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+            PatchJump(CurrentLoop.BreakJump.Value);
         }
         CurrentFunction.EndScope();
         CurrentFunction.EmitBytes((byte)Op.Pop); // This feels weird, like I shouldn't need to do it.
@@ -224,15 +229,12 @@ public partial class Parser
 
         CurrentFunction.EmitBytes((byte)Op.Pop);
         Statement();
-        if (!CurrentFunction.EmitLoop(CurrentLoop.StartAddress))
-        {
-            Error("Loop body too large.");
-        }
+        EmitLoop();
 
-        CurrentFunction.PatchJump(CurrentLoop.ExitAddress.Value);
+        PatchJump(CurrentLoop.ExitAddress.Value);
         if (CurrentLoop.BreakJump.HasValue)
         {
-            CurrentFunction.PatchJump(CurrentLoop.BreakJump.Value);
+            PatchJump(CurrentLoop.BreakJump.Value);
         }
         CurrentFunction.EmitBytes((byte)Op.Pop);
         CurrentLoop = CurrentLoop.Enclosing;
@@ -240,7 +242,66 @@ public partial class Parser
 
     private void TryStatement()
     {
-        throw new NotImplementedException();
+        CurrentFunction.EmitBytes(Op.PushExceptionHandler);
+        int exceptionType = CurrentFunction.CurrentOffset;
+        CurrentFunction.EmitBytes(0xFF);
+        int handlerAddress = CurrentFunction.CurrentOffset;
+        CurrentFunction.EmitBytes(0XFF, 0XFF);
+        int finallyAddress = CurrentFunction.CurrentOffset;
+        CurrentFunction.EmitBytes(0XFF, 0XFF);
+
+        Statement();
+
+        CurrentFunction.EmitBytes(Op.PopExceptionHandler);
+        int successJump = CurrentFunction.EmitJump(Op.Jump);
+        Match(TokenType.EndOfLine);
+        bool tryBlockCompleted = false;
+
+        if (Match(TokenType.Catch))
+        {
+            tryBlockCompleted = true;
+            CurrentFunction.BeginScope();
+            Consume(TokenType.LeftParen, "Expected '(' after catch.");
+            Consume(TokenType.Identifier, "Expected a type name to catch.");
+            byte name = IdentifierConstant(Previous);
+            CurrentFunction.SetCodeOffset(exceptionType, name);
+            CurrentFunction.PatchAddress(handlerAddress);
+            if (Match(TokenType.As))
+            {
+                Consume(TokenType.Identifier, "Expected an identifier for the exception instance.");
+                byte exVar = CurrentFunction.AddLocal(Previous.Representation);
+                CurrentFunction.MarkInitialized();
+                CurrentFunction.EmitBytes((byte)Op.SetLocal, exVar);
+            }
+            Consume(TokenType.RightParen, "Expected ')' after a catch statement.");
+            CurrentFunction.EmitBytes(Op.PopExceptionHandler);
+            Statement();
+            Match(TokenType.EndOfLine);
+            CurrentFunction.EndScope();
+        }
+        PatchJump(successJump);
+
+        if (Match(TokenType.Finally))
+        {
+            tryBlockCompleted = true;
+            // If we arrive here from either the try or handler blocks, then we don't
+            // want to continue propagating the exception
+            CurrentFunction.EmitBytes(Op.False);
+
+            CurrentFunction.PatchAddress(finallyAddress);
+            Statement();
+
+            int continueExecution = CurrentFunction.EmitJump(Op.JumpIfFalse);
+            CurrentFunction.EmitBytes(Op.Pop); // Pop the bool off the stack
+            CurrentFunction.EmitBytes(Op.PropagateException);
+            PatchJump(continueExecution);
+            CurrentFunction.EmitBytes(Op.Pop);
+        }
+
+        if (tryBlockCompleted == false)
+        {
+            ErrorAtCurrent("A try statement requires a catch, finally or both");
+        }
     }
 
     private void ImportStatement()
@@ -303,7 +364,7 @@ public partial class Parser
         CurrentFunction.DiscardCurrentScope(CurrentLoop.LoopScopeDepth);
 
         // Jump to top of current innermost loop.
-        CurrentFunction.EmitLoop(CurrentLoop.StartAddress);
+        EmitLoop();
     }
 
     private void BreakStatement()

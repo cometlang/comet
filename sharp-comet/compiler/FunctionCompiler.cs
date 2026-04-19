@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using sharpcomet.stdlib;
 using sharpcomet.vmlib;
-using sharpcomet.stdlib;
-using vmlib;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using vmlib;
 
 namespace sharpcomet.compiler;
 
@@ -214,5 +215,15 @@ public class FunctionCompiler
                 break;
             }
         }
+    }
+
+    public void PatchAddress(int address)
+    {
+        Function.SetCodeOffset(address, (byte)((CurrentOffset >> 8)), (byte)CurrentOffset);
+    }
+
+    public void SetCodeOffset(int offset, byte code)
+    {
+        Function.SetCodeOffset(offset, code);
     }
 }

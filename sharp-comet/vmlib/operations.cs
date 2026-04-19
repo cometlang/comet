@@ -35,4 +35,7 @@ public enum Op : byte
     Import,
     ImportParams,
     Loop,
+    PushExceptionHandler,
+    PopExceptionHandler,
+    PropagateException,
 };

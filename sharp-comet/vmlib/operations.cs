@@ -38,4 +38,7 @@ public enum Op : byte
     PushExceptionHandler,
     PopExceptionHandler,
     PropagateException,
+    Not,
+    Negate,
+    Splat,
 };

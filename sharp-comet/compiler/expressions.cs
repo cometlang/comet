@@ -155,7 +155,29 @@ public partial class Parser
 
     private void Unary(bool canAssign)
     {
-        throw new NotImplementedException();
+        TokenType operatorType = Previous.TokenType;
+
+        // Compile the operand.
+        ParsePrecedence(Precedence.Unary);
+
+        // Emit the operator instruction.
+        switch (operatorType)
+        {
+            case TokenType.Bang:
+                CurrentFunction.EmitBytes(Op.Not);
+                break;
+            case TokenType.Minus:
+                CurrentFunction.EmitBytes(Op.Negate);
+                break;
+            case TokenType.BitwiseNegate:
+                CurrentFunction.EmitBytes(Op.Negate);
+                break;
+            case TokenType.Star:
+                CurrentFunction.EmitBytes(Op.Splat);
+                break;
+            default:
+                return; // Unreachable.
+        }
     }
 
     private void Binary(bool canAssign)

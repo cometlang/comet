@@ -38,6 +38,11 @@ public struct Precedence
         return _precedenceValue.GetHashCode();
     }
 
+    public static Precedence operator +(Precedence left, int right)
+    {
+        return new Precedence(left._precedenceValue + right);
+    }
+
     public static bool operator >(Precedence left, Precedence right)
     {
         return left._precedenceValue > right._precedenceValue;

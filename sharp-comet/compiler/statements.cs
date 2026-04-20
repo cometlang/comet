@@ -91,12 +91,12 @@ public partial class Parser
         Consume(TokenType.RightParen, "Expected ')' after condition.");
 
         int thenJump = CurrentFunction.EmitJump(Op.JumpIfFalse);
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
         Statement();
 
         int elseJump = CurrentFunction.EmitJump(Op.Jump);
         PatchJump(thenJump);
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
 
         Match(TokenType.EndOfLine);
         if (Match(TokenType.Else))
@@ -123,7 +123,7 @@ public partial class Parser
         {
             Consume(TokenType.EndOfLine, "Only one statement per line allowed.");
         }
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
     }
 
     private void ThrowStatement()
@@ -131,7 +131,7 @@ public partial class Parser
         Expression();
         if (!Check(TokenType.EndOfFile))
             Consume(TokenType.EndOfLine, "Only one statement per line allowed.");
-        CurrentFunction.EmitBytes((byte)Op.Throw);
+        CurrentFunction.EmitBytes(Op.Throw);
     }
 
     private void RethrowStatement()
@@ -139,7 +139,7 @@ public partial class Parser
         Expression();
         if (!Check(TokenType.EndOfFile))
             Consume(TokenType.EndOfLine, "Only one statement per line allowed.");
-        CurrentFunction.EmitBytes((byte)Op.Rethrow);
+        CurrentFunction.EmitBytes(Op.Rethrow);
     }
 
     private void SyntheticMethodCall(string methodName)
@@ -156,7 +156,7 @@ public partial class Parser
         Consume(TokenType.Var, "Expected 'var' to declare foreach loop variable.");
         Token loopVarName = Current;
         byte loopVar = ParseVariable("Expected a variable name in the foreach loop.");
-        CurrentFunction.EmitBytes((byte)Op.Nil);
+        CurrentFunction.EmitBytes(Op.Nil);
         CurrentFunction.DefineVariable(loopVar);
 
         Consume(TokenType.In, "Expected 'in' keyword in foreach loop.");
@@ -173,7 +173,7 @@ public partial class Parser
         CurrentFunction.EmitBytes((byte)Op.GetLocal, iterVar);
         SyntheticMethodCall("has_next?");
         CurrentLoop.ExitAddress = CurrentFunction.EmitJump(Op.JumpIfFalse);
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
 
         CurrentFunction.EmitBytes((byte)Op.GetLocal, iterVar);
         SyntheticMethodCall("get_next");
@@ -189,7 +189,7 @@ public partial class Parser
             PatchJump(CurrentLoop.BreakJump.Value);
         }
         CurrentFunction.EndScope();
-        CurrentFunction.EmitBytes((byte)Op.Pop); // This feels weird, like I shouldn't need to do it.
+        CurrentFunction.EmitBytes(Op.Pop); // This feels weird, like I shouldn't need to do it.
         CurrentLoop = CurrentLoop.Enclosing;
     }
 
@@ -214,7 +214,7 @@ public partial class Parser
             {
                 Consume(TokenType.EndOfLine, "Only one statement per line allowed.");
             }
-            CurrentFunction.EmitBytes((byte)Op.Return);
+            CurrentFunction.EmitBytes(Op.Return);
         }
     }
 
@@ -227,7 +227,7 @@ public partial class Parser
 
         CurrentLoop.ExitAddress = CurrentFunction.EmitJump(Op.JumpIfFalse);
 
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
         Statement();
         EmitLoop();
 
@@ -236,7 +236,7 @@ public partial class Parser
         {
             PatchJump(CurrentLoop.BreakJump.Value);
         }
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
         CurrentLoop = CurrentLoop.Enclosing;
     }
 
@@ -335,7 +335,7 @@ public partial class Parser
             Consume(TokenType.From, "Expected 'from' after import parameters.");
             Expression();
             // Imports are a function that returns nil, so pop that off the stack, too
-            CurrentFunction.EmitBytes((byte)Op.Import, (byte)Op.Pop);
+            CurrentFunction.EmitBytes(Op.Import, Op.Pop);
             CurrentFunction.EmitBytes((byte)Op.ImportParams, importParamCount ?? 0);
             if (importParamCount != null)
             {
@@ -346,7 +346,7 @@ public partial class Parser
         {
             Expression();
             // Imports are a function that returns nil, so pop that off the stack, too
-            CurrentFunction.EmitBytes((byte)Op.Import, (byte)Op.Pop);
+            CurrentFunction.EmitBytes(Op.Import, Op.Pop);
             Consume(TokenType.As, "Expected 'as' after the module to import.");
             byte global = ParseVariable("Expected a variable name for the imported module.");
             CurrentFunction.DefineVariable(global);

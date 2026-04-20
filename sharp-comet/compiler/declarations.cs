@@ -117,7 +117,7 @@ public partial class Parser
             NamedVariable(SyntheticToken("Object"), false);
         }
         NamedVariable(className, false);
-        CurrentFunction.EmitBytes((byte)Op.Inherit);
+        CurrentFunction.EmitBytes(Op.Inherit);
 
         CurrentFunction.BeginScope();
         byte local = CurrentFunction.AddLocal("super");
@@ -147,12 +147,12 @@ public partial class Parser
         }
 
         Consume(TokenType.RightBrace, "Expected a '}' after the class body.");
-        CurrentFunction.EmitBytes((byte)Op.Pop);
+        CurrentFunction.EmitBytes(Op.Pop);
 
         // Not sure why, but I need attributeCount-1 to pop off the stack
         for (int i = 1; i < attributeCount; i++)
         {
-            CurrentFunction.EmitBytes((byte)Op.Pop);
+            CurrentFunction.EmitBytes(Op.Pop);
         }
 
         CurrentFunction.EndScope();
@@ -268,7 +268,7 @@ public partial class Parser
         }
         else
         {
-            CurrentFunction.EmitBytes((byte)Op.Nil);
+            CurrentFunction.EmitBytes(Op.Nil);
         }
 
         CurrentFunction.DefineVariable(global);

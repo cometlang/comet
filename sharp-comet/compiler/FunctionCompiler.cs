@@ -55,9 +55,9 @@ public class FunctionCompiler
         Function.EmitBytes(instructions);
     }
 
-    public void EmitBytes(Op opCode)
+    public void EmitBytes(params Op[] opCodes)
     {
-        Function.EmitBytes((byte)opCode);
+        Function.EmitBytes(opCodes.Cast<byte>().ToArray());
     }
 
     public void EmitConstant(CometObject constant)

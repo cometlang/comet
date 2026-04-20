@@ -182,7 +182,70 @@ public partial class Parser
 
     private void Binary(bool canAssign)
     {
-        throw new NotImplementedException();
+        // Remember the operator.
+        TokenType operatorType = Previous.TokenType;
+
+        // Compile the right operand.
+        ParseRule rule = _parseRules[operatorType];
+        ParsePrecedence(rule.Precedence + 1);
+
+        // Emit the operator instruction.
+        switch (operatorType)
+        {
+            case TokenType.BangEqual:
+                CurrentFunction.EmitBytes(Op.Equal, Op.Not);
+                break;
+            case TokenType.EqualEqual:
+                CurrentFunction.EmitBytes(Op.Equal);
+                break;
+            case TokenType.GreaterThan:
+                CurrentFunction.EmitBytes(Op.GreaterThan);
+                break;
+            case TokenType.GreaterEqual:
+                CurrentFunction.EmitBytes(Op.GreaterEqual);
+                break;
+            case TokenType.LessThan:
+                CurrentFunction.EmitBytes(Op.LessThan);
+                break;
+            case TokenType.LessEqual:
+                CurrentFunction.EmitBytes(Op.LessEqual);
+                break;
+            case TokenType.Plus:
+                CurrentFunction.EmitBytes(Op.Add);
+                break;
+            case TokenType.Minus:
+                CurrentFunction.EmitBytes(Op.Subtract);
+                break;
+            case TokenType.Star:
+                CurrentFunction.EmitBytes(Op.Multiply);
+                break;
+            case TokenType.Slash:
+                CurrentFunction.EmitBytes(Op.Divide);
+                break;
+            case TokenType.Is:
+                CurrentFunction.EmitBytes(Op.Is);
+                break;
+            case TokenType.Percent:
+                CurrentFunction.EmitBytes(Op.Modulo);
+                break;
+            case TokenType.BitwiseAnd:
+                CurrentFunction.EmitBytes(Op.BitwiseAnd);
+                break;
+            case TokenType.VBar:
+                CurrentFunction.EmitBytes(Op.BitwiseOr);
+                break;
+            case TokenType.BitwiseXor:
+                CurrentFunction.EmitBytes(Op.BitwiseXor);
+                break;
+            case TokenType.BitShiftRight:
+                CurrentFunction.EmitBytes(Op.BitShiftRight);
+                break;
+            case TokenType.BitShiftLeft:
+                CurrentFunction.EmitBytes(Op.BitShiftLeft);
+                break;
+            default:
+                return; // Unreachable.
+        }
     }
 
     private void Ternary(bool canAssign)

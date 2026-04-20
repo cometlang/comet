@@ -250,7 +250,17 @@ public partial class Parser
 
     private void Ternary(bool canAssign)
     {
-        throw new NotImplementedException();
+        Match(TokenType.EndOfLine);
+        int elseJump = CurrentFunction.EmitJump(Op.JumpIfFalse);
+        CurrentFunction.EmitBytes(Op.Pop);
+        Expression();
+        int endJump = CurrentFunction.EmitJump(Op.Jump);
+        Consume(TokenType.Colon, "Expected ':' in a ternary operation.");
+        Match(TokenType.EndOfLine);
+        CurrentFunction.PatchJump(elseJump);
+        CurrentFunction.EmitBytes(Op.Pop);
+        Expression();
+        CurrentFunction.PatchJump(endJump);
     }
 
     private void Attribute_(bool canAssign)

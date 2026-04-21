@@ -304,7 +304,14 @@ public partial class Parser
 
     private void Self(bool canAssign)
     {
-        throw new NotImplementedException();
+        if (CurrentClass == null)
+        {
+            Error("Cannot use 'self' outside of a class.");
+        }
+        else
+        {
+            Variable(false); // It's never possible to re-assign self.
+        }
     }
 
     private void Super(bool canAssign)

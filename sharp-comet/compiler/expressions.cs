@@ -265,7 +265,36 @@ public partial class Parser
 
     private void Attribute_(bool canAssign)
     {
-        throw new NotImplementedException();
+        byte attributeCount = 0;
+        do {
+            Consume(TokenType.Identifier, "Expected an identifier.");
+            NamedVariable(Previous, canAssign);
+            if (Match(TokenType.Dot) && Match(TokenType.Identifier)) {
+                byte name = IdentifierConstant(Previous);
+                CurrentFunction.EmitBytes((byte)Op.GetProperty, name);
+            }
+            Consume(TokenType.LeftParen, "Expected '(' after an attribute.");
+            Call(canAssign);
+            Match(TokenType.EndOfLine);
+            attributeCount++;
+        } while (Match(TokenType.AtSymbol));
+        if (Match(TokenType.Function))
+        {
+            FunctionDeclaration(FunctionType.Function, attributeCount);
+        }
+        else if (Match(TokenType.Class))
+        {
+            ClassDeclaration(attributeCount);
+        }
+        else if (CurrentClass != null &&
+            (Check(TokenType.Identifier) || Check(TokenType.Static)))
+        {
+            Method(attributeCount);
+        }
+        else
+        {
+            ErrorAtCurrent("Epected a function or class after an attribute.");
+        }
     }
 
     private void Lambda(bool canAssign)

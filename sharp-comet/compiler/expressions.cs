@@ -314,9 +314,37 @@ public partial class Parser
         }
     }
 
+    private void PushSuperClass()
+    {
+        NamedVariable(SyntheticToken("super"), false);
+    }
+
     private void Super(bool canAssign)
     {
-        throw new NotImplementedException();
+        if (CurrentClass == null)
+        {
+            Error("Cannot use 'super' outside of a class.");
+        }
+
+        Consume(TokenType.Dot, "Expected '.' after 'super'.");
+        Consume(TokenType.Identifier, "Expected superclass method name.");
+        byte name = IdentifierConstant(Previous);
+
+        // Push the receiver.
+        NamedVariable(SyntheticToken("self"), false);
+
+        if (Match(TokenType.LeftParen))
+        {
+            PushSuperClass();
+            CurrentFunction.EmitBytes((byte)Op.GetSuper, name);
+            byte argCount = ArgumentList(TokenType.RightParen);
+            CurrentFunction.EmitBytes((byte)Op.Call, argCount);
+        }
+        else
+        {
+            PushSuperClass();
+            CurrentFunction.EmitBytes((byte)Op.GetSuper, name);
+        }
     }
 
     private void LiteralHash(bool canAssign)

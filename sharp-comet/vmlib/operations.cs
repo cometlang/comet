@@ -53,4 +53,5 @@ public enum Op : byte
     BitwiseXor,
     BitShiftLeft,
     BitShiftRight,
+    GetSuper,
 };

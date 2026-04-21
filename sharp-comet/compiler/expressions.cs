@@ -354,7 +354,17 @@ public partial class Parser
 
     private void LiteralList(bool canAssign)
     {
-        throw new NotImplementedException();
+        NamedVariable(SyntheticToken("List"), canAssign);
+        CurrentFunction.EmitBytes(Op.Call, 0); // Create a list using the default constructor
+        CurrentFunction.EmitBytes(Op.DuplicateStackTop); // Duplicate the list instance, so the pop leaves it for the return value of assignment
+        byte argCount = ArgumentList(TokenType.RightSquareBracket);
+        if (argCount > 0)
+        {
+            Token addToken = SyntheticToken("add");
+            byte name = IdentifierConstant(addToken);
+            CurrentFunction.EmitBytes((byte)Op.Invoke, name, argCount);
+        }
+        CurrentFunction.EmitBytes(Op.Pop);
     }
 
     private void Subscript(bool canAssign)

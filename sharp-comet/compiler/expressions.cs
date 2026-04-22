@@ -299,7 +299,33 @@ public partial class Parser
 
     private void Lambda(bool canAssign)
     {
-        throw new NotImplementedException();
+        CurrentFunction = new FunctionCompiler(CurrentFunction, FunctionType.Lambda);
+        CurrentFunction.BeginScope();
+
+        if (!Check(TokenType.LambdaArgsClose))
+        {
+            do
+            {
+                CurrentFunction.Function.Arity++;
+                if (CurrentFunction.Function.Arity > 255)
+                {
+                    ErrorAtCurrent("Cannot have more than 255 parameters.");
+                }
+
+                byte paramConstant = ParseVariable("Expected a parameter name.");
+                CurrentFunction.DefineVariable(paramConstant);
+            } while (Match(TokenType.Comma));
+        }
+        Consume(TokenType.LambdaArgsClose, "Expected '|)' after lambda parameters.");
+
+        // The body.
+        Match(TokenType.EndOfLine);
+        Consume(TokenType.LeftBrace, "Expected '{' before lambda body.");
+        Block();
+
+        CurrentFunction.EndScope();
+        // Create the function object.
+        CurrentFunction.EndCompiler(true);
     }
 
     private void Self(bool canAssign)
@@ -403,7 +429,6 @@ public partial class Parser
         {
             // Single-character tokens.
             {TokenType.LeftParen,          new ParseRule(Grouping,      Call,      Precedence.Call) },
-            {TokenType.RightParen,         new ParseRule(null,          null,      Precedence.None) },
             {TokenType.LeftBrace,          new ParseRule(LiteralHash,   null,      Precedence.None)},
             {TokenType.LeftSquareBracket,  new ParseRule(LiteralList,   Subscript, Precedence.Call)},
             {TokenType.Dot,                new ParseRule(null,          Dot,       Precedence.Call) },
@@ -428,7 +453,6 @@ public partial class Parser
             //equality
             {TokenType.Bang,               new ParseRule(Unary,         null,      Precedence.Unary)},
             {TokenType.BangEqual,          new ParseRule(null,          Binary,    Precedence.Equality)},
-            {TokenType.Equal,              new ParseRule(null,          null,      Precedence.None)},
             {TokenType.EqualEqual,         new ParseRule(null,          Binary,    Precedence.Equality)},
             {TokenType.GreaterThan,        new ParseRule(null,          Binary,    Precedence.Comparison)},
             {TokenType.GreaterEqual,       new ParseRule(null,          Binary,    Precedence.Comparison)},
@@ -445,8 +469,6 @@ public partial class Parser
             {TokenType.Var,                new ParseRule(ParseVariable, null,      Precedence.None) },
             {TokenType.String,             new ParseRule(ParseString,   null,      Precedence.None) },
             {TokenType.Number,             new ParseRule(ParseNumber,   null,      Precedence.None) },
-            {TokenType.EndOfLine,          new ParseRule(null,          null,      Precedence.None) },
-            {TokenType.EndOfFile,          new ParseRule(null,          null,      Precedence.None) },
             {TokenType.Filename,           new ParseRule(Replacement,   null,      Precedence.None) },
             {TokenType.False,              new ParseRule(Literal,       null,      Precedence.None) },
             {TokenType.True,               new ParseRule(Literal,       null,      Precedence.None) },

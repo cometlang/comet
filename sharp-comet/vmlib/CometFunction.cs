@@ -63,12 +63,4 @@ public class CometFunction : CometObject
             _code[offset + i] = bytes[i];
         }
     }
-
-    //     for (int i = 0; i < function->upvalueCount; i++)
-    //     {
-    //         emitByte(parser, compiler.upvalues[i].isLocal ? 1 : 0);
-    //         emitByte(parser, compiler.upvalues[i].index);
-    //     }
-    public void EmitUpValues()
-    { }
 }

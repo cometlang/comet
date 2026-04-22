@@ -3,7 +3,6 @@ using sharpcomet.vmlib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using vmlib;
 
 namespace sharpcomet.compiler;
@@ -138,12 +137,22 @@ public class FunctionCompiler
             Function.EmitBytes((byte)Op.Nil); // Not entirely sure why we need this nil?
         }
         Function.EmitBytes((byte)Op.Return);
-        if (emitParams)
+        if (emitParams && Enclosing != null)
         {
-            EmitBytes((byte)Op.Closure, Function.MakeConstant(Function));
-            Function.EmitUpValues();
+            EmitBytes((byte)Op.Closure, Enclosing.MakeConstant(Function));
+            Enclosing.EmitUpValues(Function);
         }
         return Function;
+    }
+
+    //     for (int i = 0; i < function->upvalueCount; i++)
+    //     {
+    //         emitByte(parser, compiler.upvalues[i].isLocal ? 1 : 0);
+    //         emitByte(parser, compiler.upvalues[i].index);
+    //     }
+    private void EmitUpValues(CometFunction function)
+    {
+        throw new NotImplementedException();
     }
 
     public int EmitJump(Op instruction)

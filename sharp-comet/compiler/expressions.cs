@@ -417,9 +417,52 @@ public partial class Parser
         CurrentFunction.EmitBytes(Op.Pop);
     }
 
+    public void EmitSubscriptAssignOpInstructions(Op opCode)
+    {
+        CurrentFunction.EmitBytes((byte)Op.DuplicateStackTopTwice, (byte)Op.Index, 1);
+        Expression();
+        CurrentFunction.EmitBytes((byte)opCode, (byte)Op.IndexAssign, 2);
+    }
+
     private void Subscript(bool canAssign)
     {
-        throw new NotImplementedException();
+        byte argCount = ArgumentList(TokenType.RightSquareBracket);
+        if (argCount != 1)
+        {
+            Error("Subscript requires exactly one argument");
+        }
+        if (canAssign)
+        {
+            if (Match(TokenType.Equal))
+            {
+                Expression();
+                CurrentFunction.EmitBytes((byte)Op.IndexAssign, (byte)(argCount + 1));
+            }
+            else if (Match(TokenType.PlusEqual))
+            {
+                EmitSubscriptAssignOpInstructions(Op.Add);
+            }
+            else if (Match(TokenType.MinusEqual))
+            {
+                EmitSubscriptAssignOpInstructions(Op.Subtract);
+            }
+            else if (Match(TokenType.StarEqual))
+            {
+                EmitSubscriptAssignOpInstructions(Op.Multiply);
+            }
+            else if (Match(TokenType.SlashEqual))
+            {
+                EmitSubscriptAssignOpInstructions(Op.Divide);
+            }
+            else
+            {
+                CurrentFunction.EmitBytes((byte)Op.Index, argCount);
+            }
+        }
+        else
+        {
+            CurrentFunction.EmitBytes((byte)Op.Index, argCount);
+        }
     }
 
     private void Or_(bool canAssign)

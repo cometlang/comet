@@ -26,6 +26,7 @@ public enum Op : byte
     Modulo,
     Equal,
     DuplicateStackTop,
+    DuplicateStackTopTwice,
     Class,
     Inherit,
     StaticMethod,
@@ -54,4 +55,6 @@ public enum Op : byte
     BitShiftLeft,
     BitShiftRight,
     GetSuper,
+    IndexAssign,
+    Index,
 };

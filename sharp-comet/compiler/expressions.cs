@@ -375,7 +375,31 @@ public partial class Parser
 
     private void LiteralHash(bool canAssign)
     {
-        throw new NotImplementedException();
+        NamedVariable(SyntheticToken("Hash"), canAssign);
+        CurrentFunction.EmitBytes(Op.Call, 0, Op.DuplicateStackTop);
+        Match(TokenType.EndOfLine);
+
+        if (!Check(TokenType.RightBrace))
+        {
+            do
+            {
+                Match(TokenType.EndOfLine);
+                if (Check(TokenType.RightBrace)) // hanging comma
+                    break;
+                CurrentFunction.EmitBytes(Op.DuplicateStackTop);
+                Expression();
+                Consume(TokenType.Colon, "':' expected between key and value of a literal hash");
+                Match(TokenType.EndOfLine);
+                Expression();
+                Token addToken = SyntheticToken("add");
+                byte name = IdentifierConstant(addToken);
+                CurrentFunction.EmitBytes((byte)Op.Invoke, name, 2, (byte)Op.Pop);
+            } while (Match(TokenType.Comma));
+        }
+
+        CurrentFunction.EmitBytes(Op.Pop);
+        Match(TokenType.EndOfLine);
+        Consume(TokenType.RightBrace, "Expected '}' for a literal hash declaration");
     }
 
     private void LiteralList(bool canAssign)

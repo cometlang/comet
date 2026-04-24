@@ -21,8 +21,15 @@ jobs:
           dotnet-version: 10
 
       - name: build
-        run: |
-          dotnet build -c Release
+        run: dotnet build -c Release
 
       - name: test
         run: dotnet test -c Release --no-build
+      
+      - name: publish
+        run: dotnet publish -o output comet/comet.csproj
+
+      - name: compile test scripts
+        working-directory: ./sharp-comet/output
+        run: |
+          ls ../../test_scripts/* | xargs -n 1 ./comet -c 

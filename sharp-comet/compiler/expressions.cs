@@ -526,9 +526,9 @@ public partial class Parser
             {TokenType.LessThan,           new ParseRule(null,          Binary,    Precedence.Comparison)},
             {TokenType.LessEqual,          new ParseRule(null,          Binary,    Precedence.Comparison)},
             // logical operations
-            {TokenType.LogicalOr,         new ParseRule(null,           Or_,       Precedence.Or)},
-            {TokenType.LogicalAnd,        new ParseRule(null,           And_,      Precedence.And)},
-            //
+            {TokenType.LogicalOr,          new ParseRule(null,          Or_,       Precedence.Or)},
+            {TokenType.LogicalAnd,         new ParseRule(null,          And_,      Precedence.And)},
+            // object identifiers
             {TokenType.Self,               new ParseRule(Self,          null,      Precedence.None)},
             {TokenType.Super,              new ParseRule(Super,         null,      Precedence.None)},
             // Literals
@@ -540,6 +540,11 @@ public partial class Parser
             {TokenType.False,              new ParseRule(Literal,       null,      Precedence.None) },
             {TokenType.True,               new ParseRule(Literal,       null,      Precedence.None) },
             {TokenType.Nil,                new ParseRule(Literal,       null,      Precedence.None) },
+            // Empty Rules
+            {TokenType.As,                 new ParseRule() },
+            {TokenType.EndOfLine,          new ParseRule() },
+            {TokenType.Comma,              new ParseRule() },
+            {TokenType.RightParen,         new ParseRule() },
         };
     }
 

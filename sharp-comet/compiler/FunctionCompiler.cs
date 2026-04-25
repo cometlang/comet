@@ -19,7 +19,7 @@ public enum FunctionType
 public class FunctionCompiler
 {
     public const int GLOBAL_SCOPE = 0;
-    public const int UNINITIALIZED_SCOPE = -1;
+    public const int UNINITIALIZED_SCOPE = int.MaxValue;
     public const int UNRESOLVED_VARIABLE_INDEX = -1;
 
     private Stack<LocalVariable> _locals;
@@ -110,15 +110,18 @@ public class FunctionCompiler
 
     public byte AddLocal(string variableName)
     {
-        _locals.Push(new LocalVariable(variableName));
+        _locals.Push(new LocalVariable(variableName, ScopeDepth));
         return (byte) (_locals.Count - 1);
     }
 
-    public int ResolveLocal(string variableName)
+    public int ResolveLocal(string variableName, int scopeDepth = GLOBAL_SCOPE)
     {
         int result = 0;
         foreach (var local in _locals)
         {
+            if (local.Depth < scopeDepth)
+                return UNRESOLVED_VARIABLE_INDEX;
+
             if (local.Name == variableName)
                 return result;
             result++;

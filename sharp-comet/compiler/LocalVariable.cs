@@ -8,9 +8,9 @@ public class LocalVariable
 
     public bool IsCaptured { get; set; }
 
-    public LocalVariable(string name)
+    public LocalVariable(string name, int scope)
     {
         Name = name;
-        Depth = 0;
+        Depth = scope;
     }
 }

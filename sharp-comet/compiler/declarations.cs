@@ -37,7 +37,11 @@ public partial class Parser
         if (CurrentFunction.ScopeDepth == FunctionCompiler.GLOBAL_SCOPE)
             return;
 
-        throw new NotImplementedException();
+        int localIndex = CurrentFunction.ResolveLocal(Previous.Representation, CurrentFunction.ScopeDepth);
+        if (localIndex != FunctionCompiler.UNRESOLVED_VARIABLE_INDEX)
+            CurrentFunction.AddLocal(Previous.Representation);
+        else
+            Error($"A variable with the name '{Previous.Representation}' has already been defined in this scope.");
     }
 
     private byte IdentifierConstant(Token token)

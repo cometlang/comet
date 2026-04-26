@@ -38,7 +38,7 @@ public class FunctionCompiler
         _functionType = functionType;
         if (_functionType == FunctionType.Method || _functionType == FunctionType.Initializer)
         {
-            _locals.Push(new LocalVariable("self"));
+            _locals.Push(new LocalVariable("self", ScopeDepth));
         }
     }
 

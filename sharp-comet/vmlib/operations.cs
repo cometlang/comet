@@ -57,4 +57,5 @@ public enum Op : byte
     GetSuper,
     IndexAssign,
     Index,
+    DefineOperator,
 };

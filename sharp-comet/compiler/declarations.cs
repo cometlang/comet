@@ -62,7 +62,23 @@ public partial class Parser
 
     private void Operator()
     {
-        throw new NotImplementedException();
+        Operator op = OperatorHelper.GetOperatorFromToken(Current.TokenType);
+        if (op == vmlib.Operator.Unknown)
+        {
+            Error("Unsupported operator for overloading.");
+        }
+        Advance();
+        if (op == vmlib.Operator.Index)
+        {
+            Consume(TokenType.RightSquareBracket, "Expected ']'.");
+            if (Match(TokenType.Equal))
+            {
+                op = vmlib.Operator.IndexAssign;
+            }
+        }
+        // For all intents and purposes, this is a method.
+        ParseFunction(FunctionType.Method, 0);
+        CurrentFunction.EmitBytes((byte)Op.DefineOperator, (byte)op);
     }
 
     private void Method(byte attributeCount)

@@ -19,7 +19,7 @@ public enum FunctionType
 public class FunctionCompiler
 {
     public const int GLOBAL_SCOPE = 0;
-    public const int UNINITIALIZED_SCOPE = int.MaxValue;
+    public const int UNINITIALIZED_SCOPE = -1;
     public const int UNRESOLVED_VARIABLE_INDEX = -1;
 
     private Stack<LocalVariable> _locals;
@@ -119,7 +119,7 @@ public class FunctionCompiler
         int result = 0;
         foreach (var local in _locals)
         {
-            if (local.Depth < scopeDepth)
+            if (local.Depth != UNINITIALIZED_SCOPE && local.Depth < scopeDepth)
                 return UNRESOLVED_VARIABLE_INDEX;
 
             if (local.Name == variableName)

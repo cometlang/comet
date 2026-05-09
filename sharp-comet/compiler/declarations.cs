@@ -253,6 +253,7 @@ public partial class Parser
 
             } while (Match(TokenType.Comma));
         }
+        Consume(TokenType.RightParen, "Expected ')' after a function parameter list.");
 
         // body
         Match(TokenType.EndOfLine);

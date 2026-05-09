@@ -1,14 +1,19 @@
+using sharpcomet.lexer;
+using sharpcomet.vmlib;
+
 namespace sharpcomet.compiler.tests;
 public class DeclarationsTests
 {
-    [SetUp]
-    public void Setup()
-    {
-    }
-
     [Test]
-    public void Test1()
+    public void FunctionDeclarationTest()
     {
-        Assert.Pass();
+        // arrange
+        var source = new SourceFile("test", "function test_func() {}");
+
+        // act
+        var result = Compiler.Compile(source);
+
+        // assert
+        Assert.That(result, Is.InstanceOf<CometFunction>());
     }
 }

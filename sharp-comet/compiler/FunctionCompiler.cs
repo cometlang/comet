@@ -32,7 +32,7 @@ public class FunctionCompiler
     public FunctionCompiler(FunctionCompiler? parent, FunctionType functionType)
     {
         Enclosing = parent;
-        ScopeDepth = parent?.ScopeDepth ?? UNINITIALIZED_SCOPE;
+        ScopeDepth = parent?.ScopeDepth ?? GLOBAL_SCOPE;
         _locals = new();
         Function = Memory.AllocateObject<CometFunction>();
         _functionType = functionType;

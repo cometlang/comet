@@ -3,7 +3,6 @@ using sharpcomet.vmlib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using vmlib;
 
 namespace sharpcomet.compiler;
 
@@ -23,6 +22,7 @@ public class FunctionCompiler
     public const int UNRESOLVED_VARIABLE_INDEX = -1;
 
     private Stack<LocalVariable> _locals;
+    private List<UpValue> _upvalues;
     private FunctionType _functionType;
     public CometFunction Function { get; private set; }
 
@@ -34,6 +34,7 @@ public class FunctionCompiler
         Enclosing = parent;
         ScopeDepth = parent?.ScopeDepth ?? GLOBAL_SCOPE;
         _locals = new();
+        _upvalues = new();
         Function = Memory.AllocateObject<CometFunction>();
         _functionType = functionType;
         if (_functionType == FunctionType.Method || _functionType == FunctionType.Initializer)
@@ -148,14 +149,12 @@ public class FunctionCompiler
         return Function;
     }
 
-    //     for (int i = 0; i < function->upvalueCount; i++)
-    //     {
-    //         emitByte(parser, compiler.upvalues[i].isLocal ? 1 : 0);
-    //         emitByte(parser, compiler.upvalues[i].index);
-    //     }
     private void EmitUpValues(CometFunction function)
     {
-        throw new NotImplementedException();
+        foreach (var upvalue in _upvalues)
+        {
+            EmitBytes((byte)(upvalue.IsLocal ? 1 : 0), upvalue.Index);
+        }
     }
 
     public int EmitJump(Op instruction)

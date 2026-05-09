@@ -1,7 +1,7 @@
 ﻿using sharpcomet.stdlib;
 using System.Diagnostics.CodeAnalysis;
 
-namespace vmlib
+namespace sharpcomet.vmlib
 {
     public class Memory
     {

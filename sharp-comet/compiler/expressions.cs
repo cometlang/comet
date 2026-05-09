@@ -1,10 +1,8 @@
 using sharpcomet.lexer;
 using sharpcomet.stdlib;
 using sharpcomet.vmlib;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using vmlib;
 
 namespace sharpcomet.compiler;
 

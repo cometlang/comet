@@ -32,7 +32,7 @@ public class FunctionCompiler
     public FunctionCompiler(FunctionCompiler? parent, FunctionType functionType)
     {
         Enclosing = parent;
-        ScopeDepth = parent?.ScopeDepth ?? GLOBAL_SCOPE;
+        ScopeDepth = GLOBAL_SCOPE;
         _locals = new();
         _upvalues = new();
         Function = Memory.AllocateObject<CometFunction>();
@@ -40,6 +40,11 @@ public class FunctionCompiler
         if (_functionType == FunctionType.Method || _functionType == FunctionType.Initializer)
         {
             _locals.Push(new LocalVariable("self", ScopeDepth));
+        }
+        else
+        {
+            // In a function, it holds the function, but cannot be referenced, so has no name.
+            _locals.Push(new LocalVariable("", ScopeDepth));
         }
     }
 
@@ -143,7 +148,7 @@ public class FunctionCompiler
         Function.EmitBytes((byte)Op.Return);
         if (emitParams && Enclosing != null)
         {
-            EmitBytes((byte)Op.Closure, Enclosing.MakeConstant(Function));
+            Enclosing.EmitBytes((byte)Op.Closure, Enclosing.MakeConstant(Function));
             Enclosing.EmitUpValues(Function);
         }
         return Function;

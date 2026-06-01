@@ -2,7 +2,7 @@
   "profiles": {
     "comet": {
       "commandName": "Project",
-      "commandLineArgs": "test_scripts\\variables_basic.cmt",
+      "commandLineArgs": "-c test_scripts\\argument_exception_test.cmt",
       "workingDirectory": "C:\\Users\\micha\\Documents\\comet"
     }
   }

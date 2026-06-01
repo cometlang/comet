@@ -262,7 +262,7 @@ public partial class Parser
 
         // emit
         CurrentFunction.EndCompiler(true);
-        CurrentFunction = CurrentFunction.Enclosing;
+        CurrentFunction = CurrentFunction.Enclosing!;
     }
 
 
